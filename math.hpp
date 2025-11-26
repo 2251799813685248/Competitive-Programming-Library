@@ -201,7 +201,7 @@ struct Eratosthenes{
 /// @param m 
 /// @return a^b%m
 ll modpow(ll a, ll b, ll m){
-    ll t = a;
+    ll t = a%m;
     ll ans = 1;
     while (b > 0){
         if (b%2){
