@@ -1,5 +1,7 @@
 #include <vector>
+#include <string>
 #include <algorithm>
+#include <iostream>
 using namespace std;
 #define ll long long
 struct lll{

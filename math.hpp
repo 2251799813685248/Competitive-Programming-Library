@@ -284,9 +284,9 @@ ll inverse_mod(ll a, ll M){
 }
 
 //階乗前計算による二項係数mod998244353
-vector<ll> factorialmod(1000000);
+vector<ll> factorialmod(10000001);
 factorialmod[0] = 1;
-for (ll i = 1; i <= 1000000; i++){
+for (ll i = 1; i <= 10000000; i++){
     factorialmod[i] = (i*factorialmod[i-1])%998244353;
 }
 auto nCr = [&](ll n, ll r){return (factorialmod[n]*inverse_mod((factorialmod[n-r]*factorialmod[r])%998244353,998244353))%998244353;};
