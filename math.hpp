@@ -153,34 +153,35 @@ ll flsqrt(ll N){
 /// @brief エラトステネスの篩
 struct Eratosthenes{
     vector<ll> P_List;
-    vector<pair<bool,ll>> min_factor;
-    Eratosthenes(ll N){
-        for (ll i = 0; i <= N; i++){
-            min_factor.push_back(pair<bool,ll>{1,-1});//素数ならtrue,そうでなければfalse
-        }
-        min_factor[1] = pair<bool,ll>{0,1};
+    vector<bool> is_prime;
+    vector<ll> min_factor;
+    Eratosthenes(ll N) : is_prime(N+1,1), min_factor(N+1,-1){
+        is_prime[1] = 0;
+        min_factor[1] = 1;
         for (ll i = 2; i <= N; i++){
-            if (min_factor[i].first){
+            if (is_prime[i]){
                 P_List.push_back(i);
-                min_factor[i].second = i;
+                min_factor[i] = i;
                 for (ll j = 2*i; j <= N; j += i){
-                    min_factor[j].first = 0;
-                    min_factor[j].second = (min_factor[j].second == -1 ? i : min_factor[j].second);
+                    is_prime[j] = 0;
+                    if (min_factor[j] == -1){
+                        min_factor[j] = i;
+                    }
                 }
             }
         }
     }
 
-    void chase_prime(ll reference, ll x, vector<vector<vector<ll>>> &r){
-        if (r[reference].empty() || min_factor[x].second != r[reference].back()[0]){
-            r[reference].push_back({min_factor[x].second, 1});
+    void chase_prime(const ll &reference, ll x, vector<vector<vector<ll>>> &r){
+        if (r[reference].empty() || min_factor[x] != r[reference].back()[0]){
+            r[reference].push_back({min_factor[x], 1});
         }
         else{
             r[reference].back()[1]++;
         }
 
-        if (x != min_factor[x].second){
-            chase_prime(reference, x/min_factor[x].second, r);
+        if (x != min_factor[x]){
+            chase_prime(reference, x/min_factor[x], r);
         }
     }
 
