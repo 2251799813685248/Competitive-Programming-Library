@@ -1,0 +1,18 @@
+SegTree<ll,affine> T(A,-__LONG_LONG_MAX__,op,mapping);
+
+
+ll op(const ll &a, const ll &b){
+    return max(a,b);
+}
+
+struct affine{
+    ll a;
+    ll b;
+    affine(const ll &s, const ll &t):a(s),b(t){}
+    affine(){}
+};
+
+ll mapping(const affine &af, const ll &a){
+    return af.a*a+af.b;
+}
+

@@ -1,0 +1,29 @@
+LazySegTree<sum,affine> T(B,sum(0,0),operation,mapping,composition,affine(1,0));
+
+
+struct sum{
+    ll n;
+    ll rangewidth;
+    sum(ll x, ll w){
+        n = x;
+        rangewidth = w;
+    }
+    sum(){};
+};
+struct affine{
+    ll a,b;
+    affine(ll A, ll B){
+        a = A;
+        b = B;
+    }
+    affine(){};
+};
+sum operation(const sum &a, const sum &b){
+    return sum((a.n+b.n)%MOD, a.rangewidth+b.rangewidth);
+};
+sum mapping(const affine &T, const sum &a){
+    return sum((a.n*T.a + T.b*a.rangewidth)%MOD, a.rangewidth);
+};
+affine composition(const affine &T, const affine &U){
+    return affine((T.a*U.a)%MOD, (T.b + T.a*U.b)%MOD);
+};

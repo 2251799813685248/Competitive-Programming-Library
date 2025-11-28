@@ -1,6 +1,8 @@
 #include <vector>
 using namespace std;
 #define ll long long
+
+
 struct UnionFind{
     vector<ll> A;//根でないとき、どう辿れば根になるか(すでに根なら-1)
     vector<ll> HowMany;
