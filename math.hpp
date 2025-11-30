@@ -71,7 +71,8 @@ ll kind_of_divisor(vector<vector<ll>> vv){
     return R;
 }
 
-//約数リストと、素因数分解の結果を受け取って、約数を列挙する関数。約数は小さい順にソートされる。
+/// @brief 1のみを含むデフォルトリストdと、素因数分解の結果pを受け取って、dを約数リストに変換する。
+/// @return ない
 void search_divisor(vector<ll> &d, vector<vector<ll>> &p, ll depth = 0){
     if (depth == p.size()){
         sort(vall(d));
