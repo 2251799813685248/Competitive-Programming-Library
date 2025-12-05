@@ -7,41 +7,44 @@ using namespace std;
 
 struct UnionFind{
     vector<int> A;//根でないとき、どう辿れば根になるか(すでに根なら　-1×(その連結成分の要素数))
-
+    int groups;
 
     /// @brief 頂点番号が0,1,2...NのUnionFind木を構築する。
     /// @param N 
-    UnionFind(int N): A(N+1,-1){}
+    /// @param one_indexed 1-indexedかどうか
+    UnionFind(int N, bool one_indexed = true): A(N+1,-1), groups(one_indexed ? N : N+1){}
+
+    /// @brief nodeの親を見つける
+    /// @param node 
+    /// @return root
+    int findroot(int node){
+        while (A[node] >= 0){
+            node = A[node];
+        }
+        return node;
+    }
+    /// @brief node以上のノードをすべてrootに直接接続する
+    /// @param node 
+    /// @param root 
+    void compress_path(int node, const int &root){
+        int temp = node;
+        while (A[temp] >= 0){
+            temp = A[temp];
+            A[node] = root;
+            node = temp;
+        }
+    }
 
     /// @brief  二つのノードが同じグループであるかを返す
     /// @param node1 
     /// @param node2 
     /// @return true/false
     bool same_group(int node1, int node2){
-        int root1 = node1;
-        while (A[root1] >= 0){//ノードを根までたどる
-            root1 = A[root1];
-        }
-        int root2 = node2;
-        while (A[root2] >= 0){//たどる
-            root2 = A[root2];
-        }
-
-        int finalroot1 = root1;//最終的な根を保持する。
-        int finalroot2 = root2;
+        int root1 = findroot(node1);
+        int root2 = findroot(node2);
         
-        root1 = node1;
-        while (A[root1] >= 0){//経路圧縮
-            root1 = A[root1];
-            A[node1] = finalroot1;
-            node1 = root1;
-        }
-        root2 = node2;
-        while (A[root2] >= 0){//経路圧縮
-            root2 = A[root2];
-            A[node2] = finalroot2;
-            node2 = root2;
-        }
+        compress_path(node1, root1);
+        compress_path(node2, root2);
 
         return root1 == root2;//判定
     }
@@ -50,39 +53,25 @@ struct UnionFind{
     /// @param node1 
     /// @return 
     int howmanynodes(int node1){
-        int root1 = node1;
-        while (A[root1] >= 0){//ノードを根までたどる
-            root1 = A[root1];
-        }
+        int root1 = findroot(node1);
+        compress_path(node1,root1);
         return -A[root1];
-
-        int finalroot1 = root1;
-
-        root1 = node1;
-        while (A[root1] >= 0){//経路圧縮
-            root1 = A[root1];
-            A[node1] = finalroot1;
-            node1 = root1;
-        }
     }
 
     /// @brief node1とnode2を含む2つのグループを合成する。すでに同じなら何もしない。
     /// @param node1 
     /// @param node2 
     void merge(int node1, int node2){
-        if (same_group(node1, node2)){
+        int root1 = findroot(node1);
+        int root2 = findroot(node2);
+
+        if (root1 == root2){
             return;
         }
-        int root1 = node1;
-        while (A[root1] >= 0){//ノードを根までたどる
-            root1 = A[root1];
-        }
-        int root2 = node2;
-        while (A[root2] >= 0){//たどる
-            root2 = A[root2];
-        }
+
+        groups--;
         
-        if (howmanynodes(root1) > howmanynodes(root2)){
+        if (-A[root1] > -A[root2]){
             A[root1] += A[root2];
             A[root2] = root1;
         }

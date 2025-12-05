@@ -5,6 +5,7 @@ ll MOD = 998244353;
 
 
 //64bit整数行列
+//自動でmod998244353などを取ってくれる。
 struct matrixll{
     vector<vector<ll>> M;
     ll H,W;
@@ -158,11 +159,6 @@ matrixll matrixmodpow(matrixll A, ll N, const ll &M){
                 R *= A;
             }
             A *= A;
-            for (ll i = 0; i < A.H; i++){
-                for (ll j = 0; j < A.H; j++){
-                    A.M[i][j] %= M;
-                }
-            }
             N /= 2;
         }
         return R;
