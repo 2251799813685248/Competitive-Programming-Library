@@ -1,5 +1,6 @@
 LazySegTree<sum,affine> T(B,sum(0,0),operation,mapping,composition,affine(1,0));
 
+!!MOD998244353になっています。必要ないなら取ってください。!!
 
 struct sum{
     ll n;
