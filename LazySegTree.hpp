@@ -1,4 +1,6 @@
 /// @brief 抽象化遅延セグメントツリー
+/// @attention コンストラクタ1 LazySegTree(A, e, op, mapping, composition, id)
+/// @attention コンストラクタ2 LazySegTree(I, N, e, op, mapping, composition , id)
 /// @tparam info セグ木の各ノードに載せる情報をまとめた構造体の型
 /// @tparam func 更新に使う変数をまとめた構造体の型(アフィン変換なら、aとbを持つ構造体など)
 /// @param e 載せたものの単位元(sumなら0, maxなら-infなど)
@@ -71,7 +73,7 @@ struct LazySegTree{
     /// @param m 更新を行うとどうなるか？(アフィン変換ならx -> ax+b)
     /// @param c mを合成した結果((u,v)でu(v())の結果を返すものとする)(ax+bのあとにcx+dを作用させると実質acx+bc+dになるなど)
     /// @param ididid mの恒等写像版(アフィン変換ならx -> 1x+0)
-    LazySegTree(vector<info> &A, info eee, function<info(info,info)> op, function<info(func,info)> m, function<func(func,func)> c, func ididid){
+    LazySegTree(const vector<info> &A, info eee, function<info(info,info)> op, function<info(func,info)> m, function<func(func,func)> c, func ididid){
         //基本情報を登録
         e = eee;
         operation = op;
@@ -249,7 +251,7 @@ struct LazySegTree{
     /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。 
     /// @param L 左端
     /// @param G 判定関数...引数a,bがあり、引数aを動かし、引数bを比較対象tに固定した時に引数aによってtrue,falseが変動する。
-    /// @param t 比較対象
+    /// @param t 比較対象のinfo
     /// @return Gがtrueになる最小右端indexまたは2147483647
     int min_right(int L, const function<bool(info,info)> &G, const info &t){
         info current_result = e;
@@ -285,8 +287,8 @@ struct LazySegTree{
     /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。
     /// @param R 右端 
     /// @param G 判定関数...引数a,bがあり、引数aを動かし、引数bを比較対象tに固定した時に引数aによってtrue,falseが変動するようなものである。
-    /// @param t 比較対象
-    /// @return Gがtrueになる最大左端index
+    /// @param t 比較対象のinfo
+    /// @return Gがtrueになる最大左端indexまたは-2147483648
     int max_left(int R, const function<bool(info,info)> &G, const info &t){
         info current_result = e;
 
