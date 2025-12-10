@@ -1,0 +1,25 @@
+
+
+
+
+struct stringhash{
+    __int128_t hashvalue;
+    __int128_t len;
+    stringhash(const __int128_t &a, const __int128_t &b): hashvalue(a), len(b){}
+    stringhash(){}
+};
+struct changestr{
+    char a;
+    changestr(char c): a(c){}
+    changestr(){}
+};
+
+
+rolling_hash rh;
+    
+auto hashcomposition = [&](const stringhash &a, const stringhash &b){
+    return stringhash(rh.connect_hash(a.hashvalue, a.len, b.hashvalue, b.len), a.len+b.len);
+};
+auto mapping = [&](const changestr &cng, const stringhash &strhs){
+    return stringhash(rh.alphabet_to_ll[cng.a-97], 1);
+};

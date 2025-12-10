@@ -1,4 +1,4 @@
-SegTree<ll,affine> T(A,-__LONG_LONG_MAX__,op,mapping);
+SegTree<ll,affine> T(A,0,op,mapping);
 
 
 ll op(const ll &a, const ll &b){
