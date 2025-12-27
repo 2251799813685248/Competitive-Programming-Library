@@ -1,0 +1,21 @@
+LazySegTree<ll,affine> T(A, -__LONG_LONG_MAX__, op, mapping, composition, affine(1,0));
+
+
+ll op(const ll &a, const ll &b){
+    return max(a,b);
+}
+
+struct affine{
+    ll a;
+    ll b;
+    affine(const ll &s, const ll &t):a(s),b(t){}
+    affine(){}
+};
+
+affine composition(const affine &T, const affine &U){
+    return affine(T.a*U.a, T.a*U.b+T.b);
+}
+
+ll mapping(const affine &af, const ll &a){
+    return af.a*a+af.b;
+}

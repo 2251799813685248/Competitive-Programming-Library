@@ -1,4 +1,6 @@
 /// @brief 抽象化セグメントツリー
+/// @attention コンストラクタ1 SegTree(A, e, op, mapping)
+/// @attention コンストラクタ2 SegTree(I, N, e, op, mapping)
 /// @tparam info セグ木の各ノードに載せる情報をまとめた構造体の型
 /// @tparam func 更新に使う変数をまとめた構造体の型(アフィン変換なら、aとbを持つ構造体など)
 /// @param e 載せたものの単位元(sumなら0, maxなら-infなど)
