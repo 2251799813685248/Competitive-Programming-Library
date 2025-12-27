@@ -71,7 +71,7 @@ struct LazySegTree{
     /// @param m 更新を行うとどうなるか？(アフィン変換ならx -> ax+b)
     /// @param c mを合成した結果((u,v)でu(v())の結果を返すものとする)(ax+bのあとにcx+dを作用させると実質acx+bc+dになるなど)
     /// @param ididid mの恒等写像版(アフィン変換ならx -> 1x+0)
-    LazySegTree(vector<info> &A, info eee, function<info(info,info)> op, function<info(func,info)> m, function<func(func,func)> c, func ididid){
+    LazySegTree(const vector<info> &A, info eee, function<info(info,info)> op, function<info(func,info)> m, function<func(func,func)> c, func ididid){
         //基本情報を登録
         e = eee;
         operation = op;
