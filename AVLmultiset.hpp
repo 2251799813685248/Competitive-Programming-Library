@@ -1,3 +1,5 @@
+using namespace std;
+
 // ------------------------------
 // 1. ノードの定義 (テンプレート化)
 // ------------------------------
@@ -115,7 +117,7 @@ public:
     }
 
     iterator prevend() const{
-        return iterator(getMaxNode(root),this);
+        return iterator(getMaxNode(root), this);
     }
 
     iterator end() const{
@@ -141,9 +143,22 @@ public:
         root = insertNode(root, nullptr, key);
     }
 
+    /// @brief 指定した要素を指すイテレーターを返す。なければend()が返される。
+    /// @param key 
+    /// @return 
+    iterator find(const T& key) {
+        AVLmultisetNode<T>* curr = root;
+        while (curr) {
+            if (key == curr->key) return iterator(curr, this);
+            else if (key < curr->key) curr = curr->left;
+            else curr = curr->right;
+        }
+        return end();
+    }
 
 
-    // イテレータが指す要素を1つだけ削除し、次の要素へのイテレータを返す
+
+    /// @brief イテレータが指す要素を1つだけ削除し、次の要素へのイテレータを返す
     iterator eraseone(iterator pos) {
         if (pos == end()) return end();
 
@@ -436,7 +451,8 @@ private: //ここからprivateメンバ関数(内部実装などに使う。)
             AVLmultisetNode<T>* successor = getMinNode(node->right);
             
             // 値だけコピー（本来はstd::moveなどが好ましい）
-            node->key = successor->key;
+            node->key = move(successor->key);
+            
             
             // 削除対象を successor に変更して、以下の「子0or1」の処理に流す
             node = successor;
@@ -536,12 +552,12 @@ private: //ここからprivateメンバ関数(内部実装などに使う。)
     }
 
     //全部の値を出力
-    void PrintinOrder(AVLmultisetNode<T>* root) {
-        if (root != nullptr) {
-            PrintinOrder(root->left);
+    void PrintinOrder(AVLmultisetNode<T>* r) {
+        if (r != nullptr) {
+            PrintinOrder(r->left);
             // T型を cout で出力できる必要がある
-            std::cout << root->key << " "; 
-            PrintinOrder(root->right);
+            std::cout << r->key << " ";
+            PrintinOrder(r->right);
         }
     }
 };
