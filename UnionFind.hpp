@@ -1,18 +1,20 @@
-#include <vector>
-#include <set>
-#include <unordered_map>
-using namespace std;
-
-
-
+/// @brief UnionFind木
+/// @tparam nodeinfo 
+template<typename nodeinfo>
 struct UnionFind{
-    vector<int> A;//根でないとき、どう辿れば根になるか(すでに根なら　-1×(その連結成分の要素数))
-    int groups;
+    vector<int> A;//根でないとき、どう辿れば根になるか(すでに根なら-1×(要素数))
+    int groups;//連結成分数
+    
+    vector<nodeinfo> B;//各根に載っている状態を保存する。
+    function<void(nodeinfo&, nodeinfo)> merge_info;//異なる連結成分をマージするときの関数
+    function<void(nodeinfo&)> modify_info;//同一連結成分内に対する操作を行う関数
 
-    /// @brief 頂点番号が0,1,2...NのUnionFind木を構築する。
-    /// @param N 
+
+    /// @brief 頂点番号が(0,)1,2...NのUnionFind木を構築する。全部同一の状態で初期化される
+    /// @param N 頂点数の上限
+    /// @param e 
     /// @param one_indexed 1-indexedかどうか
-    UnionFind(int N, bool one_indexed = true): A(N+1,-1), groups(one_indexed ? N : N+1){}
+    UnionFind(const int &N, const nodeinfo &init, function<void(nodeinfo&, nodeinfo)> mergefunc, function<void(nodeinfo&)> modifyfunc, bool one_indexed = true): A(N+1,-1), groups(one_indexed ? N : N+1), B(N+1, init), merge_info(mergefunc), modify_info(modifyfunc){}
 
     /// @brief nodeの親を見つける
     /// @param node 
@@ -49,13 +51,13 @@ struct UnionFind{
         return root1 == root2;//判定
     }
 
-    /// @brief node1を含むグループの要素数を返す。
+    /// @brief node1を含むグループの根が持っている情報を返す。
     /// @param node1 
     /// @return 
     int howmanynodes(int node1){
         int root1 = findroot(node1);
         compress_path(node1,root1);
-        return -A[root1];
+        return B[root1];
     }
 
     /// @brief node1とnode2を含む2つのグループを合成する。すでに同じなら何もしない。
@@ -66,6 +68,7 @@ struct UnionFind{
         int root2 = findroot(node2);
 
         if (root1 == root2){
+            modify_info(B[root1]);
             return;
         }
 
@@ -74,10 +77,12 @@ struct UnionFind{
         if (-A[root1] > -A[root2]){
             A[root1] += A[root2];
             A[root2] = root1;
+            merge_info(B[root1], B[root2]);
         }
         else{
             A[root2] += A[root1];
             A[root1] = root2;
+            merge_info(B[root2], B[root1]);
         }
     }
 

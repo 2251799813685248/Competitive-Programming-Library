@@ -1,11 +1,6 @@
-#include <bits/stdc++.h>
-using namespace std;
-using ll = long long;
-ll MOD = 998244353;
-
-
-//64bit整数行列
-//自動でmod998244353などを取ってくれる。
+/// @brief 64bit整数行列。自動でmod998244353などを取ってくれる。
+/// @tparam MMOODD
+template<ll MMOODD>
 struct matrixll{
     vector<vector<ll>> M;
     ll H,W;
@@ -43,7 +38,7 @@ struct matrixll{
         for (ll i = 0; i < H; i++){
             for (ll j = 0; j < W; j++){
                 ans.M[i][j] += T.M[i][j];
-                ans.M[i][j] %= MOD;
+                ans.M[i][j] %= MMOODD;
             }
         }
         return ans;
@@ -56,7 +51,7 @@ struct matrixll{
         for (ll i = 0; i < H; i++){
             for (ll j = 0; j < W; j++){
                 M[i][j] += T.M[i][j];
-                M[i][j] %= MOD;
+                M[i][j] %= MMOODD;
             }
         }
     }
@@ -69,8 +64,8 @@ struct matrixll{
         for (ll i = 0; i < H; i++){
             for (ll j = 0; j < W; j++){
                 ans.M[i][j] -= T.M[i][j];
-                ans.M[i][j] += MOD;
-                ans.M[i][j] %= MOD;
+                ans.M[i][j] += MMOODD;
+                ans.M[i][j] %= MMOODD;
             }
         }
         return ans;
@@ -83,8 +78,8 @@ struct matrixll{
         for (ll i = 0; i < H; i++){
             for (ll j = 0; j < W; j++){
                 M[i][j] -= T.M[i][j];
-                M[i][j] += MOD;
-                M[i][j] %= MOD;
+                M[i][j] += MMOODD;
+                M[i][j] %= MMOODD;
             }
         }
     }
@@ -98,7 +93,7 @@ struct matrixll{
             for (ll j = 0; j < T.W; j++){
                 for (ll k = 0; k < W; k++){
                     ans.M[i][j] += M[i][k]*T.M[k][j];
-                    ans.M[i][j] %= MOD;
+                    ans.M[i][j] %= MMOODD;
                 }
             }
         }
@@ -114,7 +109,7 @@ struct matrixll{
             for (ll j = 0; j < T.W; j++){
                 for (ll k = 0; k < W; k++){
                     ans.M[i][j] += M[i][k]*T.M[k][j];
-                    ans.M[i][j] %= MOD;
+                    ans.M[i][j] %= MMOODD;
                 }
             }
         }
@@ -126,7 +121,7 @@ struct matrixll{
         for (ll i = 0; i < H; i++){
             for (ll j = 0; j < W; j++){
                 ans.M[i][j] = M[i][j] * c;
-                ans.M[i][j] %= MOD;
+                ans.M[i][j] %= MMOODD;
             }
         }
         return ans;
@@ -135,35 +130,35 @@ struct matrixll{
         for (ll i = 0; i < H; i++){
             for (ll j = 0; j < W; j++){
                 M[i][j] *= c;
-                M[i][j] %= MOD;
+                M[i][j] %= MMOODD;
             }
+        }
+    }
+
+    /// @brief A^Nを返す。
+    /// @param A 
+    /// @param N 
+    /// @return A^N
+    matrixll matrixmodpow(ll N){
+        matrixll R(H);
+        matrixll A(M);
+        for (ll i = 0; i < H; i++){
+            for (ll j = 0; j < H; j++){
+                A.M[i][j] %= MMOODD;
+            }
+        }
+        if (N){
+            while (N){
+                if (N%2){
+                    R *= A;
+                }
+                A *= A;
+                N /= 2;
+            }
+            return R;
+        }
+        else{
+            return R;
         }
     }
 };
-
-
-/// @brief A^Nを返す。
-/// @param A 
-/// @param N 
-/// @return A^N
-matrixll matrixmodpow(matrixll A, ll N, const ll &M){
-    matrixll R(A.H);
-    for (ll i = 0; i < A.H; i++){
-        for (ll j = 0; j < A.H; j++){
-            A.M[i][j] %= M;
-        }
-    }
-    if (N){
-        while (N){
-            if (N%2){
-                R *= A;
-            }
-            A *= A;
-            N /= 2;
-        }
-        return R;
-    }
-    else{
-        return R;
-    }
-}

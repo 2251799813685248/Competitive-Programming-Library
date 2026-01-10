@@ -1,20 +1,3 @@
-#include <iostream>
-#include <map>
-#include <set>
-#include <queue>
-#include <iomanip>
-#include <algorithm>
-#include <string>
-#include <vector>
-#include <cmath>
-#define INF 2251799813685248
-
-using namespace std;
-#define ll long long
-#define ld long double
-#define vall(A) A.begin(),A.end()
-
-
 struct NoWeightGraph{
     ll N;//頂点数
     vector<vector<ll>> Edge;//隣接頂点リスト(重みなし)

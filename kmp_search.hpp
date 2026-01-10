@@ -1,9 +1,3 @@
-#include <vector>
-#include <string>
-
-using namespace std;
-#define ll long long
-
 vector<ll> create_partial_match_table(const string &t){
     vector<ll> table(t.size(),0);
     table[0] = -1;
@@ -18,7 +12,10 @@ vector<ll> create_partial_match_table(const string &t){
     return table;
 }
 
-
+/// @brief sの中にtが含まれているかを判定し、あるなら最初に現れる位置を求める
+/// @param s 
+/// @param t 
+/// @return 
 ll kmp_search(const string &s, const string &t){
     auto table = create_partial_match_table(t);
     ll i = 0, j = 0;

@@ -1,0 +1,11 @@
+struct nodeinfo{
+    int size;
+    int edges;
+};
+void mergef(nodeinfo &a, const nodeinfo &b){
+    a.size += b.size;
+    a.edges += b.edges+1;
+}
+void modifyf(nodeinfo &a){
+    a.edges++;
+}

@@ -1,6 +1,6 @@
 /// @brief 抽象化セグメントツリー
 /// @attention コンストラクタ1 SegTree(A, e, op, mapping)
-/// @attention コンストラクタ2 SegTree(I, N, e, op, mapping)
+/// @attention コンストラクタ2 SegTree(N, I, e, op, mapping)
 /// @tparam info セグ木の各ノードに載せる情報をまとめた構造体の型
 /// @tparam func 更新に使う変数をまとめた構造体の型(アフィン変換なら、aとbを持つ構造体など)
 /// @param e 載せたものの単位元(sumなら0, maxなら-infなど)
@@ -9,7 +9,7 @@
 template<typename info, typename func>
 struct SegTree{
 
-    int log2N;//セグ木の高さ+1
+    int log2N;//セグ木の高さ-1
 
     info e;///単位元
     function<info(info,info)> operation;//各ノードに載ってる構造体に対する二項演算をする関数(min,max,sumなど)
@@ -31,7 +31,7 @@ struct SegTree{
     /// @param eee 載せたものの単位元(sumなら0, maxなら-infなど)
     /// @param op 各ノードに載ってる構造体に対する二項演算をする関数(min,max,sumなど)
     /// @param m 更新を行うとどうなるか？(アフィン変換ならx -> ax+b)
-    SegTree(info I, int N, info eee, function<info(info,info)> op, function<info(func,info)> m){
+    SegTree(int N, info I, info eee, function<info(info,info)> op, function<info(func,info)> m){
         //基本情報を登録
         e = eee;
         operation = op;
@@ -88,6 +88,7 @@ struct SegTree{
     }
 
     /// @brief 区間の共通部分が空集合であるか判定
+    
     /// @return range1 ⋀ {a,a} == Ø
     private: bool not_intersect(const pair<int,int> &range1, const int &a, const int &b){
         return max(range1.second,b)-min(range1.first,a) > range1.second+b-range1.first-a;
@@ -115,14 +116,6 @@ struct SegTree{
             left += 1<<log2interval;
         }
         return ret;
-        //↓再帰だったもの
-        //if (not_intersect(tree[index_on_tree].range, L, R)){
-        //    return e;
-        //}
-        //if (completely_covered(tree[index_on_tree].range, L, R)){
-        //    return tree[index_on_tree].I;
-        //}
-        //return operation(range_get(L,R,2*index_on_tree), range_get(L,R,2*index_on_tree+1));
     }
 
     /// @brief index tに対してFをmappingする。
@@ -136,17 +129,6 @@ struct SegTree{
             tree[start_index].I = operation(tree[2*start_index].I,tree[2*start_index+1].I);
             start_index >>= 1;
         }
-        //↓再帰だったもの
-        //if (not_intersect(tree[index_on_tree].range, t,t)){
-        //    return;
-        //}
-        //if (tree[index_on_tree].bottom && t == tree[index_on_tree].range.first){
-        //    tree[index_on_tree].I = mapping(F, tree[index_on_tree].I);
-        //    return;
-        //}
-        //pointwise_update(t,F,2*index_on_tree);
-        //pointwise_update(t,F,2*index_on_tree+1);
-        //tree[index_on_tree].I = operation(tree[2*index_on_tree].I, tree[2*index_on_tree+1].I);
     }
 
 

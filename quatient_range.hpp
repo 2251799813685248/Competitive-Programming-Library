@@ -1,22 +1,3 @@
-#include <iostream>
-#include <vector>
-#include <string>
-#include <cmath>
-#include <set>
-#include <unordered_map>
-#include <map>
-#include <unordered_set>
-#include <queue>
-#include <algorithm>
-#include <iomanip>
-#include <cassert>
-#include <functional>
-
-using namespace std;
-#define ll long long
-
-
-
 /// @brief sum[i=1 ~ i=N] i^a * (floor(M/i))^b を計算する
 /// @param N 
 /// @param M 

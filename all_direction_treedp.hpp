@@ -30,11 +30,11 @@ treedpinfo update_operation(treedpinfo a){
 }
 
 /// @brief 木DP
-/// @param E 
-/// @param dp 
-/// @param used 
-/// @param now 
-/// @param eee 
+/// @param E 隣接頂点リスト
+/// @param dp dp配列
+/// @param used 訪問記録
+/// @param now 今いる場所
+/// @param eee dp情報の単位元
 void dfs_dp(vector<vector<ll>> &E, vector<treedpinfo> &dp, vector<bool> &used, ll now, treedpinfo &eee){
     used[now] = 1;
     if (E[now].empty() || (E[now].size() == 1 && now != 1)){
@@ -53,11 +53,11 @@ void dfs_dp(vector<vector<ll>> &E, vector<treedpinfo> &dp, vector<bool> &used, l
     dp[now] = update_operation(r);
 }
 /// @brief 全方位木DP
-/// @param E 
-/// @param dp 
-/// @param used 
-/// @param now 
-/// @param from_parent
+/// @param E 隣接頂点リスト
+/// @param dp 木dpで求めたdp配列
+/// @param used 訪問済みリスト(初期化済み)
+/// @param now 今いる場所
+/// @param from_parent 親からの伝達情報
 void dfs_rerooting(vector<vector<ll>> &E, vector<treedpinfo> &dp, vector<bool> &used, ll now, treedpinfo from_parent){
     used[now] = 1;
     if (E[now].empty() || (E[now].size() == 1 && now != 1)){return;}

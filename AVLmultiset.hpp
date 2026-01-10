@@ -1,28 +1,23 @@
-using namespace std;
-
-// ------------------------------
-// 1. ノードの定義 (テンプレート化)
-// ------------------------------
-template <typename T>
-struct AVLmultisetNode {
-    T key; // intではなくT型にする
-    AVLmultisetNode* left;
-    AVLmultisetNode* right;
-    AVLmultisetNode* parent; //親へのポインタ
-    int size; //この部分木に含まれるノードの総数
-    int height;
-
-    AVLmultisetNode(T k, AVLmultisetNode* p = nullptr) : key(k), left(nullptr), right(nullptr), parent(p), size(1), height(1) {}
-};
-
-
-// ------------------------------
-// 2. AVL木クラス (テンプレート化)
-// ------------------------------
+//===============AVLmap=====================
+/// @brief AVL木による多重集合
+/// @tparam T 
 template <typename T>
 struct AVLmultiset {
-private: int treesize = 0;//全体の要素数
-public:
+    public:
+    template <typename TTT>
+    struct AVLmultisetNode {
+        TTT key; // intではなくT型にする
+        AVLmultisetNode* left;
+        AVLmultisetNode* right;
+        AVLmultisetNode* parent; //親へのポインタ
+        int size; //この部分木に含まれるノードの総数
+        int height;
+
+        AVLmultisetNode(TTT k, AVLmultisetNode* p = nullptr) : key(k), left(nullptr), right(nullptr), parent(p), size(1), height(1) {}
+    };
+
+    private: int treesize = 0;//全体の要素数
+    public:
     AVLmultisetNode<T>* root;
 
     AVLmultiset() : root(nullptr) {}
@@ -561,4 +556,3 @@ private: //ここからprivateメンバ関数(内部実装などに使う。)
         }
     }
 };
-

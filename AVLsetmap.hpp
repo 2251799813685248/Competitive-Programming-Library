@@ -1,29 +1,26 @@
-
-
-
 //=======AVLset=========
-
-
-/// @brief AVLset用ノード
-/// @tparam T
-template<typename T>
-struct AVLsetNode {
-    T key; //値
-    AVLsetNode* left;
-    AVLsetNode* right;
-    AVLsetNode* parent; //親へのポインタ
-    int size; //この部分木に含まれるノードの総数
-    int height; //部分木から各ノードへの経路長の最大値
-
-    AVLsetNode(T k, AVLsetNode* p = nullptr) : key(k), left(nullptr), right(nullptr), parent(p), size(1), height(1) {}
-};
-
 /// @brief AVL木による重複なし集合
 /// @tparam T 木に載せる要素の型
 template <typename T>
 struct AVLset {
-private: int treesize = 0;//全体の要素数
-public:
+    private:
+    /// @brief AVLset用ノード
+    /// @tparam TTT
+    template<typename TTT>
+    struct AVLsetNode{
+        TTT key; //値
+        AVLsetNode* left;
+        AVLsetNode* right;
+        AVLsetNode* parent; //親へのポインタ
+        int size; //この部分木に含まれるノードの総数
+        int height; //部分木から各ノードへの経路長の最大値
+
+        AVLsetNode(TTT k, AVLsetNode* p = nullptr) : key(k), left(nullptr), right(nullptr), parent(p), size(1), height(1) {}
+    };
+
+    int treesize = 0;//全体の要素数
+
+    public:
     AVLsetNode<T>* root;
 
     AVLset() : root(nullptr) {}
@@ -620,33 +617,30 @@ private:
     }
 };
 
-
-
 //===============AVLmap=====================
-
-
-/// @brief AVLmap用ノード
-/// @tparam T 
-template <typename T, typename U>
-struct AVLmapNode {
-    T key; //連想配列のキー
-    U value; //連想配列に入れる値
-    AVLmapNode* left;
-    AVLmapNode* right;
-    AVLmapNode* parent; //親へのポインタ
-    int size; //この部分木に含まれるノードの総数
-    int height; //部分木から各ノードへの経路長の最大値
-
-    AVLmapNode(T k, U v, AVLmapNode* p = nullptr) : key(k), value(v), left(nullptr), right(nullptr), parent(p), size(1), height(1) {}
-};
-
-
 /// @brief AVL木による連想配列
 /// @tparam T 木に載せる要素の型
 template <typename T, typename U>
 struct AVLmap {
-private: int treesize = 0;//全体の要素数
-public:
+    private:
+    /// @brief AVLmap用ノード
+    /// @tparam TTT UUU
+    template <typename TTT, typename UUU>
+    struct AVLmapNode {
+        TTT key; //連想配列のキー
+        UUU value; //連想配列に入れる値
+        AVLmapNode* left;
+        AVLmapNode* right;
+        AVLmapNode* parent; //親へのポインタ
+        int size; //この部分木に含まれるノードの総数
+        int height; //部分木から各ノードへの経路長の最大値
+
+        AVLmapNode(TTT k, UUU v, AVLmapNode* p = nullptr) : key(k), value(v), left(nullptr), right(nullptr), parent(p), size(1), height(1) {}
+    };
+
+    int treesize = 0;//全体の要素数
+    
+    public:
     AVLmapNode<T,U>* root;
 
     AVLmap() : root(nullptr) {}
@@ -1301,4 +1295,3 @@ private:
         }
     }
 };
-

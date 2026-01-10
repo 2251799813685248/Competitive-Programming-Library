@@ -1,15 +1,4 @@
-#include <string>
-#include <vector>
-#include <cmath>
-#include <random>
-#include <algorithm>
-#include <set>
-#define vall(a) a.begin(), a.end()
-#define ll long long
-using namespace std;
-
-
-
+/// @brief ローリングハッシュの作成、接続など
 struct rolling_hash{
 
     __int128_t safe_modpow(__int128_t x, __int128_t n, __int128_t m){

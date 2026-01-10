@@ -1,25 +1,3 @@
-#include <iostream>
-#include <map>
-#include <set>
-#include <queue>
-#include <iomanip>
-#include <algorithm>
-#include <string>
-#include <vector>
-#include <cmath>
-
-using namespace std;
-#define MOD 998244353
-#define INF 9223372036854775807
-#define ll long long
-#define ld long double
-#define vall(A) A.begin(),A.end()
-#define gridinput(H,W,vv) for (ll i = 0; i < H; i++){string T; cin >> T; for(ll j = 0; j < W; j++){vv[i][j] = {T[j]};}}
-#define adjustedgridinput(H,W,vv) for (ll i = 1; i <= H; i++){string T; cin >> T; for(ll j = 1; j <= W; j++){vv[i][j] = {T[j-1]};}}
-#define vin(A,N) for (ll i = 0; i < N; i++){cin >> A[i];}
-#define vout(A,N) for (ll i = 0; i < N; i++){cout << A[i] << " \n"[i == N-1]}
-
-
 /// @brief 正の整数Nを素因数分解する
 /// @param N
 /// @return vector<vector<ll> {{素因数1,個数}, {素因数2,個数}, {素因数3,個数}...}
@@ -98,12 +76,12 @@ ll cefrac(ll y, ll x);
 /// @param x 
 /// @return floor(y/x)
 ll flfrac(ll y, ll x){
-    if (x*y > 0){
+    if ((x^y) > 0){
         x = abs(x);
         y = abs(y);
         return (y-(y%x))/x;
     }
-    else if (x*y < 0){
+    else if ((x^y) < 0){
         x = abs(x);
         y = abs(y);
         return -cefrac(y,x);
@@ -114,7 +92,7 @@ ll flfrac(ll y, ll x){
 }
 
 ll cefrac(ll y, ll x){
-    if (x*y > 0){
+    if ((x^y) > 0){
         x = abs(x);
         y = abs(y);
         if (y%x == 0){
@@ -122,7 +100,7 @@ ll cefrac(ll y, ll x){
         }
         else return 1 + (y-(y%x))/x;
     }
-    else if (x*y < 0){
+    else if ((x^y) < 0){
         x = abs(x);
         y = abs(y);
         return -flfrac(y,x);
@@ -228,28 +206,6 @@ ll powll(ll a, ll n){
     return r;
 }
 
-/// @brief modint
-struct mll{
-    ll N;
-    ll M = 998244353;
-    mll(ll x){
-        N = x;
-    }
-    void print(){
-        cout << N << endl;
-    }
-};
-
-mll operator+(mll &a, mll &b){
-    return mll((a.N + b.N)%a.M);
-}
-mll operator-(mll &a, mll &b){
-    return mll((a.M + a.N - b.N)%a.M);
-}
-mll operator*(mll &a, mll &b){
-    return mll((a.N * b.N) % a.M);
-}
-
 /// @brief 一次不定方程式ax+by=1の解を1つ見つける
 /// @param a 
 /// @param b 
@@ -285,10 +241,119 @@ ll inverse_mod(ll a, ll M){
     return (M+(axby1(a,M).first)%M)%M;
 }
 
+/// @brief modint
+template<ll M>
+struct mll{
+    ll val;
+    mll(const ll &x){
+        val = x%M;
+    }
+    void operator=(const ll &x){
+        val = x%M;
+    }
+    void operator=(const mll &a){
+        val = a.val;
+    }
+    
+    mll operator+(const mll &a){
+        return mll(val+a.val);
+    }
+    void operator+=(const mll &a){
+        val = (val+a.val)%M;
+    }
+    mll operator+(const ll &a){
+        return mll(val+a);
+    }
+    void operator+=(const ll &a){
+        val = (val+a)%M;
+    }
+
+    mll operator-(const mll &a){
+        return mll(M+val-a.val);
+    }
+    void operator-=(const mll &a){
+        val = (M+val-a.val)%M;
+    }
+    mll operator-(const ll &a){
+        return mll(M+val-a);
+    }
+    void operator-=(const ll &a){
+        val = (M+val-a)%M;
+    }
+
+    mll operator*(const mll &a){
+        return mll(val*a.val);
+    }
+    void operator*=(const mll &a){
+        val = (val*a.val)%M;
+    }
+    mll operator*(const ll &a){
+        return mll(val*a);
+    }
+    void operator*=(const ll &a){
+        val = (val*a)%M;
+    }
+
+    mll operator/(const mll &a){
+        return mll(val*inverse_mod(a.val,M));
+    }
+    void operator/=(const mll &a){
+        val = (val*inverse_mod(a.val,M))%M;
+    }
+    mll operator/(const ll &a){
+        return mll(val*inverse_mod(a,M));
+    }
+    void operator/=(const ll &a){
+        val = (val*inverse_mod(a,M))%M;
+    }
+};
+
 //階乗前計算による二項係数mod998244353
-vector<ll> factorialmod(10000001);
-factorialmod[0] = 1;
-for (ll i = 1; i <= 10000000; i++){
-    factorialmod[i] = (i*factorialmod[i-1])%998244353;
-}
-auto nCr = [&](ll n, ll r){return (factorialmod[n]*inverse_mod((factorialmod[n-r]*factorialmod[r])%998244353,998244353))%998244353;};
+struct factorialncr{
+    private: vector<ll> factorialmod;
+    private: ll N_MAX_N_MAX;
+    public:
+    factorialncr(const ll &N_MAX){
+        N_MAX_N_MAX = N_MAX;
+        factorialmod = vector<ll>(N_MAX+1);
+        factorialmod[0] = 1;
+        for (ll i = 1; i <= N_MAX; i++){
+            factorialmod[i] = (i*factorialmod[i-1])%998244353;
+        }
+    }
+
+    ll nCr(ll n, ll r){
+        if (r < 0 || n < r || n > N_MAX_N_MAX){
+            return 0;
+        }
+        return (factorialmod[n]*inverse_mod((factorialmod[n-r]*factorialmod[r])%998244353,998244353))%998244353;
+    }
+};
+
+//表の前計算による二項係数modM
+struct tablencr{
+    private: vector<vector<ll>> ncrmodlist;
+    private: ll N_MAX_N_MAX;
+    public:
+    tablencr(const ll &N_MAX, const ll &M){
+        N_MAX_N_MAX = N_MAX;
+        ncrmodlist = vector<vector<ll>> (5001, vector<ll>(5001,0));
+        ncrmodlist[0][0] = 1;
+        for (ll i = 1; i <= 5000; i++){
+            for (ll j = 0; j <= i; j++){
+                if (j == 0 || j == i){
+                    ncrmodlist[i][j] = 1;
+                }
+                else{
+                    ncrmodlist[i][j] = (ncrmodlist[i-1][j-1] + ncrmodlist[i-1][j])%M;
+                }
+            }
+        }
+    }
+    ll nCr(ll n, ll r){
+        if (r < 0 || n < r || n > N_MAX_N_MAX){
+            return 0;
+        }
+        return ncrmodlist[n][r];
+    }
+};
