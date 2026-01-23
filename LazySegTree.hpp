@@ -115,7 +115,7 @@ struct LazySegTree{
     public:
 
     /// @brief 遅延情報の伝播を行う
-    void tell_info(int index_on_tree){
+    void tell_info(const int &index_on_tree){
         if (!tree[index_on_tree].is_delay){return;}
         if (index_on_tree >= (1<<log2N)){
             tree[index_on_tree].delay = id;
@@ -171,7 +171,7 @@ struct LazySegTree{
         info ret = e;
         int left = L;
         while (left < R+1){
-            int log2interval = min(__builtin_ctz(left),31-__builtin_clz(R+1-left));
+            int log2interval = min(left ? __builtin_ctz(left) : log2N, 31-__builtin_clz(R+1-left));
             ret = operation(ret, tree[(left+(1<<log2N))>>log2interval].I);
             left += 1<<log2interval;
         }
@@ -210,7 +210,7 @@ struct LazySegTree{
         }
         int left = L;
         while (left < R+1){
-            int log2interval = min(__builtin_ctz(left),31-__builtin_clz(R+1-left));
+            int log2interval = min(left ? __builtin_ctz(left) : log2N, 31-__builtin_clz(R+1-left));
             tree[(left+(1<<log2N))>>log2interval].I = mapping(F,tree[(left+(1<<log2N))>>log2interval].I);
             tree[(left+(1<<log2N))>>log2interval].delay = composition(F,tree[(left+(1<<log2N))>>log2interval].delay);
             tree[(left+(1<<log2N))>>log2interval].is_delay = 1;

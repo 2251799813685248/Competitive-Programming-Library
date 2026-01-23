@@ -5,15 +5,13 @@
 /// @tparam func 更新に使う変数をまとめた構造体の型(アフィン変換なら、aとbを持つ構造体など)
 /// @param e 載せたものの単位元(sumなら0, maxなら-infなど)
 /// @param operation 各ノードに載ってる構造体に対する二項演算をする関数(min,max,sumなど)
-/// @param mapping infoに対してfuncを作用させた結果を返す関数(アフィン変換ならx -> ax+b)
-template<typename info, typename func>
+template<typename info>
 struct SegTree{
 
     int log2N;//セグ木の高さ-1
 
     info e;///単位元
     function<info(info,info)> operation;//各ノードに載ってる構造体に対する二項演算をする関数(min,max,sumなど)
-    function<info(func,info)> mapping;//更新を行うとどうなるか？(アフィン変換ならx -> ax+b)
 
     /// @brief セグ木を扱うためのノード
     struct SegNode{
@@ -30,12 +28,10 @@ struct SegTree{
     /// @param N 載せた個数
     /// @param eee 載せたものの単位元(sumなら0, maxなら-infなど)
     /// @param op 各ノードに載ってる構造体に対する二項演算をする関数(min,max,sumなど)
-    /// @param m 更新を行うとどうなるか？(アフィン変換ならx -> ax+b)
-    SegTree(int N, info I, info eee, function<info(info,info)> op, function<info(func,info)> m){
+    SegTree(int N, info I, info eee, function<info(info,info)> op){
         //基本情報を登録
         e = eee;
         operation = op;
-        mapping = m;
 
         //セグ木のサイズを決定
         log2N = 0;
@@ -60,12 +56,10 @@ struct SegTree{
     /// @param N 載せた個数
     /// @param eee 載せたものの単位元(sumなら0, maxなら-infなど)
     /// @param op 各ノードに載ってる構造体に対する二項演算をする関数(min,max,sumなど)
-    /// @param m 更新を行うとどうなるか？(アフィン変換ならx -> ax+b)
-    SegTree(vector<info> &A, info eee, function<info(info,info)> op, function<info(func,info)> m){
+    SegTree(vector<info> &A, info eee, function<info(info,info)> op){
         //基本情報を登録
         e = eee;
         operation = op;
-        mapping = m;
 
         //セグ木のサイズを決定
         log2N = 0;
@@ -111,19 +105,26 @@ struct SegTree{
         info ret = e;
         int left = L;
         while (left < R+1){
-            int log2interval = min(__builtin_ctz(left),31-__builtin_clz(R+1-left));
+            int log2interval = min(left ? __builtin_ctz(left) : log2N, 31-__builtin_clz(R+1-left));
             ret = operation(ret, tree[(left+(1<<log2N))>>log2interval].I);
             left += 1<<log2interval;
         }
         return ret;
     }
 
-    /// @brief index tに対してFをmappingする。
-    /// @param L index
-    /// @param F 適用する写像(アフィン変換ならaとbを持った構造体など)
-    void pointwise_update(const int &t, const func &F){
+    /// @brief index tが指す要素を取得する。変更はできない
+    /// @param t 
+    /// @return 要素
+    info& get(const int &t) const{
+        return tree[t+(1<<log2N)].I;
+    }
+
+    /// @brief index tが指す要素をvalに置換する。
+    /// @param L 置換対象のindex
+    /// @param val 置換後の値
+    void pointwise_update(const int &t, const info &val){
         int start_index = t + (1<<log2N);
-        tree[start_index].I = mapping(F,tree[start_index].I);
+        tree[start_index].I = val;
         start_index >>= 1;
         while (start_index){
             tree[start_index].I = operation(tree[2*start_index].I,tree[2*start_index+1].I);
