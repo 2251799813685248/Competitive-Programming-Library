@@ -3018,7 +3018,7 @@ ll floor_sum(ll N, ll B, ll C, ll D){
 
 ll internal_floor_max(ll A, ll B, ll C, ll D, ll E, ll F){
     if (D < 0){return -1000000000000000000;}
-    if (B <= 0){return -1000000000000000000;}
+    if (C <= 0){return -1000000000000000000;}
     if (E > 0){
         if (B > C){swap(A,E);swap(B,C);}
         ll M = floor2(D-C*floor2(D, C), B);
@@ -4905,6 +4905,8 @@ using dmll = math::dynamic_mint;
 
 void solve(){
     
+    
+
 }
 
 int main(){
@@ -4912,7 +4914,7 @@ int main(){
     std::cin.tie(nullptr);
 
     ll T = 1;
-    //cin >> T;
+    cin >> T;
     while (T--){
         solve();
     }
