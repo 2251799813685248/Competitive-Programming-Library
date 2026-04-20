@@ -21,25 +21,28 @@ using pii = array<int,2>;
 using pll = array<ll,2>;
 
 #define vall(A) A.begin(), A.end()
-#define vin(A) for (int iiii = 0, sz = A.size(); iiii < sz; iiii++){cin >> A[iiii];}
-#define vout(A) for (int iiii = 0, sz = A.size(); iiii < sz; iiii++){cout << A[iiii] << " \n"[iiii == sz-1];}
-#define vout2d(A) for (int iiii = 0, HHHH = A.size(), WWWW = (A.empty() ? 0 : A[0].size()); iiii < HHHH; iiii++){for (int jjjj = 0; jjjj < WWWW; jjjj++){cout << A[iiii][jjjj] << " \n"[jjjj==WWWW-1];}}
-#define adjvin(A) for (int iiii = 1, sz = A.size(); iiii < sz; iiii++){cin >> A[iiii];}
-#define adjvout(A) for (int iiii = 1, sz = A.size(); iiii < sz; iiii++){cout << A[iiii] << " \n"[iiii == sz-1];}
-#define adjvout2d(A) for (int iiii = 1, HHHH = A.size(), WWWW = (A.empty() ? 0 : A[0].size()); iiii < HHHH; iiii++){for (int jjjj = 1; jjjj < WWWW; jjjj++){cout << A[iiii][jjjj] << " \n"[jjjj==WWWW-1];}}
-#define btest(K,i) (((K)&(1ull<<(i))) != 0)
+template<typename T> inline void vin(vector<T>& A){for (int i = 0, sz = A.size(); i < sz; i++){cin >> A[i];}}
+template<typename T> inline void vout(const vector<T>& A){for (int i = 0, sz = A.size(); i < sz; i++){cout << A[i] << " \n"[i == sz-1];}}
+template<typename T> inline void vout2d(const vector<vector<T>>& A){for (int i = 0, H = A.size(); i < H; i++){vout(A[i]);}}
+template<typename T> inline void adjvin(vector<T>& A){for (int i = 1, sz = A.size(); i < sz; i++){cin >> A[i];}}
+template<typename T> inline void adjvout(const vector<T>& A){for (int i = 1, sz = A.size(); i < sz; i++){cout << A[i] << " \n"[i == sz-1];}}
+template<typename T> inline void adjvout2d(const vector<vector<T>>& A){for (int i = 1, H = A.size(); i < H; i++){adjvout(A[i]);}}
+template<typename T> inline bool btest(T K, int i){return K&(1ull<<i);}
 template<typename T> void print(T object){cout << (object) << "\n";}
 template<typename T, typename U> void print(T object1, U object2){cout << (object1) << " " << (object2) << "\n";}
 template<typename T, typename U, typename V> void print(T object1, U object2, V object3){cout << (object1) << " " << (object2) << " " << (object3) << "\n";}
-vector<ull> pow2ll{1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072,262144,524288,1048576,2097152,4194304,8388608,16777216,33554432,67108864,134217728,268435456,536870912,1073741824,2147483648,4294967296,8589934592,17179869184,34359738368,68719476736,137438953472,274877906944,549755813888,1099511627776,2199023255552,4398046511104,8796093022208,17592186044416,35184372088832,70368744177664,140737488355328,281474976710656,562949953421312,1125899906842624,2251799813685248,4503599627370496,9007199254740992,18014398509481984,36028797018963968,72057594037927936,144115188075855872,288230376151711744,576460752303423488,1152921504606846976,2305843009213693952,4611686018427387904, 9223372036854775808ull};
-vector<ull> pow10ll{1,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000,10000000000,100000000000,1000000000000,10000000000000,100000000000000,1000000000000000,10000000000000000,100000000000000000,1000000000000000000, 10000000000000000000ull};
-vector<ll> di{0,1,0,-1};
-vector<ll> dj{1,0,-1,0};
+template<typename T, typename U, typename V, typename W> void print(T object1, U object2, V object3, W object4){cout << (object1) << " " << (object2) << " " << (object3) << " " << (object4) << "\n";}
+const vector<ull> pow2ll{1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536,131072,262144,524288,1048576,2097152,4194304,8388608,16777216,33554432,67108864,134217728,268435456,536870912,1073741824,2147483648,4294967296,8589934592,17179869184,34359738368,68719476736,137438953472,274877906944,549755813888,1099511627776,2199023255552,4398046511104,8796093022208,17592186044416,35184372088832,70368744177664,140737488355328,281474976710656,562949953421312,1125899906842624,2251799813685248,4503599627370496,9007199254740992,18014398509481984,36028797018963968,72057594037927936,144115188075855872,288230376151711744,576460752303423488,1152921504606846976,2305843009213693952,4611686018427387904, 9223372036854775808ull};
+const vector<ull> pow10ll{1,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000,10000000000,100000000000,1000000000000,10000000000000,100000000000000,1000000000000000,10000000000000000,100000000000000000,1000000000000000000, 10000000000000000000ull};
+const vector<ll> di{0,1,0,-1};
+const vector<ll> di8{0,1,1,1,0,-1,-1,-1};
+const vector<ll> dj{1,0,-1,0};
+const vector<ll> dj8{1,1,0,-1,-1,-1,0,1};
+
 
 
 namespace a1073741824{
 
-//library
 namespace AVL{
 
 //AVLset.hpp
@@ -2326,7 +2329,7 @@ struct LinearSieve{
                 p_list_size++;
                 lpf[i] = i;
             }
-            for (uint j = 0; j < p_list_size && p_list[j] <= lpf[i] && p_list[j]*i <= N; j++){
+            for (int j = 0; j < p_list_size && p_list[j] <= lpf[i] && p_list[j]*i <= N; j++){
                 lpf[p_list[j]*i] = p_list[j];
             }
         }
@@ -2665,7 +2668,6 @@ struct factorialncr{
         factorialmod[1] = 1;
         factorialmodinv[0] = 1;
         factorialmodinv[1] = 1;
-
         for (int i = 2; i <= N_MAX; i++){
             factorialmod[i] = (i*factorialmod[i-1])%M;
             factorialmodinv[i] = (M-factorialmodinv[M%i]*(M/i)%M)%M;
@@ -2979,7 +2981,7 @@ pair<bool, matrix<T>> inverse_matrix(matrix<T> M){
 
 ll internal_floor_sum(ll A, ll B, ll C){
     if (C < 0){return 0;}
-    if (A > B){return internal_floor_sum(B,A,C);}
+    if (A > B){swap(A,B);}
     if (B%A == 0){
         return (1+floor2(C,A))*(1+floor2(C,B)) - (B/A)*floor2(C,B)*(floor2(C,B)+1)/2;
     }
@@ -3018,7 +3020,7 @@ ll internal_floor_max(ll A, ll B, ll C, ll D, ll E, ll F){
     if (D < 0){return -1000000000000000000;}
     if (B <= 0){return -1000000000000000000;}
     if (E > 0){
-        if (B > C){return internal_floor_max(E,C,B,D,A,F);}
+        if (B > C){swap(A,E);swap(B,C);}
         ll M = floor2(D-C*floor2(D, C), B);
         ll tempans = max(A*M+E*floor2(D, C), A*floor2(D, B)) + F;
         return max(tempans, A*(1+M)+internal_floor_max(A, B, C%B, D-B*(1+M+floor2(C, B)*floor2(D, C)), E-A*floor2(C, B), F+A*floor2(C, B)*floor2(D, C)));
@@ -4901,13 +4903,9 @@ using dmll = math::dynamic_mint;
 
 
 
-
-
 void solve(){
     
 }
-
-
 
 int main(){
     ios::sync_with_stdio(false);
@@ -4917,7 +4915,7 @@ int main(){
     //cin >> T;
     while (T--){
         solve();
-    }    
+    }
 }
 
 
