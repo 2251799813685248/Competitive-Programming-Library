@@ -1,3 +1,8 @@
+#ifndef DOUBLY_LINKED_LIST_HPP_
+#define DOUBLY_LINKED_LIST_HPP_
+
+
+
 /// @brief 双方向連結リスト
 /// @tparam T 
 template<typename T>
@@ -169,3 +174,8 @@ struct DoublyLinkedList{
         }
     }
 };
+
+
+
+
+#endif /* DOUBLY_LINKED_LIST_HPP_ */

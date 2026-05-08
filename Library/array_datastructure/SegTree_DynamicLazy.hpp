@@ -1,3 +1,16 @@
+#ifndef SEG_TREE__DYNAMIC_LAZY_HPP_
+#define SEG_TREE__DYNAMIC_LAZY_HPP_
+
+#include <functional>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+#include <cassert>
+using namespace std;
+using ll = long long;
+
+
+
 /// @brief 抽象化動的遅延セグメントツリー
 /// @attention コンストラクタ1 DynamicLazySegTree(A, e, op, mapping, composition, id)
 /// @attention コンストラクタ2 DynamicLazySegTree(N, I, e, op, mapping, composition , id)
@@ -5,6 +18,7 @@
 /// @tparam func 更新に使う変数をまとめた構造体の型(アフィン変換なら、aとbを持つ構造体など)
 /// @param e 載せたものの単位元(sumなら0, maxなら-infなど)
 /// @param operation 各ノードに載ってる構造体に対する二項演算をする関数(min,max,sumなど)
+/// @param init_info 指定した区間内の初期状態を返す関数
 /// @param mapping infoに対してfuncを作用させた結果を返す関数(アフィン変換ならx -> ax+b)
 /// @param composition func同士の合成結果を1つのfuncにする関数((u,v)でu(v())の結果を返すものとする)(ax+bのあとにcx+dを作用させると実質acx+bc+dになるなど)
 /// @param id funcの恒等写像(アフィン変換ならx -> 1x+0)
@@ -213,3 +227,8 @@ struct DynamicLazySegTree{
         return max_capacity;
     }
 };
+
+
+
+
+#endif /* SEG_TREE__DYNAMIC_LAZY_HPP_ */

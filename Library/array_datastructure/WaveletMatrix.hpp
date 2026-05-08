@@ -1,3 +1,16 @@
+#ifndef WAVELET_MATRIX_HPP_
+#define WAVELET_MATRIX_HPP_
+
+#include <iostream>
+#include <vector>
+#include <cassert>
+using ll = long long;
+using ull = unsigned long long;
+using uint = unsigned int;
+using namespace std;
+
+
+
 /// @brief 完備辞書
 struct FullyIndexableDictionary{
     ull* data;
@@ -481,3 +494,8 @@ struct WaveletMatrix{
     }
 
 };
+
+
+
+
+#endif /* WAVELET_MATRIX_HPP_ */

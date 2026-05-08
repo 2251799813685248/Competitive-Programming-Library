@@ -1,3 +1,12 @@
+#ifndef PERSISTENT_ARRAY_HPP_
+#define PERSISTENT_ARRAY_HPP_
+
+#include <iostream>
+#include <vector>
+#include <array>
+using namespace std;
+
+
 /// @brief 固定長永続配列
 /// @tparam T 
 template<typename T>
@@ -196,45 +205,6 @@ struct PersistentArray{
     iterator end() const{return iterator(this, max_size);}
 
 
-    struct NodeRef {
-        PersistentArray* st;
-        int idx;
-
-        NodeRef(PersistentArray* stt, int idxx) : st(stt), idx(idxx) {}
-
-        NodeRef& operator=(const T& val) {st->write(idx, val); return *this;}
-        NodeRef& operator=(const NodeRef& other) {st->write(idx, (T)other);return *this;}
-        
-        #define DEFINE_COMPOUND_OP(OP, BI_OP) \
-        NodeRef& operator OP (const T& val) {st->write(idx, st->get(idx) BI_OP val); return *this;} \
-        NodeRef& operator OP (const NodeRef& other) {st->write(idx, st->get(idx) BI_OP (T)other); return *this;} 
-
-        DEFINE_COMPOUND_OP(+=, +)
-        DEFINE_COMPOUND_OP(-=, -)
-        DEFINE_COMPOUND_OP(*=, *)
-        DEFINE_COMPOUND_OP(/=, /)
-        DEFINE_COMPOUND_OP(%=, %)
-        DEFINE_COMPOUND_OP(|=, |)
-        DEFINE_COMPOUND_OP(&=, &)
-        DEFINE_COMPOUND_OP(^=, ^)
-        DEFINE_COMPOUND_OP(<<=, <<)
-        DEFINE_COMPOUND_OP(>>=, >>)
-
-        #undef DEFINE_COMPOUND_OP
-        
-        NodeRef& operator++() {st->write(idx, st->get(idx) + 1);return *this;}
-        T operator++(int) {T old = st->get(idx);st->write(idx, old + 1);return old;}
-        NodeRef& operator--() {st->write(idx, st->get(idx) - 1);return *this;}
-        T operator--(int) {T old = st->get(idx);st->write(idx, old - 1);return old;}
-
-        operator T() const {return st->get(idx);}
-    };
-
-    NodeRef operator[](int i) {
-        return NodeRef(this, i);
-    }
-
-
     /// @brief indexを指定して要素にアクセスする。変更はできない。
     /// @attention 基本的には[]を使う
     /// @param idx
@@ -297,3 +267,8 @@ struct PersistentArray{
         return max_size;
     }
 };
+
+
+
+
+#endif /* PERSISTENT_ARRAY_HPP_ */
