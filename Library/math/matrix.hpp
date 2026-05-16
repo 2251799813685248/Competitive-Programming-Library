@@ -19,7 +19,7 @@ using ll = long long;
 template<typename T>
 struct matrix{
     vector<vector<T>> M;
-    size_t H,W;
+    int H,W;
 
     /// @brief N次単位行列を生成
     /// @param N 
@@ -165,9 +165,12 @@ struct matrix{
     }
 
     /// @brief 行の数を返す
-    size_t size(){return H;}
-    bool empty(){return H == 0;}
-    vector<T>& operator[](const int row){
+    size_t size()const{return H;}
+    bool empty()const{return H == 0;}
+    inline vector<T>& operator[](const int row){
+        return M[row];
+    }
+    inline const vector<T>& operator[](const int row)const{
         return M[row];
     }
 
@@ -196,7 +199,7 @@ struct matrix{
     /// @return 和
     T rectangle_sum(int r1, int r2, int c1, int c2){
         if (r1 > r2 || c1 > c2){return 0;}
-        return M[r2][c2] - M[r2][c1-1] - M[r1-1][c2] + M[r1-1][c1-1];
+        return sum_from_origin(r2, c2) - sum_from_origin(r2, c1-1) - sum_from_origin(r1-1, c2) + sum_from_origin(r1-1, c1-1);
     }
 };
 

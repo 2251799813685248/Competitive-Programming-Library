@@ -4,7 +4,6 @@
 #include <iostream>
 #include <vector>
 #include <cassert>
-#include <string.h>
 using namespace std;
 using ll = long long;
 using uint = unsigned;
@@ -20,6 +19,10 @@ struct FormalPowerSeries{
         f.resize(_init_sz, 0);
         sz = _init_sz;
     }
+    FormalPowerSeries(uint _init_sz, uint _init_val){
+        f.resize(_init_sz, _init_val);
+        sz = _init_sz;
+    }
     template<typename T> FormalPowerSeries(const vector<T>& _init){
         f.assign(_init.begin(), _init.end());
         sz = f.size();
@@ -33,6 +36,13 @@ struct FormalPowerSeries{
     }
     inline uint& operator[](uint deg) {return f[deg];}
     inline const uint& operator[](uint deg) const {return f[deg];}
+    template<typename T> operator vector<T>() const {
+        vector<T> res(sz);
+        for (uint i = 0; i < sz; i++){
+            res[i] = f[i];
+        }
+        return res;
+    }
 };
 
 #endif /* FPS__HPP_ */

@@ -5,11 +5,12 @@
 #include <cmath>
 using namespace std;
 using ll = long long;
+using ull = unsigned long long;
 
 
 
 /// @brief a^bをmで割った余りを返す。bに関して対数時間で計算できる。
-constexpr ll modpow(ll a, ll b, const ll m){
+constexpr ll modpow(ll a, ull b, const ll m){
     ll t = a%m;
     ll ans = 1;
     while (b > 0){
@@ -23,9 +24,9 @@ constexpr ll modpow(ll a, ll b, const ll m){
 }
 
 /// @brief a^nを返す。bに関して線形時間で計算できる。
-constexpr ll powll(ll a, ll n){
+constexpr ll powll(ll a, ull n){
     ll r = 1;
-    for (int i = 1; i <= n; i++){
+    for (ull i = 1; i <= n; i++){
         r *= a;
     }
     return r;

@@ -4,40 +4,44 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <cassert>
+#include <math_functions.hpp>
 using namespace std;
 using ll = long long;
+using ull = unsigned long long;
 
 
-
-//階乗前計算による二項係数mod998244353
+//階乗前計算による二項係数mod M
+template<ull M>
 struct factorialncr{
-    vector<ll> factorialmod;
-    vector<ll> factorialmodinv;
-    ll N_MAX_N_MAX;
-    ll MOD;
-    factorialncr(const ll N_MAX, const ll M){
-        N_MAX_N_MAX = max(1ll, N_MAX);
-        MOD = M;
-        factorialmod = vector<ll>(N_MAX+1);
-        factorialmodinv = vector<ll>(N_MAX+1);
+    vector<uint> factorialmod;
+    vector<uint> factorialmodinv;
+    uint N_MAX;
+    factorialncr(const uint N_MAX__){
+        N_MAX = max(1u, N_MAX__);
+        factorialmod = vector<uint>(N_MAX+1);
+        factorialmodinv = vector<uint>(N_MAX+1);
         factorialmod[0] = 1;
-        factorialmod[1] = 1;
         factorialmodinv[0] = 1;
-        factorialmodinv[1] = 1;
-        for (int i = 2; i <= N_MAX; i++){
-            factorialmod[i] = (i*factorialmod[i-1])%M;
-            factorialmodinv[i] = (M-factorialmodinv[M%i]*(M/i)%M)%M;
+        ull temp = 1;
+        for (ull i = 1; i <= N_MAX; i++){
+            temp = (i*temp)%M;
+            factorialmod[i] = temp;
         }
-        for (int i = 1; i <= N_MAX; i++){
-            factorialmodinv[i] = (factorialmodinv[i]*factorialmodinv[i-1])%M;
+        factorialmodinv[N_MAX] = inverse_mod((ll)factorialmod[N_MAX], M);
+        temp = factorialmodinv[N_MAX];
+        for (ull i = N_MAX-1; i > 0; i--){
+            temp = ((i+1)*temp)%M;
+            factorialmodinv[i] = temp;
         }
     }
 
     ll nCr(ll n, ll r){
-        if (r < 0 || n < r || n > N_MAX_N_MAX){
+        assert(n <= N_MAX);
+        if (r < 0 || n < r){
             return 0;
         }
-        return factorialmod[n]*factorialmodinv[r]%MOD*factorialmodinv[n-r]%MOD;
+        return factorialmod[n]*(ull)factorialmodinv[r]%M*factorialmodinv[n-r]%M;
     }
 };
 
