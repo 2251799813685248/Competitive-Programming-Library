@@ -96,7 +96,10 @@ struct SegTree{
     /// @param R 右端(右端を含む)
     /// @return [L,R]での集計結果
     info range_get(const int L, const int R){
-        if (L > R || L >= max_capacity || L < 0 || R >= max_capacity || R < 0){
+        if (L >= max_capacity || L < 0 || R >= max_capacity || R < 0){
+            assert(false);
+        }
+        if (L > R){
             return e;
         }
         info ret = e;
@@ -114,7 +117,7 @@ struct SegTree{
     /// @return 要素
     info get(const int t) const{
         if (t >= max_capacity || t < 0){
-            return e;
+            assert(false);
         }
         return tree[t+(1<<log2N)];
     }
@@ -124,7 +127,7 @@ struct SegTree{
     /// @param val 置換後の値
     void pointwise_update(const int t, const info &val){
         if (t >= max_capacity || t < 0){
-            return;
+            assert(false);
         }
         int start_index = t + (1<<log2N);
         tree[start_index] = val;
@@ -141,7 +144,9 @@ struct SegTree{
     /// @param G 判定関数...boolを返す。引数としてinfoを受け取るが、これはT.range_get(L, t)が入り、これに関する条件式を自分で関数内に記述することで、このようなtの最小が求まる。
     /// @return Gがtrueになる最小右端indexまたは2147483647
     int min_right(int L, const function<bool(info)> &G){
-
+        if (L >= max_capacity || L < 0){
+            assert(false);
+        }
         info current_result = e;
 
         checkpoint:
@@ -171,6 +176,9 @@ struct SegTree{
     /// @param G 判定関数...boolを返す。引数としてinfoを受け取るが、これはT.range_get(t, R)が入り、これに関する条件式を自分で関数内に記述することで、このようなtの最大が求まる。
     /// @return Gがtrueになる最大左端index
     int max_left(int R, const function<bool(info)> &G){
+        if (R >= max_capacity || R < 0){
+            assert(false);
+        }
         info current_result = e;
 
         checkpoint:
@@ -195,10 +203,10 @@ struct SegTree{
         return R;
     }
 
-    info operator[](const int t){
+    info operator[](const int t)const{
         return get(t);
     }
-    int size(){
+    int size()const{
         return max_capacity;
     }
 };

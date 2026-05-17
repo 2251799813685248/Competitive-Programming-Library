@@ -135,7 +135,10 @@ struct LazySegTree{
     /// @param R 右端(右端を含む)
     /// @return [L,R]での集計結果
     info range_get(const int L, const int R){
-        if (L > R || L >= max_capacity || L < 0 || R >= max_capacity || R < 0){
+        if (L >= max_capacity || L < 0 || R >= max_capacity || R < 0){
+            assert(false);
+        }
+        if (L > R){
             return e;
         }
         int Lstart = L + (1<<log2N);
@@ -177,7 +180,10 @@ struct LazySegTree{
     /// @param R 右端(右端を含む)
     /// @param F 適用する写像(アフィン変換ならaとbを持った構造体など)
     void range_update(const int L, const int R, const func &F){
-        if (L > R || L >= max_capacity || L < 0 || R >= max_capacity || R < 0){
+        if (L >= max_capacity || L < 0 || R >= max_capacity || R < 0){
+            assert(false);
+        }
+        if (L > R){
             return;
         }
         int Lstart = L + (1<<log2N);
@@ -225,6 +231,9 @@ struct LazySegTree{
     /// @param G 判定関数...boolを返す。引数としてinfoを受け取るが、これはT.range_get(L, t)が入り、これに関する条件式を自分で関数内に記述することで、このようなtの最小が求まる。
     /// @return Gがtrueになる最小右端indexまたは2147483647
     int min_right(int L, const function<bool(info)> &G){
+        if (L >= max_capacity || L < 0){
+            assert(false);
+        }
         info current_result = e;
 
         int ctz_init = L == 0 ? log2N : __builtin_ctz(L);
@@ -261,6 +270,9 @@ struct LazySegTree{
     /// @param G 判定関数...boolを返す。引数としてinfoを受け取るが、これはT.range_get(t, R)が入り、これに関する条件式を自分で関数内に記述することで、このようなtの最小が求まる。
     /// @return Gがtrueになる最大左端indexまたは-2147483648
     int max_left(int R, const function<bool(info)> &G){
+        if (R >= max_capacity || R < 0){
+            assert(false);
+        }
         info current_result = e;
 
         int cto_init = __builtin_ctz(~R);
@@ -292,10 +304,10 @@ struct LazySegTree{
         return R;
     }
 
-    info operator[](const int t){
+    info operator[](const int t)const{
         return range_get(t,t);
     }
-    int size(){
+    int size()const{
         return max_capacity;
     }
 };
