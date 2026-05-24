@@ -95,10 +95,10 @@ constexpr inline ll ceil2(ll y, ll x){
     }
 }
 
-/// @brief 一次不定方程式ax+by=1の解を1つ見つける
+/// @brief 一次不定方程式ax+by=gcd(a,b)の解を1つ見つける
 /// @param a `a>=0`である必要がある
 /// @param b `b>=0`である必要がある
-/// @return {x,y,gcd(x,y)}
+/// @return {x,y,gcd(a,b)}
 template<typename T>
 constexpr array<T,3> axby1(T a, T b){
     T x = 1, y = 0;
