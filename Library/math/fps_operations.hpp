@@ -35,12 +35,12 @@ struct fps_operator{
         }
         int cnt2 = powroot.size()-1;
         ull now = 1;
-        for (int i = 0; i <= cnt2-2; i++) {
+        for (int i = 0; i <= cnt2-2; i++){
             sum_e[i] = (powroot[i+2]*now)%M;
             now = (now*powrootinv[i+2])%M;
         }
         ull inow = 1;
-        for (int i = 0; i <= cnt2-2; i++) {
+        for (int i = 0; i <= cnt2-2; i++){
             sum_ie[i] = (powrootinv[i+2]*inow)%M;
             inow = (inow*powroot[i+2])%M;
         }
