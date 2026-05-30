@@ -1,27 +1,27 @@
+
 #ifndef FPS_OPERATION_HPP_
 #define FPS_OPERATION_HPP_
 
 #include <vector>
 #include <algorithm>
-#include <math_functions.hpp>
 #include <fps.hpp>
-#include <inv_table.hpp>
+#include <math_functions.hpp>
 using namespace std;
 using ll = long long;
 using uint = unsigned;
+using ull = unsigned long long;
 
 template<typename T> inline bool btest_for_fps(T K, int i){return K&(1ull<<i);}
 
 
 /// @brief mod M上での形式的冪級数の計算を行う構造体
-/// @attention expやpowなどの関数を使用する際は、inv_table_initalizedがtrueである必要がある。初期化されていない場合は、inv_tableを使用する関数を呼び出す前にinit_inv_table()を呼び出すこと。
 template<ull M>
 struct fps_operator{
     ull sum_e[30];
     ull sum_ie[30];
-    ull inv_table[1048576];
-    bool inv_table_initalized = false;
-    constexpr fps_operator(bool use_inv_table = false){
+    uint log_max_length;
+    uint last_powroot;
+    constexpr fps_operator(){
         vector<ll> powroot{1};
         vector<ll> powrootinv;
         while (powroot.back() >= 0){
@@ -31,6 +31,8 @@ struct fps_operator{
             }
         }
         powroot.pop_back();
+        log_max_length = powroot.size()-1;
+        last_powroot = powroot.back();
         for (auto v : powroot){
             powrootinv.push_back(inverse_mod(v,M));
         }
@@ -49,13 +51,6 @@ struct fps_operator{
             sum_e[i] = 0;
             sum_ie[i] = 0;
         }
-        if (use_inv_table) init_inv_table();
-    }
-    constexpr void init_inv_table(){
-        inv_table_initalized = true;
-        inv_table[0] = 0;
-        inv_table[1] = 1;
-        for(int i = 2; i < 1048576; i++) inv_table[i] = inv_table[M%i]*(M-M/i)%M;
     }
     FormalPowerSeries add(const FormalPowerSeries& F1, const FormalPowerSeries& F2) const {
         FormalPowerSeries ret(max(F1.sz, F2.sz));
@@ -137,6 +132,46 @@ struct fps_operator{
             }
         }
     }
+    void inplaceDFT_T(FormalPowerSeries& F) const {
+        F.resize(upperpow2(F.sz));
+        int n = F.sz;
+        if (n == 0) return;
+        int h = __builtin_ctz(n);
+        for (int ph = h; ph >= 1; ph--) {
+            int w = 1 << (ph - 1), p = 1 << (h - ph);
+            ull now = 1;
+            for (int s = 0; s < w; s++) {
+                int offset = s << (h - ph + 1);
+                for (int i = 0; i < p; i++) {
+                    uint l = F[i + offset];
+                    uint r = F[i + offset + p];
+                    F[i + offset] = l+r<M ? l+r : l+r-M;
+                    F[i + offset + p] = (l<r ? l+M-r : l-r)*now%M;
+                }
+                now = now*sum_e[__builtin_ctz(~s)]%M;
+            }
+        }
+    }
+    void inplaceIDFT_T(FormalPowerSeries& F) const {
+        F.resize(upperpow2(F.sz));
+        int n = F.sz;
+        if (n == 0) return;
+        int h = __builtin_ctz(n);
+        for (int ph = 1; ph <= h; ph++) {
+            int w = 1 << (ph - 1), p = 1 << (h - ph);
+            ull inow = 1;
+            for (int s = 0; s < w; s++) {
+                int offset = s << (h - ph + 1);
+                for (int i = 0; i < p; i++) {
+                    uint l = F[i + offset];
+                    uint r = F[i + offset + p]*inow%M;
+                    F[i + offset] = l+r<M ? l+r : l+r-M;
+                    F[i + offset + p] = l<r ? l+M-r : l-r;
+                }
+                inow = inow*sum_ie[__builtin_ctz(~s)]%M;
+            }
+        }
+    }
     /// @brief 多項式の積を求める。 
     FormalPowerSeries convolution(FormalPowerSeries F1, FormalPowerSeries F2) const {
         int n = F1.size();
@@ -205,8 +240,7 @@ struct fps_operator{
         return res;
     }
     /// @brief exp(F) mod x^n を求める。F[x^0] == 0 が必要
-    FormalPowerSeries exp(const FormalPowerSeries& F, const int n){
-        assert(inv_table_initalized);
+    FormalPowerSeries exp(const FormalPowerSeries& F, const int n, const mod_table<M>& mtable) const {
         assert(F[0] == 0);
         ull sz_f = F.sz;
         FormalPowerSeries F0{1},f0{1},g0{1};
@@ -260,7 +294,7 @@ struct fps_operator{
             }
         
             for (ull i = 2*d-1; i >= 1; i--){
-                epsilon[i] = epsilon[i-1]*inv_table[i]%M+M-(i < sz_f ? F[i] : 0);
+                epsilon[i] = epsilon[i-1]*(ull)mtable.invmod[i]%M+M-(i < sz_f ? F[i] : 0);
                 if (epsilon[i] >= M) epsilon[i] -= M;
             }
             epsilon[0] = (F[0] != 0 ? M-F[0] : 0);
@@ -303,7 +337,7 @@ struct fps_operator{
         return f0;
     }
     /// @brief log(F) mod x^n を求める。F[x^0] == 1 が必要 
-    FormalPowerSeries log(const FormalPowerSeries& F, const int n){
+    FormalPowerSeries log(const FormalPowerSeries& F, const int n, const mod_table<M>& mtable) const {
         assert(F[0] == 1);
         auto DF = F;
         for (ull i = 0, limit = DF.sz-1; i < limit; i++){
@@ -315,15 +349,17 @@ struct fps_operator{
         auto res = convolution(DF, Finv);
         res.resize(n);
         for (int i = n-1; i >= 1; i--){
-            res[i] = res[i-1]*inv_table[i]%M;
+            res[i] = res[i-1]*(ull)mtable.invmod[i]%M;
         }
         res[0] = 0;
         return res;
     }
     /// @brief F^k mod x^n を求める。
-    FormalPowerSeries pow(const FormalPowerSeries& F, ull k, const int n){
+    FormalPowerSeries pow(const FormalPowerSeries& F, const ull k, const int n, const mod_table<M>& mtable) const {
         if (k == 0){
-            return FormalPowerSeries{1};
+            FormalPowerSeries ret(n,0);
+            ret[0] = 1;
+            return ret;
         }
         uint lowest_deg = 0;
         ull lowest_coef = 0;
@@ -337,12 +373,12 @@ struct fps_operator{
         for (uint i = lowest_deg, limit = min(F.sz, lowest_deg + n); i < limit; i++){
             G[i-lowest_deg] = F[i]*iz%M;
         }
-        auto logG = log(G, n);
+        auto logG = log(G, n, mtable);
         ull kmodm=k%M;
         for (int i = 0; i < n; i++){
             logG[i] = logG[i]*kmodm%M;
         }
-        auto res = exp(logG, n);
+        auto res = exp(logG, n, mtable);
         FormalPowerSeries ret(n);
         ull t = modpow(lowest_coef, k, M);
         int offset = lowest_deg == 0 ? 0 : k > (ull)n ? n : min(lowest_deg*k, (ull)n);
@@ -356,70 +392,137 @@ struct fps_operator{
         }
         return ret;
     }
-
-    // \sum_j[x^j]f^i を i=0,1,...,m
-    template <typename mint>
-    vc<mint> power_projection(vc<mint> f, vc<mint> wt, int m, const inv_table& it){
-      assert(len(f) == len(wt));
-      if (f.empty()) { return vc<mint>(m + 1, mint(0)); }
-      if (f[0] != mint(0)) {
-        mint c = f[0];
-        f[0] = 0;
-        vc<mint> A = power_projection(f, wt, m);
-        FOR(p, m + 1) A[p] *= fact_inv<mint>(p);
-        vc<mint> B(m + 1);
-        mint pow = 1;
-        FOR(q, m + 1) B[q] = pow * fact_inv<mint>(q), pow *= c;
-        A = convolution<mint>(A, B);
-        A.resize(m + 1);
-        FOR(i, m + 1) A[i] *= fact<mint>(i);
-        return A;
-      }
-
-      int n = 1;
-      while (n < len(f)) n *= 2;
-      f.resize(n), wt.resize(n);
-      reverse(all(wt));
-
-      vc<mint> W(2 * n);
-      {
-        // bit reverse order
-        vc<int> btr(2 * n);
-        int log = topbit(2 * n);
-        FOR(i, 2 * n) { btr[i] = (btr[i >> 1] >> 1) + ((i & 1) << (log - 1)); }
-        int t = mint::ntt_info().fi;
-        mint r = mint::ntt_info().se;
-        mint dw = r.inverse().pow((1 << t) / (4 * n));
-        mint w = 1;
-        for (auto& i: btr) { W[i] = w, w *= dw; }
-      }
-
-      int k = 1;
-      vc<mint> P(2 * n), Q(2 * n);
-      FOR(i, n) P[i] = wt[i], Q[i] = -f[i];
-
-      while (n > 1) {
-        P.resize(4 * n * k), Q.resize(4 * n * k);
-        Q[2 * n * k] = 1;
-        vc<mint> R(4 * n * k);
-        FOR(i, 4 * n * k) R[i] = (i % 2 == 0 ? Q[i] : -Q[i]);
-        ntt(P, 0), ntt(Q, 0);
-        FOR(i, 2 * n * k) {
-          P[i] = inv<mint>(2) * W[i]
-                 * (P[2 * i] * Q[2 * i + 1] - P[2 * i + 1] * Q[2 * i]);
-          Q[i] = Q[2 * i] * Q[2 * i + 1];
+    // \sum_{j} wt[j]*[x^j]f^i を i=0,1,...,m
+    FormalPowerSeries power_projection(FormalPowerSeries f, FormalPowerSeries wt, uint m, const mod_table<M>& mtable) const {
+        assert(f.size() == wt.size());
+        if (f.size() == 0){return vector<uint>(m+1, 0);}
+        if (f[0] != 0){
+            uint c = f[0];
+            f[0] = 0;
+            auto A = power_projection(f, wt, m);
+            for (uint p = 0; p < m+1; p++) A[p] = A[p]*(ull)mtable.factorialmodinv[p]%M;
+            FormalPowerSeries B(m+1);
+            ull pow = 1;
+            for (uint q = 0; q < m+1; q++) B[q] = pow * (ull)mtable.factorialmodinv[q]%M, pow = pow*c%M;
+            A = convolution(A, B);
+            A.resize(m + 1);
+            for (uint i = 0; i < m+1; i++) A[i] = A[i]*(ull)mtable.factorialmod[i]%M;
+            return A;
         }
-        P.resize(2 * n * k), Q.resize(2 * n * k);
-        ntt(P, 1), ntt(Q, 1);
-        FOR(j, 2 * k) FOR(i, n / 2, n) P[n * j + i] = 0, Q[n * j + i] = 0;
-        Q[0] = 0;
-        n /= 2, k *= 2;
-      }
-      vc<mint> p(k);
-      FOR(i, k) p[i] = P[2 * i];
-      reverse(all(p));
-      p.resize(m + 1);
-      return p;
+  
+        int n = 1;
+        while (n < (int)f.size()) n *= 2;
+        f.resize(n), wt.resize(n);
+        reverse(wt.f.begin(), wt.f.end());
+  
+        FormalPowerSeries W(2*n);
+        {
+            // bit reverse order
+            vector<int> btr(2*n);
+            int log = 31-__builtin_clz(2*n);
+            for (int i = 0; i < 2*n; i++){btr[i] = (btr[i >> 1] >> 1) + ((i & 1) << (log - 1));}
+            int t = log_max_length;
+            uint r = last_powroot;
+            ull dw = modpow(inverse_mod<ll,ll>(r, M), (1<<t)/(4*n), M);
+            uint w = 1;
+            for (auto i: btr) { W[i] = w, w = w*dw%M; }
+        }
+  
+        int k = 1;
+        FormalPowerSeries P(2*n), Q(2*n);
+        for (int i = 0; i < n; i++) P[i] = wt[i], Q[i] = f[i] == 0 ? 0 : M-f[i];
+  
+        while (n > 1) {
+            P.resize(4*n*k), Q.resize(4*n*k);
+            Q[2*n*k] = 1;
+            FormalPowerSeries R(4*n*k);
+            for(int i = 0; i < 4*n*k; i++) R[i] = (i % 2 == 0 ? Q[i] : Q[i] == 0 ? 0 : M-Q[i]);
+            inplaceDFT(P), inplaceDFT(Q);
+            for(int i = 0; i < 2*n*k; i++){
+                P[i] = (W[i]&1 ? (W[i]+M)/2 : W[i]/2)*(P[2*i]*(ull)Q[2*i+1]%M+M-P[2*i+1]*(ull)Q[2*i]%M)%M;
+                Q[i] = Q[2*i]*(ull)Q[2*i+1]%M;
+            }
+            P.resize(2*n*k), Q.resize(2*n*k);
+            inplaceIDFT(P), inplaceIDFT(Q);
+            for (int j = 0; j < 2*k; j++) for (int i = n/2; i < n; i++) P[n*j+i] = 0, Q[n*j+i] = 0;
+            Q[0] = 0;
+            n /= 2;
+            k *= 2;
+        }
+        FormalPowerSeries p(k);
+        for (int i = 0; i < k; i++) p[i] = P[2 * i];
+        reverse(p.f.begin(), p.f.end());
+        p.resize(m+1);
+        return p;
+    }
+    // f(g(x)) mod x^len(f) を求める。
+    FormalPowerSeries composition(FormalPowerSeries f, FormalPowerSeries g, const mod_table<M>& mtable) const {
+        f.resize(max(f.size(),g.size()));
+        int N = f.size();
+        if (N == 0) return FormalPowerSeries(0);
+
+        int n = 1;
+        while (n < (int)f.size()) n *= 2;
+        f.resize(n), g.resize(n);
+
+        FormalPowerSeries W(2*n);
+        {
+            // bit reverse order
+            vector<int> btr(2*n);
+            int log = 31-__builtin_clz(2*n);
+            for (int i = 0; i < 2*n; i++){btr[i] = (btr[i >> 1] >> 1) + ((i & 1) << (log - 1));}
+            int t = log_max_length;
+            uint r = last_powroot;
+            ull dw = modpow(inverse_mod<ll,ll>(r, M), (1<<t)/(4*n), M);
+            uint w = 1;
+            for (auto i: btr) { W[i] = w, w = w*dw%M; }
+        }
+
+        auto rec = [&](auto &rec, int n, int k, FormalPowerSeries &Q) -> FormalPowerSeries {
+            if (n == 1) {
+                reverse(f.f.begin(), f.f.end());
+                FormalPowerSeries p(2*k);
+                for (int i = 0; i < k; i++) p[2 * i] = f[i];
+                return p;
+            }
+            Q.resize(4*n*k);
+            Q[2*n*k] = 1;
+            inplaceDFT(Q);
+            FormalPowerSeries nxt_Q(2*n*k);
+            for (int i = 0; i < 2*n*k; i++) nxt_Q[i] = Q[2*i]*(ull)Q[2*i+1]%M;
+            
+            inplaceIDFT(nxt_Q);
+            ull iz = inverse_mod((ll)nxt_Q.size(), M);
+            for (uint i = 0; i < nxt_Q.size(); i++) nxt_Q[i] = nxt_Q[i]*iz%M;
+
+            for (int j = 0; j < 2*k; j++) for (int i = n/2; i < n; i++) nxt_Q[n*j+i] = 0;
+            nxt_Q[0] = 0;
+            FormalPowerSeries p = rec(rec, n/2, 2*k, nxt_Q);
+            for (int j = 0; j < 2*k; j++) for (int i = n/2; i < n; i++) p[n * j + i] = 0;
+            
+            iz = mtable.invmod[p.size()];
+            for (uint i = 0; i < p.size(); i++) p[i] = p[i]*iz%M;
+            inplaceIDFT_T(p);
+            
+            p.resize(4*n*k);
+            for (int i = 2*n*k-1; i >= 0; i--){
+                p[2*i+1] = (ull)(mtable.invmod[2]-1+M)%M*W[i]%M*Q[2*i]%M*p[i]%M;
+                p[2*i] = (ull)mtable.invmod[2]*W[i]%M*Q[2*i+1]%M*p[i]%M;
+            }
+            
+            inplaceDFT_T(p);
+            
+            p.resize(2*n*k);
+            return p;
+        };
+
+        FormalPowerSeries Q(2*n);
+        for(int i = 0; i < n; i++) Q[i] = g[i] == 0 ? 0 : M-g[i];
+        FormalPowerSeries p = rec(rec, n, 1, Q);
+        p.resize(n);
+        reverse(p.f.begin(), p.f.end());
+        p.resize(N);
+        return p;
     }
 
 };
