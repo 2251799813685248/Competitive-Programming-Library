@@ -1,5 +1,5 @@
 # Competitive Programming Library made by $2^{51}$
-2251799813685248が作った競技プログラミング用ライブラリ
+競技プログラミング用ライブラリ
 
 ## description
 
