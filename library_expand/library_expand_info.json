@@ -6,7 +6,8 @@
         "fps.hpp",
         "fps_operations.hpp",
         "mod_table.hpp",
-        "SegTree_Lazy.hpp"
+        "SegTree_Lazy.hpp",
+        "priority_deque.hpp"
     ],
     "library_path": [
         "/home/a1024/cpp/Competitive-Programming-Library/Library/array_datastructure",

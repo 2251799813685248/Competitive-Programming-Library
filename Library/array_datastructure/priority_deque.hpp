@@ -76,10 +76,11 @@ struct priority_deque{
         }
     }
     public:
-    void make_heap(const vector<T>& B){
+    priority_deque(const vector<T>& B){
         A = B;
         build_heap();
     }
+    priority_deque(){}
     void push(const T& value){
         if (A.size()&1){
             if (A.back() < value){
