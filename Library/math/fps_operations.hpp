@@ -1,4 +1,3 @@
-
 #ifndef FPS_OPERATION_HPP_
 #define FPS_OPERATION_HPP_
 
