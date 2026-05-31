@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ "$#" -lt 1 ]; then
+  echo "引数が空です"
+  exit 1
+fi
+
+if [ "$1" == "-all" ]; then
+    echo "all is called"
+    exit 0
+elif [[ "$1" =~ -.* ]]; then
+    echo "不明な引数「$1」が使用されました"
+    exit 1
+elif [[ "$1" =~ .*\.cpp ]]; then
+    echo "ファイル「$1」を展開します"
+    echo $1 | python3 /home/a1024/cpp/contest/contest_true/library_expand/library_expand.py
+    exit 0
+else
+    echo "C++ファイルではありません"
+    exit 1
+fi

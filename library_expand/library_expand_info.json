@@ -1,0 +1,21 @@
+{
+    "registered_library": [
+        "math_functions.hpp",
+        "nCr.hpp",
+        "prime_and_divisors.hpp",
+        "fps.hpp",
+        "fps_operations.hpp",
+        "mod_table.hpp",
+        "SegTree_Lazy.hpp"
+    ],
+    "library_path": [
+        "/home/a1024/cpp/Competitive-Programming-Library/Library/array_datastructure",
+        "/home/a1024/cpp/Competitive-Programming-Library/Library/general_algorithm",
+        "/home/a1024/cpp/Competitive-Programming-Library/Library/graph",
+        "/home/a1024/cpp/Competitive-Programming-Library/Library/math",
+        "/home/a1024/cpp/Competitive-Programming-Library/Library/set_map",
+        "/home/a1024/cpp/Competitive-Programming-Library/Library/string_algorithm"
+    ],
+    "source_file_path": "/home/a1024/cpp/contest/contest_true/programs",
+    "result_path": "/home/a1024/cpp/contest/contest_true/submissions"
+}
