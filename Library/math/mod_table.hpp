@@ -13,7 +13,7 @@ struct mod_table{
     vector<uint> factorialmod;
     vector<uint> factorialmodinv;
     uint N_MAX;
-    mod_table(const uint N_MAX__){
+    constexpr mod_table(const uint N_MAX__){
         N_MAX = max(1u, N_MAX__);
         invmod = vector<uint>(N_MAX+1);
         factorialmod = vector<uint>(N_MAX+1);

@@ -1,3 +1,4 @@
+
 #ifndef NCR_HPP_
 #define NCR_HPP_
 
@@ -11,7 +12,7 @@ using ll = long long;
 using ull = unsigned long long;
 
 
-//階乗前計算による二項係数mod M
+//階乗前計算による二項係数mod M  Mが複数欲しいときにも使える。
 template<ull M>
 struct factorialncr{
     vector<uint> factorialmod;
