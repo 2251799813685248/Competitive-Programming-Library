@@ -23,7 +23,7 @@ struct matrix{
 
     /// @brief N次単位行列を生成
     /// @param N 
-    matrix(size_t N){
+    matrix(int N){
         H = N;W = N;
         M = vector<vector<T>>(N,vector<T>(N,0));
         for (int i = 0; i < N; i++){
@@ -166,7 +166,7 @@ struct matrix{
 
     /// @brief 行の数を返す
     size_t size()const{return H;}
-    bool empty()const{return H == 0;}
+    bool empty()const{return min(H,W) == 0;}
     inline vector<T>& operator[](const int row){
         return M[row];
     }

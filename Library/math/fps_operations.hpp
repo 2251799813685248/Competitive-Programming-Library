@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <fps.hpp>
 #include <math_functions.hpp>
+#include <mod_table.hpp>
 using namespace std;
 using ll = long long;
 using uint = unsigned;

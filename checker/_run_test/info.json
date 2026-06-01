@@ -1,0 +1,23 @@
+{
+    "fps":[
+        "convolution",
+        "composition_of_formal_power_series_large"
+    ],
+    "floor":[
+        "min_of_mod_of_linear",
+        "sum_of_floor_of_linear"
+    ],
+    "matrix":[
+        "pow_of_matrix",
+        "inverse_matrix"
+    ],
+    "number_theory":[
+        "enumerate_quotients",
+        "counting_primes",
+        "enumerate_primes",
+        "primality_test",
+        "min_of_mod_of_linear",
+        "sum_of_floor_of_linear",
+        "sqrt_mod"
+    ]
+}

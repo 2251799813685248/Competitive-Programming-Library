@@ -4,8 +4,10 @@
 #include <array>
 #include <vector>
 #include <math_functions.hpp>
+#include <algorithm>
 using namespace std;
 using ll = long long;
+using ulll = __uint128_t;
 using pll = array<ll,2>;
 using pii = array<int,2>;
 
@@ -130,6 +132,101 @@ struct LinearSieve{
 };
 
 
+ll prime_counting(ll N) {
+  ll N2 = sqrt(N);
+  ll NdN2 = N/N2;
+
+  vector<ll> hl(NdN2);
+  for (int i = 1; i < NdN2; i++) hl[i] = N/i - 1;
+
+  vector<int> hs(N2 + 1);
+  for (int i = 0; i <= N2; i++){
+    hs[i] = i-1;
+  }
+
+  for (int x = 2, pi = 0; x <= N2; ++x) {
+    if (hs[x] == hs[x - 1]) continue;
+    ll x2 = ll(x) * x;
+    ll imax = min(NdN2, N/x2 + 1);
+    ll ix = x;
+    for (ll i = 1; i < imax; i++) {
+      hl[i] -= (ix < NdN2 ? hl[ix] : hs[N/ix]) - pi;
+      ix += x;
+    }
+    for (int n = N2; n >= x2; n--) {
+      hs[n] -= hs[n/x] - pi;
+    }
+    ++pi;
+  }
+  return hl[1];
+}
+
+constexpr ull __MillerRabin_small[3] = {2,7,61};
+constexpr ull __MillerRabin_large[7] = {2,325,9375,28178,450775,9780504,1795265022};
+
+struct Montgomery64 {
+    ull n, ni, r2;
+    constexpr Montgomery64(ull n) : n(n), ni(n), r2(-ulll(n) % n){
+        for (int i = 0; i < 5; ++i) ni *= 2ull - n * ni;
+        ni *= -1;
+    }
+    constexpr ull reduce(ulll x) const {
+        ull m = (ull)x * ni;
+        ull res = (x + ulll(m) * n) >> 64;
+        return res >= n ? res - n : res;
+    }
+    constexpr ull mul(ull x, ull y) const {
+        return reduce(ulll(x) * y);
+    }
+    constexpr ull pow_not_reduced(ull a, ull b)const{
+        ull res = reduce(r2);
+        a = reduce(ulll(a) * r2);
+        while (b) {
+            if (b & 1) res = mul(res, a);
+            a = mul(a, a);
+            b >>= 1;
+        }
+        return res;
+    }
+};
+
+constexpr bool MillerRabin(ull N){
+    if (N <= 1) return false;
+    if (N == 2 || N == 3) return true;
+    if (N % 2 == 0) return false;
+
+    ull d = N - 1;
+    int s = 0;
+    while (d % 2 == 0){
+        d >>= 1;
+        s++;
+    }
+    Montgomery64 mg(N);
+    auto check = [&](ull a){
+        if (a >= N) a %= N;
+        if (a == 0) return true;
+        ull x = mg.pow_not_reduced(a, d);
+        ull y = mg.reduce(x);
+        if (y == 1 || y == N-1) return true;
+        for (int r = 1; r < s; r++){
+            x = mg.mul(x, x);
+            if (mg.reduce(x) == N - 1) return true;
+        }
+        return false;
+    };
+
+    if (N < 4759123141ull){
+        for (auto a : __MillerRabin_small){
+            if (!check(a)) return false;
+        }
+    }
+    else{
+        for (auto a : __MillerRabin_large){
+            if (!check(a)) return false;
+        }
+    }
+    return true;
+}
 
 
 

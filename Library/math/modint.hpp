@@ -21,11 +21,11 @@ struct mint{
     mint(){}
 
     mint inv(){
-        val = math::inverse_mod(val, M);
+        val = inverse_mod(val, M);
         return *this;
     }
     mint pow(ll N){
-        val = math::modpow(val, N, M);
+        val = modpow(val, N, M);
         return *this;
     }
     
