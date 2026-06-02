@@ -233,7 +233,7 @@ constexpr bool MillerRabin(ull N){
 constexpr vector<pll> Pollard_rho(ull N){
     assert(N>0);
     if (N == 1){return {{1,0}};}
-    vector<pll> res;
+    vector<ll> res;
     deque<ull> dq;
     dq.push_back(N);
     while (!dq.empty()){
@@ -241,27 +241,31 @@ constexpr vector<pll> Pollard_rho(ull N){
         dq.pop_front();
         while (!MillerRabin(n)){
             if ((n&1) == 0){
-                res.emplace_back(2,0);
-                while ((n&1) == 0){res.back()[1]++; n>>=1;}
+                while ((n&1) == 0){res.emplace_back(2); n>>=1;}
+                if (n == 1){goto next_loop;}
                 continue;
             }
+            Montgomery64 mg(n);
             int blocksize = max<int>(1, pow(n, 0.125));
             for (ull c = 1; c <= n; c++){
-                ull y = (0b1010110101101011110011ull^c^n)%n;
+                ull reduced_c = mg.reduce(c*(ulll)mg.r2);
+                ull y = (0b1010110101101011110011ull^c^n)%n; y = mg.reduce(y*(ulll)mg.r2);
                 ull r = 1;
                 ull k = 0;
-                ull k_mod_blocksize = 0;
+                int k_mod_blocksize = 0;
                 for (int _ = 0; _ < 63; _++){
-                    ull q = 1, q_old = 1;
+                    ull q = mg.reduce(mg.r2);
+                    ull q_old = q;
+                    ull y_old = y;
+                    ull x = y;
                     while (k < r){
-                        ull x = y;
                         k++;
                         k_mod_blocksize++;
-                        y = (y*(ulll)y+c)%n;
-                        q = q*(y >= x ? (ulll)(y-x) : (ulll)(x-y))%n;
+                        y = mg.reduce(y*(ulll)y)+reduced_c; if (y >= n){ y -= n;}
+                        q = mg.reduce(q*(y >= x ? (ulll)(y-x) : (ulll)(x-y)));
                         if (k_mod_blocksize == blocksize){
                             k_mod_blocksize -= blocksize;
-                            ull g = gcd(q,n);
+                            ull g = gcd(mg.reduce(q),n);
                             if (g > 1){
                                 if (g != n){
                                     dq.push_back(g);
@@ -269,38 +273,54 @@ constexpr vector<pll> Pollard_rho(ull N){
                                     goto next_loop;
                                 }
                                 else{
-                                    y = x;
+                                    y = y_old;
                                     q = q_old;
                                     for (int i = 0; i < blocksize; i++){
-                                        y = (y*(ulll)y+c)%n;
-                                        q = q*(y >= x ? (ulll)(y-x) : (ulll)(x-y))%n;
-                                        g = gcd(q,n);
+                                        y = mg.reduce(y*(ulll)y)+reduced_c; if (y >= n){ y -= n;}
+                                        q = mg.reduce(q*(y >= x ? (ulll)(y-x) : (ulll)(x-y)));
+                                        g = gcd(mg.reduce(q),n);
                                         if (g > 1){
                                             if (g != n){
                                                 dq.push_back(g);
                                                 dq.push_back(n/g);
                                                 goto next_loop;
                                             }
-                                            else{
-                                                for (int j = k-blocksize+i+1; j < r; j++){
-                                                    y = (y*(ulll)y+c)%n;
-                                                }
-                                                goto next_loop;
-                                            }
+                                            goto next_loop_inner;
                                         }
                                     }
                                 }
                             }
                             q_old = q;
+                            y_old = y;
                         }
                     }
+                    q_old = gcd(mg.reduce(q),n);
+                    if (q_old > 1){
+                        if (q_old != n){
+                            dq.push_back(q_old);
+                            dq.push_back(n/q_old);
+                            goto next_loop;
+                        }
+                        goto next_loop_inner;
+                    }
+                    r <<= 1;
                 }
+                next_loop_inner:
             }
         }
-        res.emplace_back(n,1);
+        res.push_back(n);
         next_loop:
     }
-    return res;
+    sort(res.begin(), res.end());
+    vector<pll> res2;
+    for (int l = 0, r = 0, sz = res.size(); l < sz;){
+        while (r < sz && res[l] == res[r]){
+            r++;
+        }
+        res2.push_back({res[l], r-l});
+        l = r;
+    }
+    return res2;
 }
 
 

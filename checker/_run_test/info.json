@@ -23,6 +23,7 @@
         "primality_test",
         "min_of_mod_of_linear",
         "sum_of_floor_of_linear",
-        "sqrt_mod"
+        "sqrt_mod",
+        "factorize"
     ]
 }
