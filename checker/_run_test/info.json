@@ -1,4 +1,7 @@
 {
+    "array_datastructure":[
+        "range_affine_range_sum"
+    ],
     "fps":[
         "convolution",
         "composition_of_formal_power_series_large",

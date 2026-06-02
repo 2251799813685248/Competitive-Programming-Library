@@ -380,7 +380,7 @@ struct fps_operator{
         }
         auto res = exp(logG, n, mtable);
         FormalPowerSeries ret(n);
-        ull t = modpow(lowest_coef, k, M);
+        ull t = modpow<M>(lowest_coef, k);
         int offset = lowest_deg == 0 ? 0 : k > (ull)n ? n : min(lowest_deg*k, (ull)n);
         for (int i = 0;; i++){
             if (i+offset < n){
@@ -423,7 +423,7 @@ struct fps_operator{
             for (int i = 0; i < 2*n; i++){btr[i] = (btr[i >> 1] >> 1) + ((i & 1) << (log - 1));}
             int t = log_max_length;
             uint r = last_powroot;
-            ull dw = modpow(inverse_mod<ll,ll>(r, M), (1<<t)/(4*n), M);
+            ull dw = modpow<M>(inverse_mod<ll,ll>(r, M), (1<<t)/(4*n));
             uint w = 1;
             for (auto i: btr) { W[i] = w, w = w*dw%M; }
         }
@@ -473,7 +473,7 @@ struct fps_operator{
             for (int i = 0; i < 2*n; i++){btr[i] = (btr[i >> 1] >> 1) + ((i & 1) << (log - 1));}
             int t = log_max_length;
             uint r = last_powroot;
-            ull dw = modpow(inverse_mod<ll,ll>(r, M), (1<<t)/(4*n), M);
+            ull dw = modpow<M>(inverse_mod<ll,ll>(r, M), (1<<t)/(4*n));
             uint w = 1;
             for (auto i: btr) { W[i] = w, w = w*dw%M; }
         }

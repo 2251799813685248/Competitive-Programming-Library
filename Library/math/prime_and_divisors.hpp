@@ -5,6 +5,7 @@
 #include <vector>
 #include <math_functions.hpp>
 #include <algorithm>
+#include <queue>
 using namespace std;
 using ll = long long;
 using ulll = __uint128_t;
@@ -228,6 +229,79 @@ constexpr bool MillerRabin(ull N){
     return true;
 }
 
+
+constexpr vector<pll> Pollard_rho(ull N){
+    assert(N>0);
+    if (N == 1){return {{1,0}};}
+    vector<pll> res;
+    deque<ull> dq;
+    dq.push_back(N);
+    while (!dq.empty()){
+        ull n = dq.front();
+        dq.pop_front();
+        while (!MillerRabin(n)){
+            if ((n&1) == 0){
+                res.emplace_back(2,0);
+                while ((n&1) == 0){res.back()[1]++; n>>=1;}
+                continue;
+            }
+            int blocksize = max<int>(1, pow(n, 0.125));
+            for (ull c = 1; c <= n; c++){
+                ull y = (0b1010110101101011110011ull^c^n)%n;
+                ull r = 1;
+                ull k = 0;
+                ull k_mod_blocksize = 0;
+                for (int _ = 0; _ < 63; _++){
+                    ull q = 1, q_old = 1;
+                    while (k < r){
+                        ull x = y;
+                        k++;
+                        k_mod_blocksize++;
+                        y = (y*(ulll)y+c)%n;
+                        q = q*(y >= x ? (ulll)(y-x) : (ulll)(x-y))%n;
+                        if (k_mod_blocksize == blocksize){
+                            k_mod_blocksize -= blocksize;
+                            ull g = gcd(q,n);
+                            if (g > 1){
+                                if (g != n){
+                                    dq.push_back(g);
+                                    dq.push_back(n/g);
+                                    goto next_loop;
+                                }
+                                else{
+                                    y = x;
+                                    q = q_old;
+                                    for (int i = 0; i < blocksize; i++){
+                                        y = (y*(ulll)y+c)%n;
+                                        q = q*(y >= x ? (ulll)(y-x) : (ulll)(x-y))%n;
+                                        g = gcd(q,n);
+                                        if (g > 1){
+                                            if (g != n){
+                                                dq.push_back(g);
+                                                dq.push_back(n/g);
+                                                goto next_loop;
+                                            }
+                                            else{
+                                                for (int j = k-blocksize+i+1; j < r; j++){
+                                                    y = (y*(ulll)y+c)%n;
+                                                }
+                                                goto next_loop;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            q_old = q;
+                        }
+                    }
+                }
+            }
+        }
+        res.emplace_back(n,1);
+        next_loop:
+    }
+    return res;
+}
 
 
 #endif /* PRIME_AND_DIVISORS_HPP_ */

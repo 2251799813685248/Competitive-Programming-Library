@@ -53,7 +53,7 @@ int main(){
 
     int N;
     cin >> N;
-    matrix<mint<998244353>> A(N, N, 0);
+    matrix<constant_modint<998244353>> A(N, N, 0);
     for (int i = 0; i < N; i++){
         for (int j = 0; j < N; j++){
             cin >> A[i][j];

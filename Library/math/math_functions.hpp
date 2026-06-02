@@ -9,21 +9,35 @@ using ull = unsigned long long;
 
 
 
-/// @brief a^bをmで割った余りを返す。bに関して対数時間で計算できる。
+/// @brief a^bをmで割った余りを返す。bに関して対数時間で計算できる
 constexpr ll modpow(ll a, ull b, const ll m){
     ll t = a%m;
-    ll ans = 1;
+    ll ans = (m == 1 ? 0 : 1);
     while (b > 0){
-        if (b%2){
+        if (b&1){
             ans = (ans*t)%m;
         }
-        b /= 2;
+        b >>= 1;
         t = (t*t)%m;
     }
     return ans;
 }
 
-/// @brief a^nを返す。bに関して線形時間で計算できる。
+/// @brief a^bをmで割った余りを返す。bに関して対数時間で計算できる。mはコンパイル時に決定している必要がある
+template<ll m> constexpr ll modpow(ll a, ull b){
+    ll t = a%m;
+    ll ans = (m == 1 ? 0 : 1);
+    while (b > 0){
+        if (b&1){
+            ans = (ans*t)%m;
+        }
+        b >>= 1;
+        t = (t*t)%m;
+    }
+    return ans;
+}
+
+/// @brief a^nを返す。bに関して線形時間で計算できる
 constexpr ll powll(ll a, ull n){
     ll r = 1;
     for (ull i = 1; i <= n; i++){
@@ -33,22 +47,15 @@ constexpr ll powll(ll a, ull n){
 }
 
 /// @brief floor(sqrt(N))を返す
-constexpr ll isqrt(ll N){
-    if (N){
-        ll ok = 1;
-        ll ng = min(N,2000000000LL);
-        while (ng - ok >= 2){
-            ll mid = (ok+ng)/2;
-            if (mid*mid <= N){
-                ok = mid;
-            } 
-            else{
-                ng = mid;
-            }
-        }
-        return ok;
+constexpr ll isqrt(ull N){
+    ll ret = sqrt(N);
+    while (ret*ret > N){
+        ret--;
     }
-    else{return 0;}
+    while ((ret+1)*(ret+1) <= N){
+        ret++;
+    }
+    return ret;
 }
 
 /// @brief floor(log_a(L))を返す
@@ -128,9 +135,9 @@ constexpr ll cipolla(ll a){
     if (M == 2) return a;
 	if (a == 0) return 0;
     ll z = (M-1)/2;
-    if (modpow(a, z, M) != 1){return -1;}
+    if (modpow<M>(a, z) != 1){return -1;}
     int b = 0;
-    while (modpow((b*b+M-a)%M, z, M) == 1){
+    while (modpow<M>((b*b+M-a)%M, z) == 1){
         b++;
     }
     array<ll,2> x{1,0};
