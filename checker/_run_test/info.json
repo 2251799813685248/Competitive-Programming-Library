@@ -1,7 +1,9 @@
 {
     "fps":[
         "convolution",
-        "composition_of_formal_power_series_large"
+        "composition_of_formal_power_series_large",
+        "product_of_polynomial_sequence",
+        "polynomial_taylor_shift"
     ],
     "floor":[
         "min_of_mod_of_linear",

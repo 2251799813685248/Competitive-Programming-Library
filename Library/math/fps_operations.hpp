@@ -525,6 +525,31 @@ struct fps_operator{
         return p;
     }
 
+    FormalPowerSeries polynominal_taylor_shift(const FormalPowerSeries& F, ll a, const mod_table<M>& mtable){
+        ull b = M+a%M;
+        if (b >= M){b -= M;}
+        if (b == 0){return F;}
+        int N = F.size();
+        FormalPowerSeries G(N), H(N);
+        for (int i = 0; i < N; i++){
+            G[i] = F[N-1-i]*(ull)mtable.factorialmod[N-1-i]%M;
+            H[i] = mtable.factorialmodinv[i];
+        }
+        ull t = b;
+        for (int i = N-2; i >= 0; i--){
+            G[i] = G[i]*t%M;
+            t = t*b%M;
+        }
+        G = convolution(G,H);
+        t = 1;
+        b = inverse_mod(b,M);
+        for (int j = 0; j < N; j++){
+            H[j] = mtable.factorialmodinv[j]*t%M*G[N-1-j]%M;
+            t = t*b%M;
+        }
+        return H;
+    }
+
 };
 
 /// @brief [x^N](P(x)/Q(x))をmod Mで求める。
