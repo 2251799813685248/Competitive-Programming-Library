@@ -5,7 +5,9 @@
 #include <vector>
 #include <math_functions.hpp>
 #include <algorithm>
-#include <queue>
+#include <cassert>
+#include <numeric>
+#include <random>
 using namespace std;
 using ll = long long;
 using ulll = __uint128_t;
@@ -14,7 +16,7 @@ using pii = array<int,2>;
 
 
 
-/// @brief 正の整数Nを素因数分解する
+/// @brief  試し割り法で正の整数Nを素因数分解する
 /// @return vector<array<ll,2>>{{素因数1,個数}, {素因数2,個数}, {素因数3,個数}...}
 vector<pll> p_fact(ll N){
     if (N == 1){
@@ -108,6 +110,7 @@ struct LinearSieve{
             }
         }
     }
+    /// @brief xを素因数分解する。 
     vector<pii> p_fact(int x){
         if (x == 1){return {{1,0}};}
         vector<pii> r;
@@ -122,6 +125,7 @@ struct LinearSieve{
         }while(x > 1);
         return r;
     }
+    /// @brief N以下の整数をすべて素因数分解した結果を取得する。
     vector<vector<pii>> p_fact_all(int N){
         vector<vector<pii>> r(N+1);
         r[1].push_back({1,0});
@@ -130,37 +134,23 @@ struct LinearSieve{
         }
         return r;
     }
+    /// @brief N以下の整数に対するメビウス関数の値を列挙する。
+    vector<int> enumerate_mobius(int N){
+        vector<int> ret(N+1);
+        ret[1] = 1;
+        for (int i = 2; i <= N; i++){
+            if (lpf[i] == i){ret[i] = -1; continue;}
+            int temp = i/lpf[i];
+            if (lpf[i] == lpf[temp]){
+                ret[i] = 0;
+            }
+            else{
+                ret[i] = ret[lpf[i]]*ret[temp];
+            }
+        }
+        return ret;
+    }
 };
-
-
-ll prime_counting(ll N) {
-  ll N2 = sqrt(N);
-  ll NdN2 = N/N2;
-
-  vector<ll> hl(NdN2);
-  for (int i = 1; i < NdN2; i++) hl[i] = N/i - 1;
-
-  vector<int> hs(N2 + 1);
-  for (int i = 0; i <= N2; i++){
-    hs[i] = i-1;
-  }
-
-  for (int x = 2, pi = 0; x <= N2; ++x) {
-    if (hs[x] == hs[x - 1]) continue;
-    ll x2 = ll(x) * x;
-    ll imax = min(NdN2, N/x2 + 1);
-    ll ix = x;
-    for (ll i = 1; i < imax; i++) {
-      hl[i] -= (ix < NdN2 ? hl[ix] : hs[N/ix]) - pi;
-      ix += x;
-    }
-    for (int n = N2; n >= x2; n--) {
-      hs[n] -= hs[n/x] - pi;
-    }
-    ++pi;
-  }
-  return hl[1];
-}
 
 constexpr ull __MillerRabin_small[3] = {2,7,61};
 constexpr ull __MillerRabin_large[7] = {2,325,9375,28178,450775,9780504,1795265022};
@@ -191,6 +181,7 @@ struct Montgomery64 {
     }
 };
 
+/// @brief ミラーラビン素数判定法 
 constexpr bool MillerRabin(ull N){
     if (N <= 1) return false;
     if (N == 2 || N == 3) return true;
@@ -229,20 +220,21 @@ constexpr bool MillerRabin(ull N){
     return true;
 }
 
-
+/// @brief ポラード・ロー法による素因数分解
 constexpr vector<pll> Pollard_rho(ull N){
     assert(N>0);
     if (N == 1){return {{1,0}};}
     vector<ll> res;
-    deque<ull> dq;
+    vector<ull> dq;
     dq.push_back(N);
     while (!dq.empty()){
-        ull n = dq.front();
-        dq.pop_front();
+        ull n = dq.back();
+        dq.pop_back();
+        bool next_loop = false;
         while (!MillerRabin(n)){
             if ((n&1) == 0){
-                while ((n&1) == 0){res.emplace_back(2); n>>=1;}
-                if (n == 1){goto next_loop;}
+                while ((n&1) == 0){res.push_back(2); n>>=1;}
+                if (n == 1){next_loop = true; break;}
                 continue;
             }
             Montgomery64 mg(n);
@@ -253,6 +245,7 @@ constexpr vector<pll> Pollard_rho(ull N){
                 ull r = 1;
                 ull k = 0;
                 int k_mod_blocksize = 0;
+                bool next_loop_inner = false;
                 for (int _ = 0; _ < 63; _++){
                     ull q = mg.reduce(mg.r2);
                     ull q_old = q;
@@ -270,7 +263,7 @@ constexpr vector<pll> Pollard_rho(ull N){
                                 if (g != n){
                                     dq.push_back(g);
                                     dq.push_back(n/g);
-                                    goto next_loop;
+                                    next_loop = true; break;
                                 }
                                 else{
                                     y = y_old;
@@ -283,33 +276,37 @@ constexpr vector<pll> Pollard_rho(ull N){
                                             if (g != n){
                                                 dq.push_back(g);
                                                 dq.push_back(n/g);
-                                                goto next_loop;
+                                                next_loop = true; break;
                                             }
-                                            goto next_loop_inner;
+                                            next_loop_inner = true; break;
                                         }
                                     }
+                                    if (next_loop || next_loop_inner) break;
                                 }
                             }
                             q_old = q;
                             y_old = y;
                         }
                     }
+                    if (next_loop || next_loop_inner) break;
                     q_old = gcd(mg.reduce(q),n);
                     if (q_old > 1){
                         if (q_old != n){
                             dq.push_back(q_old);
                             dq.push_back(n/q_old);
-                            goto next_loop;
+                            next_loop = true; break;
                         }
-                        goto next_loop_inner;
+                        next_loop_inner = true; break;
                     }
                     r <<= 1;
                 }
-                next_loop_inner:
+                if (next_loop) break;
             }
+            if (next_loop) break;
         }
-        res.push_back(n);
-        next_loop:
+        if (!next_loop) {
+            res.push_back(n);
+        }
     }
     sort(res.begin(), res.end());
     vector<pll> res2;
@@ -323,5 +320,38 @@ constexpr vector<pll> Pollard_rho(ull N){
     return res2;
 }
 
+struct Xorshift64{
+    ull state;
+    constexpr Xorshift64(ull seed = 881726454633252252ull) : state(seed) {}
+    constexpr ull next() {
+        state ^= state << 13;
+        state ^= state >> 7;
+        state ^= state << 17;
+        return state;
+    }
+};
+
+/// @brief mod Pにおける原始根を1つ探す
+constexpr ull primitive_root(ull P){
+    assert(MillerRabin(P));
+    if (P == 2){
+        return 1;
+    }
+    Montgomery64 mg(P);
+    Xorshift64 rng(0x1234567E89ABCDEF);
+    auto factorized = Pollard_rho(P-1);
+    while (true) {
+        ull r = rng.next()%P;
+        if (r == 0){continue;}
+        bool ok = true;
+        for (auto& q : factorized){
+            if (mg.reduce(mg.pow_not_reduced(r, (P-1)/q[0])) == 1){
+                ok = false;
+                break;
+            }
+        }
+        if (ok) return r;
+    }
+}
 
 #endif /* PRIME_AND_DIVISORS_HPP_ */

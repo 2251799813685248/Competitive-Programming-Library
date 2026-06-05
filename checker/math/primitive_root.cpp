@@ -42,26 +42,14 @@ constexpr ll di8[8] = {0,1,1,1,0,-1,-1,-1};
 constexpr ll dj[4] = {1,0,-1,0};
 constexpr ll dj8[8] = {1,1,0,-1,-1,-1,0,1};
 
-
-
+#include <math_functions.hpp>
+#include <quotients.hpp>
 #include <prime_and_divisors.hpp>
-
 
 void solve(){
     ll P;
     cin >> P;
-   
-    auto ans = Pollard_rho(P);
-    ll num = 0;
-    vector<ll> pf;
-    for (auto& p : ans){
-        num += p[1];
-        for (int i = 0; i < p[1]; i++){
-            pf.push_back(p[0]);
-        }
-    }
-    cout << num << " ";
-    vout(pf);
+    print(primitive_root(P));
 }
 
 int main(){
@@ -70,7 +58,6 @@ int main(){
 
     ll T = 1;
     cin >> T;
-    while (T--){
-        solve();
-    }
+    while (T--){solve();}
+
 }

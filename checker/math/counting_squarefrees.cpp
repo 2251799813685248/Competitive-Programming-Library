@@ -42,35 +42,71 @@ constexpr ll di8[8] = {0,1,1,1,0,-1,-1,-1};
 constexpr ll dj[4] = {1,0,-1,0};
 constexpr ll dj8[8] = {1,1,0,-1,-1,-1,0,1};
 
-
-
+#include <math_functions.hpp>
+#include <quotients.hpp>
 #include <prime_and_divisors.hpp>
 
-
-void solve(){
-    ll P;
-    cin >> P;
-   
-    auto ans = Pollard_rho(P);
-    ll num = 0;
-    vector<ll> pf;
-    for (auto& p : ans){
-        num += p[1];
-        for (int i = 0; i < p[1]; i++){
-            pf.push_back(p[0]);
+ll count_square_free_integers(ll N){
+    assert(N>0);
+    if (N == 1){
+        return 1;
+    }
+    ll ans = 0;
+    ll I = max<ll>(1, pow(N, 0.2));
+    ll D = 0;
+    ll D2 = 2000000000;
+    while (D2-D > 1){
+        lll mid = (D+D2)/2;
+        if (mid*mid*(I+1) <= (lll)N){
+            D = mid;
+        }
+        else{
+            D2 = mid;
         }
     }
-    cout << num << " ";
-    vout(pf);
+    LinearSieve L(D+10);
+    auto mobius = L.enumerate_mobius(D+10);
+    vector<int> mobius_cum = mobius;
+    for (ll i = 2; i <= D+10; i++){
+        mobius_cum[i] += mobius_cum[i-1];
+    }
+    for (ll i = 1; i <= D; i++){
+        ans += N/(i*i)*mobius[i];
+    }
+    vector<int> M(I+2, 0);
+    for (int i = I+1; i >= 1; i--){
+        ll x = sqrt(N/i);
+        while (x*x*i > N){
+            x--;
+        }
+        while ((x+1)*(x+1)*i <= N){
+            x++;
+        }
+        M[i] = 1;
+        for (auto& p : enumerate_quotient(x,x)){
+            if (p[0] == x){continue;}
+            if (p[0] <= D+10){
+                M[i] -= (p[2]-p[1]+1)*mobius_cum[p[0]];
+            }
+            else{
+                M[i] -= M[p[1]*p[1]*i];
+            }
+        }
+    }
+    for (int i = 1; i <= I; i++){
+        ans += i*(M[i]-M[i+1]);
+    }
+    return ans;
 }
+
 
 int main(){
     ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
 
-    ll T = 1;
-    cin >> T;
-    while (T--){
-        solve();
-    }
+    ll N;
+    cin >> N;
+
+    print(count_square_free_integers(N));
+
 }
