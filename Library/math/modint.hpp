@@ -70,6 +70,7 @@ struct constant_modint {
         return is;
     }
 };
+
 template <int id = -1>
 struct dynamic_modint {
     uint val;
