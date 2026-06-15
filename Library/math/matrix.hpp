@@ -21,6 +21,8 @@ struct matrix{
     vector<vector<T>> M;
     int H,W;
 
+    /// @brief デフォルトコンストラクタ すべて0で初期化される
+    matrix(){H = 0; W = 0; M = vector<vector<T>>();}
     /// @brief N次単位行列を生成
     /// @param N 
     matrix(int N){
@@ -34,7 +36,7 @@ struct matrix{
     /// @param h 
     /// @param w 
     /// @param v 
-    matrix(int h, int w, T v){
+    matrix(int h, int w, T v = (T)0){
         H = h;
         W = w;
         M = vector<vector<T>>(H,vector<T>(W,v));
@@ -44,7 +46,7 @@ struct matrix{
     matrix(const vector<vector<T>> &A){
         M = A;
         H = A.size();
-        W = A[0].size();
+        W = A.empty() ? 0 : A[0].size();
     }
     
     matrix operator+(const matrix &A)const{
@@ -162,6 +164,17 @@ struct matrix{
         for (int k = 0; k < W; k++){
             M[j][k] -= M[i][k]*c;
         }
+    }
+
+    void transpose(){
+        swap(H,W);
+        vector<vector<T>> temp(H, vector<T>(W));
+        for (int i = 0; i < W; i++){
+            for (int j = 0; j < H; j++){
+                temp[j][i] = move(M[i][j]);
+            }
+        }
+        M = move(temp);
     }
 
     /// @brief 行の数を返す
