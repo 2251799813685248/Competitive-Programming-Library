@@ -12,6 +12,8 @@
 #include <random>
 #include <bitset>
 #include <unistd.h>
+#include <fstream>
+#include <chrono>
 
 
 using namespace std;
@@ -24,10 +26,11 @@ using pll = array<ll,2>;
 using plll = array<lll,2>;
 
 #define vall(A) A.begin(), A.end()
+ostream& operator<<(ostream& os, const pll& p) {os << p[0] << " " << p[1]; return os;}
                                     inline void print(){cout << "\n";}
                                     inline void printflush(){cout << endl;}
-template<typename T, typename... U> inline void print(T obj1, U... obj2){cout << (obj1) << " "; print(obj2...);}
-template<typename T, typename... U> inline void printflush(T obj1, U... obj2){cout << (obj1) << " "; printflush(obj2...);}
+template<typename T, typename... U> inline void print(const T& obj1, const U&... obj2){cout << (obj1) << " "; print(obj2...);}
+template<typename T, typename... U> inline void printflush(const T& obj1, const U&... obj2){cout << (obj1) << " "; printflush(obj2...);}
 template<typename T> inline void vin(T& A){for (int i = 0, sz = A.size(); i < sz; i++){cin >> A[i];}}
 template<typename T> inline void vout(const T& A){if (A.size() == 0ull){print();} for (int i = 0, sz = A.size(); i < sz; i++){cout << A[i] << " \n"[i == sz-1];}}
 template<typename T> inline void vout2d(const T& A){if (A.size() == 0ull){print();} for (int i = 0, H = A.size(); i < H; i++){vout(A[i]);}}
@@ -43,34 +46,28 @@ constexpr ll dj[4] = {1,0,-1,0};
 constexpr ll dj8[8] = {1,1,0,-1,-1,-1,0,1};
 
 
+#include <geomrtry_2d.hpp>
 
-#include <prime_and_divisors.hpp>
-
-
-void solve(){
-    ll P;
-    cin >> P;
-   
-    auto ans = Pollard_rho(P);
-    ll num = 0;
-    vector<ll> pf;
-    for (auto& p : ans){
-        num += p[1];
-        for (int i = 0; i < p[1]; i++){
-            pf.push_back(p[0]);
-        }
-    }
-    cout << num << " ";
-    vout(pf);
-}
 
 int main(){
     ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
 
-    ll T = 1;
+
+    ll T;
     cin >> T;
     while (T--){
-        solve();
+        ll N;
+        cin >> N;
+        vector<pll> A(N);
+        for (ll i = 0; i < N; i++){
+            cin >> A[i][0] >> A[i][1];
+        }
+        auto ch = static_convex_hull(A);
+        print(ch.size());
+        for (auto& p : ch){
+            print(p);
+        }
     }
+
 }

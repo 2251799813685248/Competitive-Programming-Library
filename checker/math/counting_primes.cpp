@@ -43,7 +43,35 @@ const vector<ll> dj{1,0,-1,0};
 const vector<ll> dj8{1,1,0,-1,-1,-1,0,1};
 
 
-#include <prime_and_divisors.hpp>
+ll prime_counting(ll N) {
+  ll N2 = sqrt(N);
+  ll NdN2 = N/N2;
+
+  vector<ll> hl(NdN2);
+  for (int i = 1; i < NdN2; i++) hl[i] = N/i - 1;
+
+  vector<int> hs(N2 + 1);
+  for (int i = 0; i <= N2; i++){
+    hs[i] = i-1;
+  }
+
+  for (int x = 2, pi = 0; x <= N2; ++x) {
+    if (hs[x] == hs[x - 1]) continue;
+    ll x2 = ll(x) * x;
+    ll imax = min(NdN2, N/x2 + 1);
+    ll ix = x;
+    for (ll i = 1; i < imax; i++) {
+      hl[i] -= (ix < NdN2 ? hl[ix] : hs[N/ix]) - pi;
+      ix += x;
+    }
+    for (int n = N2; n >= x2; n--) {
+      hs[n] -= hs[n/x] - pi;
+    }
+    ++pi;
+  }
+  return hl[1];
+}
+
 
 void solve(){
     ll N;

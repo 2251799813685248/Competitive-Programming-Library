@@ -12,6 +12,8 @@
 #include <random>
 #include <bitset>
 #include <unistd.h>
+#include <fstream>
+#include <chrono>
 
 
 using namespace std;
@@ -43,34 +45,28 @@ constexpr ll dj[4] = {1,0,-1,0};
 constexpr ll dj8[8] = {1,1,0,-1,-1,-1,0,1};
 
 
+#include <fps.hpp>
+#include <fps_operations.hpp>
+#include <mod_table.hpp>
 
-#include <prime_and_divisors.hpp>
-
-
-void solve(){
-    ll P;
-    cin >> P;
-   
-    auto ans = Pollard_rho(P);
-    ll num = 0;
-    vector<ll> pf;
-    for (auto& p : ans){
-        num += p[1];
-        for (int i = 0; i < p[1]; i++){
-            pf.push_back(p[0]);
-        }
-    }
-    cout << num << " ";
-    vout(pf);
-}
+fps_operator<998244353> op;
+mod_table<998244353> mtable(524288);
 
 int main(){
     ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
 
-    ll T = 1;
-    cin >> T;
-    while (T--){
-        solve();
+    ll N;
+    cin >> N;
+    FormalPowerSeries F(N+1);
+    for (ll i = 0; i <= N; i++){
+        F[i] = mtable.factorialmodinv[i+1];
     }
+    F = op.inv(F, N+1);
+    vector<uint> ans(N+1);
+    for (ll i = 0; i <= N; i++){
+        ans[i] = F[i]*(ull)mtable.factorialmod[i]%998244353;
+    }
+    vout(ans);
 }
+

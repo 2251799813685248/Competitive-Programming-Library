@@ -8,7 +8,7 @@
 using namespace std;
 using ll = long long;
 
-/// @brief 1<=x<=M の範囲におけるN/xの商を列挙する。 
+/// @brief 1<=x<=M の範囲におけるN/xの商を列挙する。 {値, 左端, 右端}の形で求まる。
 vector<array<ll,3>> enumerate_quotient(ll N, ll M){
     vector<array<ll,3>> ret;
     if (N == 0){

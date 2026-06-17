@@ -8,6 +8,9 @@
         "product_of_polynomial_sequence",
         "polynomial_taylor_shift"
     ],
+    "tree":[
+        "frequency_table_of_tree_distance"
+    ],
     "floor":[
         "min_of_mod_of_linear",
         "sum_of_floor_of_linear"
@@ -24,6 +27,17 @@
         "min_of_mod_of_linear",
         "sum_of_floor_of_linear",
         "sqrt_mod",
-        "factorize"
+        "factorize",
+        "counting_squarefrees",
+        "primitive_root",
+        "bernoulli_number",
+        "bell_number"
+    ],
+    "geometry":[
+        "static_convex_hull",
+        "sort_points_by_argument"
+    ],
+    "temp":[
+        "matrix_rank"
     ]
 }
