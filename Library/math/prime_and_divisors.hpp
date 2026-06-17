@@ -14,9 +14,9 @@ using pii = array<int,2>;
 
 
 
-/// @brief 正の整数Nを素因数分解する
+/// @brief 試し割り法で正の整数Nを素因数分解する
 /// @return vector<array<ll,2>>{{素因数1,個数}, {素因数2,個数}, {素因数3,個数}...}
-vector<pll> p_fact(ll N){
+constexpr vector<pll> trial_division(ll N){
     if (N == 1){
         return vector<pll> {{1,0}};
     }
@@ -108,7 +108,7 @@ struct LinearSieve{
             }
         }
     }
-    vector<pii> p_fact(int x){
+    vector<pii> factorize(int x){
         if (x == 1){return {{1,0}};}
         vector<pii> r;
         do{
@@ -122,11 +122,11 @@ struct LinearSieve{
         }while(x > 1);
         return r;
     }
-    vector<vector<pii>> p_fact_all(int N){
+    vector<vector<pii>> factorize_all(int N){
         vector<vector<pii>> r(N+1);
         r[1].push_back({1,0});
         for (int i = 2; i <= N; i++){
-            r[i] = p_fact(i);
+            r[i] = factorize(i);
         }
         return r;
     }
@@ -323,5 +323,11 @@ constexpr vector<pll> Pollard_rho(ull N){
     return res2;
 }
 
+constexpr vector<pll> factorize(ull N){
+    if (N < 640000ull){
+        return trial_division(N);
+    }
+    return Pollard_rho(N);
+}
 
 #endif /* PRIME_AND_DIVISORS_HPP_ */
