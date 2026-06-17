@@ -325,4 +325,38 @@ constexpr vector<pll> factorize(ull N){
     return Pollard_rho(N);
 }
 
+struct Xorshift64{
+    ull state;
+    constexpr Xorshift64(ull seed = 881726454633252252ull) : state(seed) {}
+    constexpr ull next() {
+        state ^= state << 13;
+        state ^= state >> 7;
+        state ^= state << 17;
+        return state;
+    }
+};
+
+/// @brief mod Pにおける原始根を1つ探す
+constexpr ull primitive_root(ull P){
+    assert(MillerRabin(P));
+    if (P == 2){
+        return 1;
+    }
+    Montgomery64 mg(P);
+    Xorshift64 rng(0x1234567E89ABCDEF);
+    auto factorized = Pollard_rho(P-1);
+    while (true) {
+        ull r = rng.next()%P;
+        if (r == 0){continue;}
+        bool ok = true;
+        for (auto& q : factorized){
+            if (mg.reduce(mg.pow_not_reduced(r, (P-1)/q[0])) == 1){
+                ok = false;
+                break;
+            }
+        }
+        if (ok) return r;
+    }
+}
+
 #endif /* PRIME_AND_DIVISORS_HPP_ */
