@@ -318,6 +318,7 @@ constexpr vector<pll> Pollard_rho(ull N){
     return res2;
 }
 
+/// @brief 素因数分解を行う。`N`の大きさによって、試し割り法とポラード・ロー法を使い分けてくれる。
 constexpr vector<pll> factorize(ull N){
     if (N < 640000ull){
         return trial_division(N);
