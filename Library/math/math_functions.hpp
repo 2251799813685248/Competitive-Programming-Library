@@ -6,6 +6,7 @@
 using namespace std;
 using ll = long long;
 using ull = unsigned long long;
+using ulll = __uint128_t;
 
 
 
@@ -46,9 +47,20 @@ constexpr ll powll(ll a, ull n){
     return r;
 }
 
-/// @brief floor(sqrt(N))を返す
+/// @brief floor(sqrt(N))を返す。64bit整数まで対応
 constexpr ll isqrt(ull N){
     ll ret = sqrt(N);
+    while (ret*ret > N){
+        ret--;
+    }
+    while ((ret+1)*(ret+1) <= N){
+        ret++;
+    }
+    return ret;
+}
+/// @brief floor(sqrt(N))を返す。128bit整数まで対応
+constexpr ll isqrt_large(ulll N){
+    __uint128_t ret = sqrt((__float128)N);
     while (ret*ret > N){
         ret--;
     }
