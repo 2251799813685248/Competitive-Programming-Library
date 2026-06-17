@@ -49,7 +49,8 @@ constexpr ll powll(ll a, ull n){
 
 /// @brief floor(sqrt(N))を返す。64bit整数まで対応
 constexpr ll isqrt(ull N){
-    ll ret = sqrt(N);
+    assert(N <= 15000000000000000000ull);
+    ull ret = sqrt(N);
     while (ret*ret > N){
         ret--;
     }
@@ -60,6 +61,7 @@ constexpr ll isqrt(ull N){
 }
 /// @brief floor(sqrt(N))を返す。128bit整数まで対応
 constexpr ll isqrt_large(ulll N){
+    assert((ld)N <= 1e38);
     __uint128_t ret = sqrt((__float128)N);
     while (ret*ret > N){
         ret--;
