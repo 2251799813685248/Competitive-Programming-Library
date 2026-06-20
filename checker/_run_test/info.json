@@ -38,6 +38,7 @@
         "sort_points_by_argument"
     ],
     "temp":[
-        "matrix_rank"
+        "many_aplusb_128bit",
+        "many_aplusb"
     ]
 }

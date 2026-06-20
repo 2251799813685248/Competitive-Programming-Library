@@ -2,6 +2,7 @@
 #define MODINT__HPP_
 
 #include <iostream>
+#include <math_functions.hpp>
 
 using ll = long long;
 using uint = unsigned int;
@@ -15,7 +16,7 @@ struct constant_modint {
     template <class T> constant_modint(T x) {
         ll y = (ll)(x % (ll)M);
         if (y < 0) y += M;
-        val = (uint)y;
+        val = y;
     }
 
     constant_modint& operator+=(const constant_modint& rhs) {
@@ -29,7 +30,7 @@ struct constant_modint {
         return *this;
     }
     constant_modint& operator*=(const constant_modint& rhs) {
-        val = (uint)((ull)val * rhs.val % M);
+        val = (ull)val * rhs.val % M;
         return *this;
     }
     constant_modint& operator/=(const constant_modint& rhs) {
@@ -57,7 +58,7 @@ struct constant_modint {
         return res;
     }
     constant_modint inv() const {
-        return pow(M - 2); // 拡張ユークリッドの互除法を使うこともできますが、Mが素数であることを前提としています
+        return inverse_mod((ll)val, M);
     }
 
     friend std::ostream& operator<<(std::ostream& os, const constant_modint& m) {
@@ -84,7 +85,7 @@ struct dynamic_modint {
 
     dynamic_modint() : val(0) {}
     template <class T> dynamic_modint(T x) {
-        ll y = (ll)(x % (ll)mod());
+        ll y = x % (ll)mod();
         if (y < 0) y += mod();
         val = (uint)y;
     }
@@ -100,7 +101,7 @@ struct dynamic_modint {
         return *this;
     }
     dynamic_modint& operator*=(const dynamic_modint& rhs) {
-        val = (uint)((ull)val * rhs.val % mod());
+        val = (ull)val * rhs.val % mod();
         return *this;
     }
     dynamic_modint& operator/=(const dynamic_modint& rhs) {
