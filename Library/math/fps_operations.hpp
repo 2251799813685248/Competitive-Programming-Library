@@ -552,12 +552,12 @@ struct fps_operator{
 
 };
 
-/// @brief [x^N](P(x)/Q(x))をmod Mで求める。
+/// @brief `[x^N](P(x)/Q(x))` をmod Mで求める。
 template<ull M>
 ll Bostan_Mori(const ll N, FormalPowerSeries P, FormalPowerSeries Q, const fps_operator<M>& op){
     assert(N >= 0);
     if (N == 0){
-        return P[0]*inverse_mod(Q[0], M);
+        return P[0]*inverse_mod((ll)Q[0], M)%M;
     }
     vector<ll> Q_minus;
     const int maxloop = (N == 1 ? 1 : 65-__builtin_clzll(N-1));
@@ -581,7 +581,7 @@ ll Bostan_Mori(const ll N, FormalPowerSeries P, FormalPowerSeries Q, const fps_o
             P[i/2] = A[i];
         }
     }
-    return P[0]*inverse_mod(Q[0], M);
+    return P[0]*inverse_mod((ll)Q[0], M)%M;
 }
 
 
