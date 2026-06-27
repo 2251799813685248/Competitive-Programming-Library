@@ -83,32 +83,32 @@ constexpr ll ilog(ll a, ll L){
     return ans-1;
 }
 
-/// @brief 有理数のfloorを求める
-constexpr inline ll floor2(ll y, ll x){
+/// @brief 有理数のfloorを求める。 floor(y/x)
+template<typename T> constexpr inline T floor2(T y, T x){
     if ((x^y) > 0){
-        x = abs(x);
-        y = abs(y);
+        x = x > 0 ? x : -x;
+        y = y > 0 ? y : -y;
         return y/x;
     }
     else if ((x^y) < 0){
-        x = abs(x);
-        y = abs(y);
+        x = x > 0 ? x : -x;
+        y = y > 0 ? y : -y;
         return -((y+x-1)/x);
     }
     else{
         return y/x;
     }
 }
-/// @brief 有理数のceilを求める
-constexpr inline ll ceil2(ll y, ll x){
+/// @brief 有理数のceilを求める。 ceil(y/x)
+template<typename T> constexpr inline T ceil2(T y, T x){
     if ((x^y) > 0){
-        x = abs(x);
-        y = abs(y);
+        x = x > 0 ? x : -x;
+        y = y > 0 ? y : -y;
         return (y+x-1)/x;
     }
     else if ((x^y) < 0){
-        x = abs(x);
-        y = abs(y);
+        x = x > 0 ? x : -x;
+        y = y > 0 ? y : -y;
         return -(y/x);
     }
     else{
@@ -206,16 +206,26 @@ ll cipolla(ll a, const ll M){
 }
 
 /// @brief x以下の最大の2冪を返す。0は0が返る。 
-constexpr int lowerpow2(ull x){
+constexpr ull lowerpow2(ull x){
     if (x == 0){return 0;}
     return 1ull<<(63-__builtin_clzll(x));
 }
 /// @brief x以上の最小の2冪を返す。0は0が返る。 
-constexpr int upperpow2(ull x){
+constexpr ull upperpow2(ull x){
     if (x == 0){return 0;}
     if (x == 1){return 1;}
     return 1ull<<(64-__builtin_clzll(x-1));
 }
+/// @brief xのpopcountを求める 
+constexpr int popcount(ull x){
+    return __builtin_popcountll(x);
+}
+/// @brief xのbit lengthを求める。
+constexpr int bit_length(ull x){
+    if (x == 0){return 0;}
+    return 64-__builtin_clzll(x);
+}
+
 
 
 
