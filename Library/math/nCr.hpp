@@ -81,14 +81,12 @@ struct dynamicfactorialncr{
     }
 };
 
-
 //表の前計算による二項係数modM
 struct tablencr{
     vector<vector<ll>> ncrmodlist;
-    ll N_MAX_N_MAX;
-    public:
-    tablencr(const ll N_MAX, const ll M){
-        N_MAX_N_MAX = N_MAX;
+    ll N_MAX;
+    tablencr(const ll N_MAX__, const ll M){
+        N_MAX = N_MAX__;
         ncrmodlist = vector<vector<ll>> (N_MAX+1, vector<ll>(N_MAX+1,0));
         ncrmodlist[0][0] = 1;
         for (int i = 1; i <= N_MAX; i++){
@@ -106,7 +104,8 @@ struct tablencr{
         }
     }
     ll nCr(ll n, ll r){
-        if (r < 0 || n < r || n > N_MAX_N_MAX){
+        assert(n <= N_MAX);
+        if (r < 0 || n < r){
             return 0;
         }
         return ncrmodlist[n][r];
