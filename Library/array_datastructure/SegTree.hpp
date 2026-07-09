@@ -2,6 +2,7 @@
 #define SEG_TREE_HPP_
 
 #include <functional>
+#include <iostream>
 #include <vector>
 #include <cmath>
 #include <algorithm>
