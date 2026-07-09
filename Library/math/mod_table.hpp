@@ -2,6 +2,7 @@
 #define INV_TABLE_HPP_
 
 #include <vector>
+using uint = unsigned;
 using ull = unsigned long long;
 using namespace std;
 

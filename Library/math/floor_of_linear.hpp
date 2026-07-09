@@ -7,7 +7,7 @@ using ll = long long;
 
 
 
-ll internal_floor_sum(ll A, ll B, ll C){
+constexpr ll internal_floor_sum(ll A, ll B, ll C){
     if (C < 0){return 0;}
     if (A > B){swap(A,B);}
     if (B%A == 0){
@@ -17,7 +17,7 @@ ll internal_floor_sum(ll A, ll B, ll C){
     return (1+k)*(1+floor2(C,B)) + floor2(B,A)*floor2(C,B)*(floor2(C,B)+1)/2 + internal_floor_sum(A, B%A, C-A*(floor2(B,A)*floor2(C,B)+k+1));
 }
 /// @brief `\sum_{i=0}^{N} \lfloor\frac{Ci+D}{B}\rfloor`を求める。
-ll floor_sum(ll N, ll B, ll C, ll D){
+constexpr ll floor_sum(ll N, ll B, ll C, ll D){
     if (N < 0){
         return 0;
     }
@@ -47,7 +47,7 @@ ll floor_sum(ll N, ll B, ll C, ll D){
 //}
 
 
-ll internal_floor_max(ll A, ll B, ll C, ll D, ll E, ll F){
+constexpr ll internal_floor_max(ll A, ll B, ll C, ll D, ll E, ll F){
     if (D < 0){return -1000000000000000000;}
     if (C <= 0){return -1000000000000000000;}
     if (E > 0){
@@ -67,7 +67,7 @@ ll internal_floor_max(ll A, ll B, ll C, ll D, ll E, ll F){
 /// @param E 
 /// @param F 
 /// @return `max`
-ll floor_max(ll N, ll A, ll B, ll C, ll D, ll E, ll F){
+constexpr ll floor_max(ll N, ll A, ll B, ll C, ll D, ll E, ll F){
     if (N < 0){
         return -1000000000000000000;
     }

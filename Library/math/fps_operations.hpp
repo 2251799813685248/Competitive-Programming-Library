@@ -207,7 +207,7 @@ struct fps_operator{
         F1.resize(n+m-1);
         return F1;
     }
-    /// @brief F*G == 1 mod x^n となるGを求める。F[x^0] != 0 が必要 
+    /// @brief F*G == 1 mod x^n となるGを求める F[x^0] != 0 が必要 
     FormalPowerSeries inv(const FormalPowerSeries& F, const int n) const {
         int sz_f = F.sz;
         FormalPowerSeries res{inverse_mod((ll)F[0], M)};
@@ -239,7 +239,7 @@ struct fps_operator{
         res.resize(n);
         return res;
     }
-    /// @brief exp(F) mod x^n を求める。F[x^0] == 0 が必要
+    /// @brief exp(F) mod x^n を求める F[x^0] == 0 が必要
     FormalPowerSeries exp(const FormalPowerSeries& F, const int n, const mod_table<M>& mtable) const {
         assert(F[0] == 0);
         ull sz_f = F.sz;
@@ -336,7 +336,7 @@ struct fps_operator{
         f0.resize(n);
         return f0;
     }
-    /// @brief log(F) mod x^n を求める。F[x^0] == 1 が必要 
+    /// @brief log(F) mod x^n を求める F[x^0] == 1 が必要 
     FormalPowerSeries log(const FormalPowerSeries& F, const int n, const mod_table<M>& mtable) const {
         assert(F[0] == 1);
         auto DF = F;
@@ -354,7 +354,7 @@ struct fps_operator{
         res[0] = 0;
         return res;
     }
-    /// @brief F^k mod x^n を求める。
+    /// @brief F^k mod x^n を求める
     FormalPowerSeries pow(const FormalPowerSeries& F, const ull k, const int n, const mod_table<M>& mtable) const {
         if (k == 0){
             FormalPowerSeries ret(n,0);
@@ -455,7 +455,7 @@ struct fps_operator{
         p.resize(m+1);
         return p;
     }
-    // f(g(x)) mod x^len(f) を求める。
+    // f(g(x)) mod x^len(f) を求める
     FormalPowerSeries composition(FormalPowerSeries f, FormalPowerSeries g, const mod_table<M>& mtable) const {
         f.resize(max(f.size(),g.size()));
         int N = f.size();
@@ -524,7 +524,7 @@ struct fps_operator{
         p.resize(N);
         return p;
     }
-
+    // f(x+a)を求める
     FormalPowerSeries polynominal_taylor_shift(const FormalPowerSeries& F, ll a, const mod_table<M>& mtable){
         ull b = M+a%M;
         if (b >= M){b -= M;}
@@ -552,7 +552,7 @@ struct fps_operator{
 
 };
 
-/// @brief `[x^N](P(x)/Q(x))` をmod Mで求める。
+/// @brief `[x^N](P(x)/Q(x))` をmod Mで求める
 template<ull M>
 ll Bostan_Mori(const ll N, FormalPowerSeries P, FormalPowerSeries Q, const fps_operator<M>& op){
     assert(N >= 0);

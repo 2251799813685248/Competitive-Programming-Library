@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <cassert>
+#include <queue>
 using ll = long long;
 using ull = unsigned long long;
 using uint = unsigned int;
@@ -333,7 +334,7 @@ struct WaveletMatrix{
         }
         return r;
     }
-    INTEGER operator[](uint idx){
+    INTEGER operator[](uint idx) const {
         return access(idx);
     }
 

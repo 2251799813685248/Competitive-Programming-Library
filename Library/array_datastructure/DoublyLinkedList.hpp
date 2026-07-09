@@ -2,6 +2,10 @@
 #define DOUBLY_LINKED_LIST_HPP_
 
 
+#include <vector>
+#include <iostream>
+#include <cassert>
+using namespace std;
 
 /// @brief 双方向連結リスト
 /// @tparam T 

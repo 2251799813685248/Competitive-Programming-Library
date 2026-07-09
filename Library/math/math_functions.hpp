@@ -3,11 +3,15 @@
 
 #include <array>
 #include <cmath>
+#include <cassert>
 using namespace std;
 using ll = long long;
+using ld = long double;
 using ull = unsigned long long;
 using ulll = __uint128_t;
-
+#ifdef BOOST_VERSION
+using bll = boost::multiprecision::cpp_int;
+#endif
 
 
 /// @brief a^bをmで割った余りを返す。bに関して対数時間で計算できる
@@ -47,7 +51,7 @@ constexpr ll powll(ll a, ull n){
     return r;
 }
 
-/// @brief floor(sqrt(N))を返す。64bit整数まで対応
+/// @brief floor(sqrt(N))を返す。1.5×10^19まで対応
 constexpr ll isqrt(ull N){
     assert(N <= 15000000000000000000ull);
     ull ret = sqrt(N);
@@ -59,10 +63,10 @@ constexpr ll isqrt(ull N){
     }
     return ret;
 }
-/// @brief floor(sqrt(N))を返す。128bit整数まで対応
-constexpr ll isqrt_large(ulll N){
-    assert((ld)N <= 1e38);
-    __uint128_t ret = sqrt((__float128)N);
+#ifdef BOOST_VERSION
+/// @brief floor(sqrt(N))を返す。多倍長整数に対応
+constexpr bll isqrt_large(bll N){
+    bll ret = sqrt(N);
     while (ret*ret > N){
         ret--;
     }
@@ -71,6 +75,7 @@ constexpr ll isqrt_large(ulll N){
     }
     return ret;
 }
+#endif
 
 /// @brief floor(log_a(L))を返す
 constexpr ll ilog(ll a, ll L){
@@ -144,7 +149,7 @@ constexpr T inverse_mod(T a, U M){
 
 /// @brief sqrt(a) mod Mを求める。ないなら-1が返される。
 template<ll M>
-constexpr ll cipolla(ll a){
+inline constexpr ll cipolla(ll a){
     a %= M;
     if (M == 2) return a;
 	if (a == 0) return 0;
@@ -174,7 +179,7 @@ constexpr ll cipolla(ll a){
     }
     return x[0];
 }
-ll cipolla(ll a, const ll M){
+inline constexpr ll cipolla(ll a, const ll M){
     a %= M;
     if (M == 2) return a;
 	if (a == 0) return 0;
