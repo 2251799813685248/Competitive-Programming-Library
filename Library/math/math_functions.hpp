@@ -42,13 +42,18 @@ template<ll m> constexpr ll modpow(ll a, ull b){
     return ans;
 }
 
-/// @brief a^nを返す。bに関して線形時間で計算できる
+/// @brief a^nを返す。bに関して対数時間で計算できる
 constexpr ll powll(ll a, ull n){
-    ll r = 1;
-    for (ull i = 1; i <= n; i++){
-        r *= a;
+    ll t = a;
+    ll ans = 1;
+    while (n > 0){
+        if (n&1){
+            ans *= t;
+        }
+        n >>= 1;
+        t *= t;
     }
-    return r;
+    return ans;
 }
 
 /// @brief floor(sqrt(N))を返す。1.5×10^19まで対応

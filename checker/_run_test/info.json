@@ -33,6 +33,11 @@
         "bernoulli_number",
         "bell_number"
     ],
+    "combinations":[
+        "binomial_coefficient",
+        "binomial_coefficient_prime_mod",
+        "partition_function"
+    ],
     "geometry":[
         "static_convex_hull",
         "sort_points_by_argument"
