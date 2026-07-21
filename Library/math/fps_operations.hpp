@@ -395,7 +395,7 @@ struct fps_operator{
     // \sum_{j} wt[j]*[x^j]f^i を i=0,1,...,m
     FormalPowerSeries power_projection(FormalPowerSeries f, FormalPowerSeries wt, uint m, const mod_table<M>& mtable) const {
         assert(f.size() == wt.size());
-        if (f.size() == 0){return vector<uint>(m+1, 0);}
+        if (f.size() == 0){return FormalPowerSeries(m+1, 0);}
         if (f[0] != 0){
             uint c = f[0];
             f[0] = 0;
@@ -559,7 +559,7 @@ ll Bostan_Mori(const ll N, FormalPowerSeries P, FormalPowerSeries Q, const fps_o
     if (N == 0){
         return P[0]*inverse_mod((ll)Q[0], M)%M;
     }
-    vector<ll> Q_minus;
+    FormalPowerSeries Q_minus;
     const int maxloop = (N == 1 ? 1 : 65-__builtin_clzll(N-1));
     for (int _i_ = 0; _i_ < maxloop; _i_++){
         Q_minus.resize(Q.size());
