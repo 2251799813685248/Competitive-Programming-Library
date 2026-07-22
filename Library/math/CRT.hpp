@@ -65,28 +65,6 @@ template<typename T> constexpr T crt_relatively_prime(const vector<T>& r, const 
     return ans;
 }
 
-#ifdef BOOST_VERSION
-// Garnerのアルゴリズムで元の数を復元する。すべての法同士が互いに素である必要がある。解のうち最小の非負整数が返る。多倍長整数版
-constexpr bll crt_relatively_prime_large(const vector<bll>& r, const vector<bll>& m){
-    bll ans = 0;
-    int N = len(r);
-    assert(N == len(m));
-    vector<bll> A(N);
-    for (int i = 0; i < N; i++){
-        bll b = r[i]%m[i];
-        bll cumulative_prod = 1;
-        for (int k = 0; k < i; k++){
-            b += m[i]-cumulative_prod%m[i]*A[k]%m[i];
-            if (b >= m[i]){b -= m[i];}
-            cumulative_prod *= m[k];
-        }
-        A[i] = b*inverse_mod<bll>(cumulative_prod, m[i])%m[i];
-        ans += A[i]*cumulative_prod;
-    }
-    return ans;
-}
-#endif
-
 template<typename T> inline constexpr T internal_arrange_mod(T m1, T m2, T g){
     g = gcd(g, m2/g);
     T temp = m1;

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <deque>
 using namespace std;
 using ll = long long;
 
@@ -19,7 +20,7 @@ using ll = long long;
 /// @tparam func 更新に使う変数をまとめた構造体の型(アフィン変換なら、aとbを持つ構造体など)
 /// @param e 載せたものの単位元(sumなら0, maxなら-infなど)
 /// @param operation 各ノードに載ってる構造体に対する二項演算をする関数(min,max,sumなど)
-/// @param init_info 指定した区間内の初期状態を返す関数
+/// @param init_info 指定した閉区間内の初期状態を返す関数
 /// @param mapping infoに対してfuncを作用させた結果を返す関数(アフィン変換ならx -> ax+b)
 /// @param composition func同士の合成結果を1つのfuncにする関数((u,v)でu(v())の結果を返すものとする)(ax+bのあとにcx+dを作用させると実質acx+bc+dになるなど)
 /// @param id funcの恒等写像(アフィン変換ならx -> 1x+0)
@@ -115,9 +116,7 @@ struct DynamicLazySegTree{
     /// @param R 右端(右端を含む)
     /// @param F 適用する写像(アフィン変換ならaとbを持った構造体など)
     void range_update(const int L, const int R, const func &F, int nowleft = 0, int depth = 0, SegTreeNode* now = nullptr){
-        if (L > R || L >= max_capacity || L < 0 || R >= max_capacity || R < 0){
-            return;
-        }
+        if (L > R || L >= max_capacity || L < 0 || R >= max_capacity || R < 0){return;}
         if (nowleft > R || nowleft + (1ll<<(log2N-depth)) <= L){return;}
         if (now == nullptr){now = root;}
         if (L <= nowleft && nowleft + (1ll<<(log2N-depth))-1 <= R){
@@ -143,45 +142,117 @@ struct DynamicLazySegTree{
         range_update(L,R,F,nowleft+(1ll<<(log2N-depth-1)),depth+1,now->right);
         now->I = operation(now->left->I, now->right->I);
     }
+
+    deque<SegTreeNode*> stk; //二分探索中に辿っているノードを保持
+
+    /// @brief 左端をLに固定したとき、Gがtrueになる最小の右端indexを返す。もしなければINF(=2147483647)が返ってくる。
+    /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。 
+    /// @param L 左端
+    /// @param G 判定関数...boolを返す。引数としてinfoを受け取るが、これはT.range_get(L, t)が入り、これに関する条件式を自分で関数内に記述することで、このようなtの最小が求まる。
+    /// @return Gがtrueになる最小右端indexまたは2147483647
+    ll min_right(ll L, const function<bool(info)> &G){
+        stk.clear();
+        if (L >= max_capacity || L < 0){assert(false);}
+        info current_result = e;
+        int ctz_init = L == 0 ? log2N : __builtin_ctz(L);
+        SegTreeNode* now = root;
+        stk.push_back(now);
+        ll nowidx = 1;
+        ll nowidx_ref = L;
+        ll nowleft = 0;
+        int depth = 0;
+        for (int i = log2N; i > ctz_init; i--){
+            if (now->left == nullptr){
+                now->left = new SegTreeNode;
+                now->left->delay = id;
+                now->left->I = init_info(nowleft, nowleft + (1ll<<(log2N-depth-1)) - 1);
+            }
+            if (now->right == nullptr){
+                now->right = new SegTreeNode;
+                now->right->delay = id;
+                now->right->I = init_info(nowleft + (1ll<<(log2N-depth-1)), nowleft + (1<<(log2N-depth)) - 1);
+            }
+            tell_info(now);
+            if ((nowidx_ref & (1ll<<(i-1)))){
+                now = now->right;
+                nowleft += 1ll<<(log2N-depth-1);
+                depth++;
+                nowidx <<= 1;
+                nowidx++;
+            }
+            else{
+                now = now->left;
+                depth++;
+                nowidx <<= 1;
+            }
+            stk.push_back(now);
+        }
+        checkpoint:
+        if (!G(operation(current_result, now->I))){
+            if (nowleft + (1ll<<(log2N-depth)) == 1<<log2N){
+                return 2147483647;
+            }
+            current_result = operation(current_result, now->I);
+            while(nowidx&1){
+                nowidx >>= 1;
+                stk.pop_back();
+                now = stk.back();
+                nowleft -= 1ll<<(log2N-depth);
+                depth--;
+            }
+            stk.pop_back();
+            now = stk.back();
+            now = now->right;
+            stk.push_back(now);
+            nowleft += 1ll<<(log2N-depth);
+            nowidx++;
+            goto checkpoint;
+        }
+        if (now->left == nullptr){
+            now->left = new SegTreeNode;
+            now->left->delay = id;
+            now->left->I = init_info(nowleft, nowleft + (1ll<<(log2N-depth-1)) - 1);
+        }
+        if (now->right == nullptr){
+            now->right = new SegTreeNode;
+            now->right->delay = id;
+            now->right->I = init_info(nowleft + (1ll<<(log2N-depth-1)), nowleft + (1<<(log2N-depth)) - 1);
+        }
+        tell_info(now);
+        now = now->left;
+        stk.push_back(now);
+        nowidx <<= 1;
+        depth++;
+        while (depth <= log2N){
+            if (now->left == nullptr){
+                now->left = new SegTreeNode;
+                now->left->delay = id;
+                now->left->I = init_info(nowleft, nowleft + (1ll<<(log2N-depth-1)) - 1);
+            }
+            if (now->right == nullptr){
+                now->right = new SegTreeNode;
+                now->right->delay = id;
+                now->right->I = init_info(nowleft + (1ll<<(log2N-depth-1)), nowleft + (1<<(log2N-depth)) - 1);
+            }
+            tell_info(now);
+            if (!G(operation(current_result, now->I))){
+                current_result = operation(current_result, now->I);
+                stk.pop_back();
+                now = stk.back();
+                now = now->right;
+                stk.push_back(now);
+                nowleft += 1ll<<(log2N-depth);
+                nowidx++;
+                goto checkpoint;
+            }
+            now = now->left;
+            stk.push_back(now);
+            nowidx <<= 1;
+            depth++;
+        }
+        return nowleft;
+    }
     
-    //↓二分探索はめんどかったから書いてない
-    // /// @brief 左端をLに固定したとき、条件式Gが成り立つ最小の右端indexを返す。もしなければINF(=2147483647)が返ってくる。
-    // /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。 
-    // /// @param L 左端
-    // /// @param G 判定関数...引数a,bがあり、引数aを動かし、引数bを比較対象tに固定した時に引数aによってtrue,falseが変動する。
-    // /// @param t 比較対象のinfo
-    // /// @return Gがtrueになる最小右端indexまたは2147483647
-    // int min_right(int L, const function<bool(info,info)> &G, const info &t){
-    //     info current_result = e;
-
-    //     int ctz_init = L == 0 ? log2N : __builtin_ctz(L);
-    //     for (int i = log2N; i > ctz_init; i--){
-    //         tell_info(((1<<log2N)+L)>>i);
-    //     }
-
-    //     checkpoint:
-
-    //     int ctz = L == 0 ? log2N : __builtin_ctz(L);
-    //     tell_info(((1<<log2N)+L)>>ctz);
-    //     if (!G(operation(current_result, tree[((1<<log2N)+L)>>ctz].first), t)){
-    //         if (get_right(((1<<log2N)+L)>>ctz)+1 == 1<<log2N){
-    //             return 2147483647;
-    //         }
-    //         current_result = operation(current_result, tree[((1<<log2N)+L)>>ctz].first);
-    //         L = get_right(((1<<log2N)+L)>>ctz)+1;
-    //         goto checkpoint;
-    //     }
-
-    //     for (int i = ctz-1; i >= 0; i--){
-    //         tell_info(((1<<log2N)+L)>>i);
-    //         if (!G(operation(current_result, tree[((1<<log2N)+L)>>i].first), t)){
-    //             current_result = operation(current_result, tree[((1<<log2N)+L)>>i].first);
-    //             L = get_right(((1<<log2N)+L)>>i)+1;
-    //             goto checkpoint;
-    //         }
-    //     }
-    //     return L;
-    // }
     // /// @brief 右端をRに固定したとき、条件式Gが成り立つ最大の左端indexを返す。もしなければ-INF-1(=-2147483648)が返ってくる。
     // /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。
     // /// @param R 右端 
@@ -220,11 +291,11 @@ struct DynamicLazySegTree{
     //     return R;
     // }
 
-    info operator[](const int t){
+    info operator[](const ll t){
         return range_get(t,t);
     }
     
-    int size(){
+    ll size() const{
         return max_capacity;
     }
 };
