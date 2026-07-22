@@ -2,6 +2,7 @@
 #define FPS__HPP_
 
 #include <iostream>
+#include <iterator>
 #include <vector>
 #include <cassert>
 using namespace std;
