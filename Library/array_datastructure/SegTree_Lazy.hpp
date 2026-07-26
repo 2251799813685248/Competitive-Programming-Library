@@ -127,10 +127,8 @@ struct LazySegTree{
         tree[index_on_tree].second = id;
     }
 
-
     deque<int> lazy_node;//区間集計、区間更新に使う。
     deque<int> lazy_node_flipped;//区間更新で使う。
-
 
     /// @brief index閉区間[L,R]において、集計を行う。
     /// @param L 左端(左端を含む)
@@ -233,20 +231,14 @@ struct LazySegTree{
     /// @param G 判定関数...boolを返す。引数としてinfoを受け取るが、これはT.range_get(L, t)が入り、これに関する条件式を自分で関数内に記述することで、このようなtの最小が求まる。
     /// @return Gがtrueになる最小右端indexまたは2147483647
     int min_right(int L, const function<bool(info)> &G){
-        if (L >= max_capacity || L < 0){
-            assert(false);
-        }
+        if (L >= max_capacity || L < 0){assert(false);}
         info current_result = e;
-
         int ctz_init = L == 0 ? log2N : __builtin_ctz(L);
         for (int i = log2N; i > ctz_init; i--){
             tell_info(((1<<log2N)+L)>>i);
         }
-
         checkpoint:
-
         int ctz = L == 0 ? log2N : __builtin_ctz(L);
-        tell_info(((1<<log2N)+L)>>ctz);
         if (!G(operation(current_result, tree[((1<<log2N)+L)>>ctz].first))){
             if (get_right(((1<<log2N)+L)>>ctz)+1 == 1<<log2N){
                 return 2147483647;
@@ -255,7 +247,7 @@ struct LazySegTree{
             L = get_right(((1<<log2N)+L)>>ctz)+1;
             goto checkpoint;
         }
-
+        tell_info(((1<<log2N)+L)>>ctz);
         for (int i = ctz-1; i >= 0; i--){
             tell_info(((1<<log2N)+L)>>i);
             if (!G(operation(current_result, tree[((1<<log2N)+L)>>i].first))){
@@ -276,16 +268,12 @@ struct LazySegTree{
             assert(false);
         }
         info current_result = e;
-
         int cto_init = __builtin_ctz(~R);
         for (int i = log2N; i > cto_init; i--){
             tell_info(((1<<log2N)+R)>>i);
         }
-
         checkpoint:
-
         int cto = __builtin_ctz(~R);//cto...count trailing one
-        tell_info(((1<<log2N)+R)>>cto);
         if (!G(operation(current_result, tree[((1<<log2N)+R)>>cto].first))){
             if (get_left(((1<<log2N)+R)>>cto) == 0){
                 return -2147483648;
@@ -294,7 +282,7 @@ struct LazySegTree{
             R = get_left(((1<<log2N)+R)>>cto)-1;
             goto checkpoint;
         }
-
+        tell_info(((1<<log2N)+R)>>cto);
         for (int i = cto-1; i >= 0; i--){
             tell_info(((1<<log2N)+R)>>i);
             if (!G(operation(current_result, tree[((1<<log2N)+R)>>i].first))){
@@ -306,15 +294,12 @@ struct LazySegTree{
         return R;
     }
 
-    info operator[](const int t)const{
+    info operator[](const int t){
         return range_get(t,t);
     }
-    int size()const{
+    int size() const{
         return max_capacity;
     }
 };
-
-
-
 
 #endif /* SEG_TREE__LAZY_HPP_ */

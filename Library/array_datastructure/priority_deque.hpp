@@ -105,8 +105,8 @@ struct priority_deque{
         }
     }
     T pop_min(){
-        if (A.size() == 1){T temp = move(A[0]); A.pop_back(); return temp;}
-        T ret = move(A[1]);
+        if (A.size() == 1){T temp = std::move(A[0]); A.pop_back(); return temp;}
+        T ret = std::move(A[1]);
         A[1] = A.back();
         A.pop_back();
         int idx = 1;
@@ -143,7 +143,7 @@ struct priority_deque{
         return ret;
     }
     T pop_max(){
-        T ret = move(A[0]);
+        T ret = std::move(A[0]);
         A[0] = A.back();
         A.pop_back();
         int idx = 0;
