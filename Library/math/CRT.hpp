@@ -27,8 +27,8 @@ template<typename T> constexpr T crt_relatively_prime(const vector<T>& r, const 
     assert(N == len(m));
     vector<T> A(N);
     for (int i = 0; i < N; i++){
-        ll b = r[i]%m[i];
-        ll cumulative_prod = 1;
+        T b = r[i]%m[i];
+        T cumulative_prod = 1;
         for (int k = 0; k < i; k++){
             b += m[i]-cumulative_prod%m[i]*A[k]%m[i];
             if (b >= m[i]){b -= m[i];}
@@ -47,9 +47,9 @@ template<typename T> constexpr T crt_relatively_prime(const vector<T>& r, const 
     assert(N == len(m));
     vector<T> A(N);
     for (int i = 0; i < N; i++){
-        ll b = r[i]%m[i];
-        ll cumulative_prod1 = 1;
-        ll cumulative_prod2 = 1;
+        T b = r[i]%m[i];
+        T cumulative_prod1 = 1;
+        T cumulative_prod2 = 1;
         for (int k = 0; k < i; k++){
             b += m[i]-cumulative_prod1*A[k]%m[i];
             if (b >= m[i]){b -= m[i];}
