@@ -7,27 +7,29 @@
 #include <algorithm>
 #include <cassert>
 #include <numeric>
-#include <random>
+#include <iostream>
 using namespace std;
 using ll = long long;
 using ulll = __uint128_t;
 using pll = array<ll,2>;
+using pull = array<ull,2>;
 using pii = array<int,2>;
 
 
 
 /// @brief 試し割り法で正の整数Nを素因数分解する
 /// @return vector<array<ll,2>>{{素因数1,個数}, {素因数2,個数}, {素因数3,個数}...}
-constexpr vector<pll> trial_division(ll N){
+template<typename T> constexpr vector<array<T,2>> trial_division(T N){
+    assert(N > 0);
     if (N == 1){
-        return vector<pll> {{1,0}};
+        return vector<array<T,2>> {{1,0}};
     }
-    vector<pll> R;//戻り値用リスト
+    vector<array<T,2>> R;//戻り値用リスト
 
-    const int M = isqrt(N);
-    for (int i = 2; i <= M; i++){
+    const T M = isqrt(static_cast<ull>(N));
+    for (T i = 2; i <= M; i++){
         if (N % i == 0){
-            ll divide_count = 0;
+            T divide_count = 0;
             while (N % i == 0){
                 divide_count++;
                 N /= i;
@@ -43,12 +45,11 @@ constexpr vector<pll> trial_division(ll N){
 
 /// @brief 素因数分解リストを受け取って約数関数の値を求める
 /// @return 約数のK乗和
-template<typename T>
-ll divisor_function(const vector<array<T,2>>& vv, ll K, const ll MOD = -1){
+template<typename T> constexpr T divisor_function(const vector<array<T,2>>& vv, T K, const T MOD = -1){
     if (vv[0][0] == 1){
         return 1;
     }
-    ll R = 1;
+    T R = 1;
     if (K == 0){
         for (auto x : vv){
             R *= x[1]+1;
@@ -70,18 +71,17 @@ ll divisor_function(const vector<array<T,2>>& vv, ll K, const ll MOD = -1){
 }
 
 /// @brief 素因数分解の結果pを受け取って、約数リストを生成する。
-template<typename T>
-vector<T> enumerate_divisor(const vector<array<T,2>>& p){
+template<typename T> constexpr vector<T> enumerate_divisor(const vector<array<T,2>>& p){
     vector<T> d{1};
     if (p[0][0] == 1){
         return d;
     }
     for (auto &v : p){
-        int t = d.size();
-        ll temp = 1;
-        for (int w = 0; w < v[1]; w++){
+        T t = d.size();
+        T temp = 1;
+        for (T w = 0; w < v[1]; w++){
             temp *= v[0];
-            for (int i = 0; i < t; i++){
+            for (T i = 0; i < t; i++){
                 d.push_back(d[i]*temp);
             }
         }
@@ -153,6 +153,7 @@ struct LinearSieve{
 constexpr ull __MillerRabin_small[3] = {2,7,61};
 constexpr ull __MillerRabin_large[7] = {2,325,9375,28178,450775,9780504,1795265022};
 
+
 struct Montgomery64 {
     ull n, ni, r2;
     constexpr Montgomery64(ull n) : n(n), ni(n), r2(-ulll(n) % n){
@@ -179,8 +180,67 @@ struct Montgomery64 {
     }
 };
 
-/// @brief ミラーラビン素数判定法 
-constexpr bool MillerRabin(ull N){
+
+///@brief ミラーラビン素数判定法
+template<typename T> constexpr bool MillerRabin(T N){
+    if (N <= 1) return false;
+    if (N == 2 || N == 3) return true;
+    if (N % 2 == 0) return false;
+
+    T d = N - 1;
+    T s = 0;
+    while (d % 2 == 0){
+        d >>= 1;
+        s++;
+    }
+    auto modpow_T = [&](T a,T b,T m){
+        T t = a%m;
+        T ans = (m == 1 ? 0 : 1);
+        while (b > 0){
+            if (b&1){
+                ans = (ans*t)%m;
+            }
+            b >>= 1;
+            t = (t*t)%m;
+        }
+        return ans;
+    };
+    auto check = [&](T a){
+        if (a >= N) a %= N;
+        if (a == 0) return true;
+        T x = modpow_T(a, d, N);
+        if (x == 1 || x == N-1) return true;
+        for (int r = 1; r < s; r++){
+            x = x*x%N;
+            if (x == N - 1) return true;
+        }
+        return false;
+    };
+
+    if (N < 4759123141){
+        for (auto a : __MillerRabin_small){
+            if (!check(static_cast<T>(a))) return false;
+        }
+    }
+    else if (N < 1000000000000000000){
+        for (auto a : __MillerRabin_large){
+            if (!check(static_cast<T>(a))) return false;
+        }
+    }
+    else{
+        for (auto a : __MillerRabin_large){
+            if (!check(static_cast<T>(a))) return false;
+        }
+        //50個の整数でテスト
+        for (T a = 638245987265732141; a < 638245987265732191; a++){
+            if (!check(a)) return false;
+        }
+    }
+    return true;
+}
+
+/// @brief ミラーラビン素数判定法のull範囲限定版
+template<> constexpr bool MillerRabin(ull N){
     if (N <= 1) return false;
     if (N == 2 || N == 3) return true;
     if (N % 2 == 0) return false;
@@ -218,18 +278,118 @@ constexpr bool MillerRabin(ull N){
     return true;
 }
 
+
+
 /// @brief ポラード・ロー法による素因数分解
-constexpr vector<pll> Pollard_rho(ull N){
-    assert(N>0);
+template<typename T> constexpr vector<array<T, 2>> Pollard_rho(T N){
+    assert(N > 0);
     if (N == 1){return {{1,0}};}
-    vector<ll> res;
+    vector<T> res;
+    vector<T> dq;
+    dq.push_back(N);
+    while (!dq.empty()){
+        T n = dq.back();
+        dq.pop_back();
+        bool next_loop = false;
+        while (!MillerRabin<T>(n)){
+            if ((n&1) == 0){
+                while ((n&1) == 0){res.push_back(2); n>>=1;}
+                if (n == 1){next_loop = true; break;}
+                continue;
+            }
+            T blocksize = sqrt(sqrt(sqrt(n)));
+            for (T c = 1; c <= n; c++){
+                T y = (0b1010110101101011110011ull^c^n)%n;
+                T r = 1;
+                T k = 0;
+                T k_mod_blocksize = 0;
+                bool next_loop_inner = false;
+                for (int _ = 0;;){
+                    T q = 1;
+                    T q_old = q;
+                    T y_old = y;
+                    T x = y;
+                    while (k < r){
+                        k++;
+                        k_mod_blocksize++;
+                        y = y*y%n+c; if (y >= n){ y -= n;}
+                        q = q*(y >= x ? (y-x) : (x-y))%n;
+                        if (k_mod_blocksize == blocksize){
+                            k_mod_blocksize -= blocksize;
+                            T g = gcd(q,n);
+                            if (g > 1){
+                                if (g != n){
+                                    dq.push_back(g);
+                                    dq.push_back(n/g);
+                                    next_loop = true; break;
+                                }
+                                else{
+                                    y = y_old;
+                                    q = q_old;
+                                    for (int i = 0; i < blocksize; i++){
+                                        y = y*y%n+c; if (y >= n){ y -= n;}
+                                        q = q*(y >= x ? (y-x) : (x-y))%n;
+                                        g = gcd(q,n);
+                                        if (g > 1){
+                                            if (g != n){
+                                                dq.push_back(g);
+                                                dq.push_back(n/g);
+                                                next_loop = true; break;
+                                            }
+                                            next_loop_inner = true; break;
+                                        }
+                                    }
+                                    if (next_loop || next_loop_inner) break;
+                                }
+                            }
+                            q_old = q;
+                            y_old = y;
+                        }
+                    }
+                    if (next_loop || next_loop_inner) break;
+                    q_old = gcd(q,n);
+                    if (q_old > 1){
+                        if (q_old != n){
+                            dq.push_back(q_old);
+                            dq.push_back(n/q_old);
+                            next_loop = true; break;
+                        }
+                        next_loop_inner = true; break;
+                    }
+                    r <<= 1;
+                }
+                if (next_loop) break;
+            }
+            if (next_loop) break;
+        }
+        if (!next_loop) {
+            res.push_back(n);
+        }
+    }
+    sort(res.begin(), res.end());
+    vector<array<T,2>> res2;
+    for (ull l = 0, r = 0, sz = res.size(); l < sz;){
+        while (r < sz && res[l] == res[r]){
+            r++;
+        }
+        res2.push_back({res[l], r-l});
+        l = r;
+    }
+    return res2;
+}
+
+/// @brief ポラード・ロー法による素因数分解のull範囲限定版
+template<> constexpr vector<pull> Pollard_rho(ull N){
+    assert(N > 0);
+    if (N == 1){return {{1,0}};}
+    vector<ull> res;
     vector<ull> dq;
     dq.push_back(N);
     while (!dq.empty()){
         ull n = dq.back();
         dq.pop_back();
         bool next_loop = false;
-        while (!MillerRabin(n)){
+        while (!MillerRabin<ull>(n)){
             if ((n&1) == 0){
                 while ((n&1) == 0){res.push_back(2); n>>=1;}
                 if (n == 1){next_loop = true; break;}
@@ -307,23 +467,51 @@ constexpr vector<pll> Pollard_rho(ull N){
         }
     }
     sort(res.begin(), res.end());
-    vector<pll> res2;
+    vector<pull> res2;
     for (int l = 0, r = 0, sz = res.size(); l < sz;){
         while (r < sz && res[l] == res[r]){
             r++;
         }
-        res2.push_back({res[l], r-l});
+        res2.push_back({res[l], static_cast<ull>(r-l)});
         l = r;
     }
     return res2;
 }
 
+
 /// @brief 素因数分解を行う。`N`の大きさによって、試し割り法とポラード・ロー法を使い分けてくれる。
-constexpr vector<pll> factorize(ull N){
-    if (N < 640000ull){
-        return trial_division(N);
+template<typename T> constexpr vector<array<T, 2>> factorize(T N){
+    if (N < 640000){
+        return trial_division<T>(N);
     }
-    return Pollard_rho(N);
+    if (N < 1000000000000000000){
+        return Pollard_rho<T>(N);
+    }
+    return Pollard_rho<T>(N);
+}
+template<> constexpr vector<pull> factorize(ull N){
+    if (N < 640000ull){
+        return trial_division<ull>(N);
+    }
+    return Pollard_rho<ull>(N);
+}
+template<> constexpr vector<pll> factorize(ll N){
+    auto res = factorize<ull>(N);
+    vector<pll> res2(res.size());
+    for (int i = 0, sz = res.size(); i < sz; i++){
+        res2[i][0] = res[i][0];
+        res2[i][1] = res[i][1];
+    }
+    return res2;
+}
+template<> constexpr vector<pii> factorize(int N){
+    auto res = factorize<ull>(N);
+    vector<pii> res2(res.size());
+    for (int i = 0, sz = res.size(); i < sz; i++){
+        res2[i][0] = res[i][0];
+        res2[i][1] = res[i][1];
+    }
+    return res2;
 }
 
 struct Xorshift64{
@@ -337,15 +525,15 @@ struct Xorshift64{
     }
 };
 
-/// @brief mod Pにおける原始根を1つ探す
+/// @brief mod Pにおける原始根を1つ探す。Pはull範囲内の素数でなければならない。
 constexpr ull primitive_root(ull P){
-    assert(MillerRabin(P));
+    assert(MillerRabin<ull>(P));
     if (P == 2){
         return 1;
     }
     Montgomery64 mg(P);
     Xorshift64 rng(0x1234567E89ABCDEF);
-    auto factorized = Pollard_rho(P-1);
+    auto factorized = Pollard_rho<ull>(P-1);
     while (true) {
         ull r = rng.next()%P;
         if (r == 0){continue;}

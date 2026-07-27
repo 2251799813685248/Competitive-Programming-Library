@@ -57,7 +57,7 @@ constexpr ll mod = 998244353;
 void solve(){
     ll P;
     cin >> P;
-    if (MillerRabin(P)){
+    if (MillerRabin<ull>(P)){
         cout << "Yes\n";
     }
     else{

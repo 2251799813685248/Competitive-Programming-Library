@@ -52,14 +52,14 @@ int main(){
     ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
 
-    deque<FormalPowerSeries> q;
-    q.push_back(FormalPowerSeries(1,1));
+    deque<FormalPowerSeries<998244353>> q;
+    q.push_back(FormalPowerSeries<998244353>(1,1));
     int N;
     cin >> N;
     for (int i = 0; i < N; i++){
         int d;
         cin >> d;
-        FormalPowerSeries t(d+1);
+        FormalPowerSeries<998244353> t(d+1);
         vin(t);
         q.push_back(t);
     }

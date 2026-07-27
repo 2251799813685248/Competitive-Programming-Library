@@ -55,7 +55,7 @@ int main(){
     int N;
     cin >> N;
 
-    FormalPowerSeries F(N),G(N);
+    FormalPowerSeries<998244353> F(N),G(N);
     vin(F);
     vin(G);
 

@@ -58,14 +58,14 @@ int main(){
 
     ll N;
     cin >> N;
-    FormalPowerSeries F(N+1);
+    FormalPowerSeries<998244353> F(N+1);
     for (ll i = 0; i <= N; i++){
-        F[i] = mtable.factorialmodinv[i+1];
+        F[i] = mtable.factorialmod(i+1);
     }
     F = op.inv(F, N+1);
-    vector<uint> ans(N+1);
+    FormalPowerSeries<998244353> ans(N+1);
     for (ll i = 0; i <= N; i++){
-        ans[i] = F[i]*(ull)mtable.factorialmod[i]%998244353;
+        ans[i] = F[i]*mtable.factorialmod(i);
     }
     vout(ans);
 }

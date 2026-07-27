@@ -46,7 +46,7 @@ constexpr ll dj[4] = {1,0,-1,0};
 constexpr ll dj8[8] = {1,1,0,-1,-1,-1,0,1};
 
 
-#include <geomrtry_2d.hpp>
+#include <geometry_2d.hpp>
 
 
 int main(){
@@ -60,7 +60,7 @@ int main(){
     for (ll i = 0; i < N; i++){
         cin >> P[i][0] >> P[i][1];
     }
-    sort(vall(P), compare_argument);
+    sort(vall(P), compare_argument<ll>);
     for (ll i = 0; i < N; i++){
         print(P[i]);
     }

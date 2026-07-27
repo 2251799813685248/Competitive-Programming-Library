@@ -3,7 +3,11 @@
         "range_affine_range_sum"
     ],
     "fps":[
-        "convolution",
+        "convolution_mod",
+        "inv_of_formal_power_series",
+        "log_of_formal_power_series",
+        "exp_of_formal_power_series",
+        "pow_of_formal_power_series",
         "composition_of_formal_power_series_large",
         "product_of_polynomial_sequence",
         "polynomial_taylor_shift"
@@ -43,7 +47,6 @@
         "sort_points_by_argument"
     ],
     "temp":[
-        "many_aplusb_128bit",
-        "many_aplusb"
+        "inv_of_formal_power_series"
     ]
 }

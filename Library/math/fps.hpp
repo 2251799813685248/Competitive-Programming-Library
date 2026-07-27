@@ -5,12 +5,16 @@
 #include <iterator>
 #include <vector>
 #include <cassert>
+#include <modint.hpp>
 using namespace std;
 using ll = long long;
 using uint = unsigned;
 
+
+template<uint T>
 struct FormalPowerSeries{
-    vector<uint> f;
+    using mint = constant_modint<T>;
+    vector<mint> f;
     uint sz;
     FormalPowerSeries(){
         sz = 0;
@@ -20,27 +24,27 @@ struct FormalPowerSeries{
         f.resize(_init_sz, 0);
         sz = _init_sz;
     }
-    FormalPowerSeries(uint _init_sz, uint _init_val){
+    FormalPowerSeries(uint _init_sz, mint _init_val){
         f.resize(_init_sz, _init_val);
         sz = _init_sz;
     }
-    template<typename T> FormalPowerSeries(const vector<T>& _init){
+    template<typename U> FormalPowerSeries(const vector<U>& _init){
         f.assign(_init.begin(), _init.end());
         sz = f.size();
     }
-    template<typename T> FormalPowerSeries(initializer_list<T> _init) : FormalPowerSeries(vector<T>(_init)){}
+    template<typename U> FormalPowerSeries(initializer_list<U> _init) : FormalPowerSeries(vector<U>(_init)){}
     uint size() const {return sz;}
     void resize(uint _new_size){
         if (sz == _new_size){return;}
         f.resize(_new_size, 0);
         sz = _new_size;
     }
-    inline uint& operator[](uint deg) {return f[deg];}
-    inline const uint& operator[](uint deg) const {return f[deg];}
-    template<typename T> operator vector<T>() const {
-        vector<T> res(sz);
+    inline mint& operator[](uint deg) {return f[deg];}
+    inline const mint& operator[](uint deg) const {return f[deg];}
+    template<typename U> operator vector<U>() const {
+        vector<U> res(sz);
         for (uint i = 0; i < sz; i++){
-            res[i] = f[i];
+            res[i] = f[i].val;
         }
         return res;
     }

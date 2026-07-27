@@ -46,7 +46,7 @@ constexpr ll dj[4] = {1,0,-1,0};
 constexpr ll dj8[8] = {1,1,0,-1,-1,-1,0,1};
 
 
-#include <geomrtry_2d.hpp>
+#include <geometry_2d.hpp>
 
 
 int main(){

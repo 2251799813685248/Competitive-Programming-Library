@@ -44,21 +44,20 @@ const vector<ll> dj8{1,1,0,-1,-1,-1,0,1};
 
 #include <fps.hpp>
 #include <fps_operations.hpp>
-#include <mod_table.hpp>
 
 
 fps_operator<998244353> op;
-mod_table<998244353> mt(524289);
 
 int main(){
     ios::sync_with_stdio(false);
     std::cin.tie(nullptr);
 
-    int N, c;
-    cin >> N >> c;
+    int N;
+    cin >> N;
+
     FormalPowerSeries<998244353> F(N);
     vin(F);
 
-    vout(op.polynominal_taylor_shift(F,c,mt));
-
+    auto ans = op.inv(F,N);
+    vout(ans);
 }

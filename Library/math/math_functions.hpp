@@ -42,8 +42,21 @@ template<ll m> constexpr ll modpow(ll a, ull b){
     return ans;
 }
 
+/// @brief a^nを返す。bに関して対数時間で計算できる。
+template<typename T> constexpr T powll(T a, T n){
+    T t = a;
+    T ans = 1;
+    while (n > 0){
+        if (n%2){
+            ans *= t;
+        }
+        n >>= 1;
+        t *= t;
+    }
+    return ans;
+}
 /// @brief a^nを返す。bに関して対数時間で計算できる
-constexpr ll powll(ll a, ull n){
+template<> constexpr ll powll(ll a, ll n){
     ll t = a;
     ll ans = 1;
     while (n > 0){
@@ -55,6 +68,7 @@ constexpr ll powll(ll a, ull n){
     }
     return ans;
 }
+
 
 /// @brief floor(sqrt(N))を返す。1.5×10^19まで対応
 constexpr ll isqrt(ull N){

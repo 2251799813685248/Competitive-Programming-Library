@@ -50,8 +50,8 @@ constexpr ll dj8[8] = {1,1,0,-1,-1,-1,0,1};
 void solve(){
     ll P;
     cin >> P;
-   
-    auto ans = Pollard_rho(P);
+
+    auto ans = factorize(P);
     ll num = 0;
     vector<ll> pf;
     for (auto& p : ans){
