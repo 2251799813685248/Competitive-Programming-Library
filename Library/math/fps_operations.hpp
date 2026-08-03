@@ -498,7 +498,18 @@ struct fps_operator{
         }
         return H;
     }
-
+    // fの微分を求める。
+    FormalPowerSeries<M> differential(const FormalPowerSeries<M>& F){
+        FormalPowerSeries<M> G = F;
+        G.differential();
+        return G;
+    }
+    // fの積分を求める。積分定数は0
+    FormalPowerSeries<M> integral(const FormalPowerSeries<M>& F, const mod_table<M>& mtable){
+        FormalPowerSeries<M> G = F;
+        G.integral(mtable);
+        return G;
+    }
 };
 
 /// @brief `[x^N].val(P(x)/Q(x))` をmod Mで求める

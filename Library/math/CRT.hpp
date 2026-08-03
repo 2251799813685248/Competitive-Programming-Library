@@ -17,7 +17,7 @@ using bll = boost::multiprecision::cpp_int;
 #endif
 #ifndef LEN_DEFINED
 #define LEN_DEFINED
-template<typename T> inline ll len(T A){return ssize(A);}
+template<typename T> inline constexpr ll len(const T& A){return ssize(A);}
 #endif
 
 // Garnerのアルゴリズムで元の数を復元する。すべての法同士が互いに素である必要がある。解のうち最小の非負整数が返る。

@@ -16,7 +16,7 @@ using ull = unsigned long long;
 
 #ifndef LEN_DEFINED
 #define LEN_DEFINED
-template<typename T> inline constexpr ll len(T A){return ssize(A);}
+template<typename T> inline constexpr ll len(const T& A){return ssize(A);}
 #endif
 
 
@@ -190,7 +190,7 @@ struct factorialncr4{
             ull pq = powll(p[0], p[1]);
             vector<uint> powlist(p[1]+1); //累乗リスト
             powlist[0] = 1;
-            for (int i = 1; i <= p[1]; i++){
+            for (uint i = 1; i <= p[1]; i++){
                 powlist[i] = powlist[i-1]*p[0];
             }
             crt_mod.push_back(powlist.back());

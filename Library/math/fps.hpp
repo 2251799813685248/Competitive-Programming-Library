@@ -6,6 +6,7 @@
 #include <vector>
 #include <cassert>
 #include <modint.hpp>
+#include <mod_table.hpp>
 using namespace std;
 using ll = long long;
 using uint = unsigned;
@@ -47,6 +48,23 @@ struct FormalPowerSeries{
             res[i] = f[i].val;
         }
         return res;
+    }
+
+    void differential(){
+        if (sz == 0){return;}
+        for (uint i = 0; i < sz-1; i++){
+            f[i].val = (i+1)*(ull)f[i+1].val%T;
+        }
+        f.pop_back();
+        sz--;
+    }
+    void integral(const mod_table<T>& mtable){
+        if (sz == 0){return;}
+        sz++;
+        f.push_back(0);
+        for (uint i = sz; i > 0; i--){
+            f[i].val = mtable.invmodlist[i]*(ull)f[i-1].val%T;
+        }
     }
 };
 
