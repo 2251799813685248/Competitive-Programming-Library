@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <functional>
-#include <unordered_map>
+#include <numeric>
 using namespace std;
 
 
@@ -14,6 +14,7 @@ using namespace std;
 template<typename nodeinfo>
 struct UnionFind{
     vector<int> A;//根でないとき、どう辿れば根になるか(すでに根なら-1×(要素数))
+    vector<int> P;//連結成分管理用
     int groups;//連結成分数
     
     vector<nodeinfo> B;//各根に載っている状態を保存する。
@@ -21,16 +22,26 @@ struct UnionFind{
     function<void(nodeinfo&, int, int)> modify_info;//同一連結成分内に対する操作を行う関数{変更される要素, それの代表元2つ}
 
 
-    /// @brief 頂点番号が(0,)1,2...NのUnionFind木を構築する。全部同一の状態で初期化される
+    /// @brief 頂点番号が(0,)1,2...N-1のUnionFind木を構築する。全部同一の状態で初期化される
     /// @param N 頂点数の上限
     /// @param e 
     /// @param one_indexed 1-indexedかどうか
-    UnionFind(const int &N, const nodeinfo &init, function<void(nodeinfo&, nodeinfo, int, int)> mergefunc, function<void(nodeinfo&, int, int)> modifyfunc, bool one_indexed = true): A(N+1,-1), groups(one_indexed ? N : N+1), B(N+1, init), merge_info(mergefunc), modify_info(modifyfunc){}
+    UnionFind(const int N,
+        const nodeinfo &init,
+        function<void(nodeinfo&, nodeinfo, int, int)> mergefunc,
+        function<void(nodeinfo&, int, int)> modifyfunc):
+            A(N,-1),
+            P([N](){vector<int> v(N); iota(v.begin(), v.end(), 0); return v;}),
+            groups(N),
+            B(N, init),
+            merge_info(mergefunc),
+            modify_info(modifyfunc)
+    {}
 
     /// @brief nodeの親を見つける
     /// @param node 
     /// @return root
-    int findroot(int node){
+    int findroot(int node) const {
         while (A[node] >= 0){
             node = A[node];
         }
@@ -39,7 +50,7 @@ struct UnionFind{
     /// @brief node以上のノードをすべてrootに直接接続する
     /// @param node 
     /// @param root 
-    void compress_path(int node, const int &root){
+    void compress_path(int node, const int root){
         int temp = node;
         while (A[temp] >= 0){
             temp = A[temp];
@@ -84,6 +95,7 @@ struct UnionFind{
         }
 
         groups--;
+        swap(P[node1], P[node2]);
         
         if (-A[root1] > -A[root2]){
             A[root1] += A[root2];
@@ -97,42 +109,33 @@ struct UnionFind{
         }
     }
 
-    /// @brief 連結成分ごとに分解し、各成分に属する頂点をまとめたリストを作成する。
-    /// @param one_indexed 1-indexedかどうか(デフォルトで1-indexed)
-    /// @return 
-    vector<vector<int>> connected_groups(bool one_indexed = true){
-        unordered_map<int,vector<int>> BB;//仮の答え保存用
-        vector<int> C(A.size(),-1);//どの連結成分にいるかを管理
-
-        for (int i = one_indexed, sz = A.size(); i <= sz-1; i++){
-            if (A[i] < 0){
-                BB[i].push_back(i);
-                C[i] = i;
-            }
+    vector<int> enumerate_cc(int node){
+        vector<int> res;
+        res.push_back(node);
+        int n = P[node];
+        while (n != node){
+            res.push_back(n);
+            n = P[n];
         }
-
-        vector<int> passed_node;//たどっている途中の頂点を保持するスタック
-
-        for (int i = one_indexed, sz = A.size(); i <= sz-1; i++){
-            if (C[i] != -1){
-                continue;
+        return res;
+    }
+    vector<vector<int>> enumerate_all_cc(){
+        vector<vector<int>> res_all;
+        vector<bool> used(A.size(), false);
+        for (unsigned i = 0; i < A.size(); i++){
+            if (used[i]){continue;}
+            vector<int> res;
+            res.push_back(i);
+            used[i] = true;
+            int n = P[i];
+            while (n != i){
+                res.push_back(n);
+                used[n] = true;
+                n = P[n];
             }
-            int temp = i;
-            while (C[temp] == -1){
-                passed_node.push_back(temp);
-                temp = A[temp];
-            }
-            while (!passed_node.empty()){
-                BB[C[temp]].push_back(passed_node.back());
-                C[passed_node.back()] = C[temp];
-                passed_node.pop_back();
-            }
+            res_all.push_back(std::move(res));
         }
-        vector<vector<int>> ret;
-        for (auto &pvec : BB){
-            ret.push_back(pvec.second);
-        }
-        return ret;
+        return res_all;
     }
 };
 

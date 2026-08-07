@@ -3,9 +3,11 @@
 
 #include <vector>
 #include <algorithm>
+#include <immintrin.h>
 #include <fps.hpp>
 #include <math_functions.hpp>
 #include <mod_table.hpp>
+#include <prime_and_divisors.hpp>
 using namespace std;
 using ll = long long;
 using uint = unsigned;
@@ -17,10 +19,93 @@ template<typename T> inline bool btest_for_fps(T K, int i){return K&(1ull<<i);}
 /// @brief mod M上での形式的冪級数の計算を行う構造体
 template<uint M>
 struct fps_operator{
-    ull sum_e[30];
-    ull sum_ie[30];
+    uint sum_e[30];
+    uint sum_ie[30];
     uint log_max_length;
     uint last_powroot;
+
+    // --- モンゴメリ乗算用の定数と関数 ---
+    static constexpr uint get_r() {
+        uint res = M;
+        for (int i = 0; i < 4; ++i) res *= 2 - M * res;
+        return res;
+    }
+    static constexpr uint R = get_r();
+    static constexpr uint R2 = -ull(M) % M;
+    static constexpr uint NEG_INV = 0 - R;
+
+    static inline constexpr uint reduce(ull x) {
+        uint res = (x + ull(uint(x) * NEG_INV) * M) >> 32;
+        return res >= M ? res - M : res;
+    }
+    static inline constexpr uint to_montgomery(uint x) {
+        return reduce(ull(x) * R2);
+    }
+    static inline constexpr uint from_montgomery(uint x) {
+        return reduce(x);
+    }
+    static inline constexpr uint montgomery_mul(uint x, uint y) {
+        return reduce(ull(x) * y);
+    }
+    static inline constexpr uint mod_add(uint x, uint y) {
+        return x + y >= M ? x + y - M : x + y;
+    }
+    static inline constexpr uint mod_sub(uint x, uint y) {
+        return x < y ? x + M - y : x - y;
+    }
+
+    // --- AVX-512 / AVX2 SIMD Intrinsics ---
+#if defined(__AVX512F__) && defined(__AVX512DQ__)
+    static inline __m512i montgomery_mul_simd(__m512i a, __m512i b, __m512i mod, __m512i neg_inv) {
+        __m512i mul0 = _mm512_mul_epu32(a, b);
+        __m512i mul1 = _mm512_mul_epu32(_mm512_srli_epi64(a, 32), _mm512_srli_epi64(b, 32));
+        __m512i q0 = _mm512_mul_epu32(_mm512_mullo_epi32(mul0, neg_inv), mod);
+        __m512i q1 = _mm512_mul_epu32(_mm512_mullo_epi32(mul1, neg_inv), mod);
+        __m512i res0 = _mm512_srli_epi64(_mm512_add_epi64(mul0, q0), 32);
+        __m512i res1 = _mm512_srli_epi64(_mm512_add_epi64(mul1, q1), 32);
+        __m512i res = _mm512_or_si512(res0, _mm512_slli_epi64(res1, 32));
+        __mmask16 cmp = _mm512_cmpge_epu32_mask(res, mod);
+        return _mm512_mask_sub_epi32(res, cmp, res, mod);
+    }
+    static inline __m512i mod_add_simd(__m512i a, __m512i b, __m512i mod) {
+        __m512i res = _mm512_add_epi32(a, b);
+        __mmask16 cmp = _mm512_cmpge_epu32_mask(res, mod);
+        return _mm512_mask_sub_epi32(res, cmp, res, mod);
+    }
+    static inline __m512i mod_sub_simd(__m512i a, __m512i b, __m512i mod) {
+        __mmask16 cmp = _mm512_cmplt_epu32_mask(a, b);
+        __m512i res = _mm512_sub_epi32(a, b);
+        return _mm512_mask_add_epi32(res, cmp, res, mod);
+    }
+#elif defined(__AVX2__)
+    // AVX2用 モンゴメリ乗算・剰余加減算
+    static inline __m256i montgomery_mul_simd(__m256i a, __m256i b, __m256i mod, __m256i neg_inv) {
+        __m256i mul0 = _mm256_mul_epu32(a, b);
+        __m256i mul1 = _mm256_mul_epu32(_mm256_srli_epi64(a, 32), _mm256_srli_epi64(b, 32));
+        __m256i q0 = _mm256_mul_epu32(_mm256_mullo_epi32(mul0, neg_inv), mod);
+        __m256i q1 = _mm256_mul_epu32(_mm256_mullo_epi32(mul1, neg_inv), mod);
+        __m256i res0 = _mm256_srli_epi64(_mm256_add_epi64(mul0, q0), 32);
+        __m256i res1 = _mm256_srli_epi64(_mm256_add_epi64(mul1, q1), 32);
+        
+        __m256i res = _mm256_blend_epi32(res0, _mm256_slli_epi64(res1, 32), 0xAA);
+        __m256i diff = _mm256_sub_epi32(res, mod);
+        // diff < 0 なら -1 (全ビット1)、そうでないなら 0 となるマスク
+        __m256i mask = _mm256_srai_epi32(diff, 31);
+        return _mm256_add_epi32(diff, _mm256_and_si256(mask, mod));
+    }
+    static inline __m256i mod_add_simd(__m256i a, __m256i b, __m256i mod) {
+        __m256i diff = _mm256_sub_epi32(_mm256_add_epi32(a, b), mod);
+        __m256i mask = _mm256_srai_epi32(diff, 31);
+        return _mm256_add_epi32(diff, _mm256_and_si256(mask, mod));
+    }
+    static inline __m256i mod_sub_simd(__m256i a, __m256i b, __m256i mod) {
+        __m256i diff = _mm256_sub_epi32(a, b);
+        __m256i mask = _mm256_srai_epi32(diff, 31);
+        return _mm256_add_epi32(diff, _mm256_and_si256(mask, mod));
+    }
+#endif
+
+
     constexpr fps_operator(){
         vector<ll> powroot{1};
         vector<ll> powrootinv;
@@ -37,20 +122,295 @@ struct fps_operator{
             powrootinv.push_back(inverse_mod<ll,ll>(v,M));
         }
         int cnt2 = powroot.size()-1;
-        ull now = 1;
+        uint now = reduce(R2);
         for (int i = 0; i <= cnt2-2; i++){
-            sum_e[i] = (powroot[i+2]*now)%M;
-            now = (now*powrootinv[i+2])%M;
+            sum_e[i] = montgomery_mul(to_montgomery(powroot[i+2]), now);
+            now = montgomery_mul(now, to_montgomery(powrootinv[i+2]));
         }
-        ull inow = 1;
+        uint inow = reduce(R2);
         for (int i = 0; i <= cnt2-2; i++){
-            sum_ie[i] = (powrootinv[i+2]*inow)%M;
-            inow = (inow*powroot[i+2])%M;
+            sum_ie[i] = montgomery_mul(to_montgomery(powrootinv[i+2]), inow);
+            inow = montgomery_mul(inow, to_montgomery(powroot[i+2]));
         }
         for (int i = cnt2-1; i < 30; i++){
             sum_e[i] = 0;
             sum_ie[i] = 0;
         }
+    }
+
+    void inplaceDFT(FormalPowerSeries<M>& F) const {
+        F.resize(upperpow2(F.sz));
+        int n = F.sz;
+        if (n == 0) return;
+        int h = __builtin_ctz(n);
+        
+        for (int ph = 1; ph <= h; ph++) {
+            int w = 1 << (ph - 1), p = 1 << (h - ph);
+            uint now = to_montgomery(1);
+            for (int s = 0; s < w; s++) {
+                int offset = s << (h - ph + 1);
+#if defined(__AVX512F__) && defined(__AVX512DQ__)
+                if (p >= 16) {
+                    __m512i vmod = _mm512_set1_epi32(M);
+                    __m512i vneg_inv = _mm512_set1_epi32(NEG_INV);
+                    __m512i vnow = _mm512_set1_epi32(now);
+                    for (int i = 0; i < p; i += 16) {
+                        __m512i l = _mm512_loadu_si512((__m512i*)&F[i + offset].val);
+                        __m512i r = _mm512_loadu_si512((__m512i*)&F[i + offset + p].val);
+                        __m512i r_now = montgomery_mul_simd(r, vnow, vmod, vneg_inv);
+                        _mm512_storeu_si512((__m512i*)&F[i + offset].val, mod_add_simd(l, r_now, vmod));
+                        _mm512_storeu_si512((__m512i*)&F[i + offset + p].val, mod_sub_simd(l, r_now, vmod));
+                    }
+                } else
+#elif defined(__AVX2__)
+                if (p >= 8) {
+                    __m256i vmod = _mm256_set1_epi32(M);
+                    __m256i vneg_inv = _mm256_set1_epi32(NEG_INV);
+                    __m256i vnow = _mm256_set1_epi32(now);
+                    for (int i = 0; i < p; i += 8) {
+                        __m256i l = _mm256_loadu_si256((__m256i*)&F[i + offset].val);
+                        __m256i r = _mm256_loadu_si256((__m256i*)&F[i + offset + p].val);
+                        __m256i r_now = montgomery_mul_simd(r, vnow, vmod, vneg_inv);
+                        _mm256_storeu_si256((__m256i*)&F[i + offset].val, mod_add_simd(l, r_now, vmod));
+                        _mm256_storeu_si256((__m256i*)&F[i + offset + p].val, mod_sub_simd(l, r_now, vmod));
+                    }
+                } else
+#endif
+                {
+                    for (int i = 0; i < p; i++) {
+                        uint l = F[i + offset].val;
+                        uint r = montgomery_mul(F[i + offset + p].val, now);
+                        F[i + offset].val = mod_add(l, r);
+                        F[i + offset + p].val = mod_sub(l, r);
+                    }
+                }
+                now = montgomery_mul(now, sum_e[__builtin_ctz(~s)]);
+            }
+        }
+    }
+    void inplaceIDFT(FormalPowerSeries<M>& F) const {
+        F.resize(upperpow2(F.sz));
+        int n = F.sz;
+        if (n == 0) return;
+        int h = __builtin_ctz(n);
+        
+        for (int ph = h; ph >= 1; ph--) {
+            int w = 1 << (ph - 1), p = 1 << (h - ph);
+            uint inow = to_montgomery(1);
+            for (int s = 0; s < w; s++) {
+                int offset = s << (h - ph + 1);
+#if defined(__AVX512F__) && defined(__AVX512DQ__)
+                if (p >= 16) {
+                    __m512i vmod = _mm512_set1_epi32(M);
+                    __m512i vneg_inv = _mm512_set1_epi32(NEG_INV);
+                    __m512i vinow = _mm512_set1_epi32(inow);
+                    for (int i = 0; i < p; i += 16) {
+                        __m512i l = _mm512_loadu_si512((__m512i*)&F[i + offset].val);
+                        __m512i r = _mm512_loadu_si512((__m512i*)&F[i + offset + p].val);
+                        _mm512_storeu_si512((__m512i*)&F[i + offset].val, mod_add_simd(l, r, vmod));
+                        _mm512_storeu_si512((__m512i*)&F[i + offset + p].val, montgomery_mul_simd(mod_sub_simd(l, r, vmod), vinow, vmod, vneg_inv));
+                    }
+                } else
+#elif defined(__AVX2__)
+                if (p >= 8) {
+                    __m256i vmod = _mm256_set1_epi32(M);
+                    __m256i vneg_inv = _mm256_set1_epi32(NEG_INV);
+                    __m256i vinow = _mm256_set1_epi32(inow);
+                    for (int i = 0; i < p; i += 8) {
+                        __m256i l = _mm256_loadu_si256((__m256i*)&F[i + offset].val);
+                        __m256i r = _mm256_loadu_si256((__m256i*)&F[i + offset + p].val);
+                        _mm256_storeu_si256((__m256i*)&F[i + offset].val, mod_add_simd(l, r, vmod));
+                        _mm256_storeu_si256((__m256i*)&F[i + offset + p].val, montgomery_mul_simd(mod_sub_simd(l, r, vmod), vinow, vmod, vneg_inv));
+                    }
+                } else
+#endif
+                {
+                    for (int i = 0; i < p; i++) {
+                        uint l = F[i + offset].val;
+                        uint r = F[i + offset + p].val;
+                        F[i + offset].val = mod_add(l, r);
+                        F[i + offset + p].val = montgomery_mul(mod_sub(l, r), inow);
+                    }
+                }
+                inow = montgomery_mul(inow, sum_ie[__builtin_ctz(~s)]);
+            }
+        }
+    }
+    void inplaceDFT_T(FormalPowerSeries<M>& F) const {
+        F.resize(upperpow2(F.sz));
+        int n = F.sz;
+        if (n == 0) return;
+        int h = __builtin_ctz(n);
+        
+        for (int ph = h; ph >= 1; ph--) {
+            int w = 1 << (ph - 1), p = 1 << (h - ph);
+            uint32_t now = to_montgomery(1);
+            for (int s = 0; s < w; s++) {
+                int offset = s << (h - ph + 1);
+#if defined(__AVX512F__) && defined(__AVX512DQ__)
+                if (p >= 16) {
+                    __m512i vmod = _mm512_set1_epi32(M);
+                    __m512i vneg_inv = _mm512_set1_epi32(NEG_INV);
+                    __m512i vnow = _mm512_set1_epi32(now);
+                    for (int i = 0; i < p; i += 16) {
+                        __m512i l = _mm512_loadu_si512((__m512i*)&F[i + offset].val);
+                        __m512i r = _mm512_loadu_si512((__m512i*)&F[i + offset + p].val);
+                        _mm512_storeu_si512((__m512i*)&F[i + offset].val, mod_add_simd(l, r, vmod));
+                        _mm512_storeu_si512((__m512i*)&F[i + offset + p].val, montgomery_mul_simd(mod_sub_simd(l, r, vmod), vnow, vmod, vneg_inv));
+                    }
+                } else
+#elif defined(__AVX2__)
+                if (p >= 8) {
+                    __m256i vmod = _mm256_set1_epi32(M);
+                    __m256i vneg_inv = _mm256_set1_epi32(NEG_INV);
+                    __m256i vnow = _mm256_set1_epi32(now);
+                    for (int i = 0; i < p; i += 8) {
+                        __m256i l = _mm256_loadu_si256((__m256i*)&F[i + offset].val);
+                        __m256i r = _mm256_loadu_si256((__m256i*)&F[i + offset + p].val);
+                        _mm256_storeu_si256((__m256i*)&F[i + offset].val, mod_add_simd(l, r, vmod));
+                        _mm256_storeu_si256((__m256i*)&F[i + offset + p].val, montgomery_mul_simd(mod_sub_simd(l, r, vmod), vnow, vmod, vneg_inv));
+                    }
+                } else
+#endif
+                {
+                    for (int i = 0; i < p; i++) {
+                        uint32_t l = F[i + offset].val;
+                        uint32_t r = F[i + offset + p].val;
+                        F[i + offset].val = mod_add(l, r);
+                        F[i + offset + p].val = montgomery_mul(mod_sub(l, r), now);
+                    }
+                }
+                now = montgomery_mul(now, sum_e[__builtin_ctz(~s)]);
+            }
+        }
+    }
+    void inplaceIDFT_T(FormalPowerSeries<M>& F) const {
+        F.resize(upperpow2(F.sz));
+        int n = F.sz;
+        if (n == 0) return;
+        int h = __builtin_ctz(n);
+        
+        for (int ph = 1; ph <= h; ph++) {
+            int w = 1 << (ph - 1), p = 1 << (h - ph);
+            uint32_t inow = to_montgomery(1);
+            for (int s = 0; s < w; s++) {
+                int offset = s << (h - ph + 1);
+#if defined(__AVX512F__) && defined(__AVX512DQ__)
+                if (p >= 16) {
+                    __m512i vmod = _mm512_set1_epi32(M);
+                    __m512i vneg_inv = _mm512_set1_epi32(NEG_INV);
+                    __m512i vinow = _mm512_set1_epi32(inow);
+                    for (int i = 0; i < p; i += 16) {
+                        __m512i l = _mm512_loadu_si512((__m512i*)&F[i + offset].val);
+                        __m512i r = _mm512_loadu_si512((__m512i*)&F[i + offset + p].val);
+                        __m512i r_inow = montgomery_mul_simd(r, vinow, vmod, vneg_inv);
+                        _mm512_storeu_si512((__m512i*)&F[i + offset].val, mod_add_simd(l, r_inow, vmod));
+                        _mm512_storeu_si512((__m512i*)&F[i + offset + p].val, mod_sub_simd(l, r_inow, vmod));
+                    }
+                } else
+#elif defined(__AVX2__)
+                if (p >= 8) {
+                    __m256i vmod = _mm256_set1_epi32(M);
+                    __m256i vneg_inv = _mm256_set1_epi32(NEG_INV);
+                    __m256i vinow = _mm256_set1_epi32(inow);
+                    for (int i = 0; i < p; i += 8) {
+                        __m256i l = _mm256_loadu_si256((__m256i*)&F[i + offset].val);
+                        __m256i r = _mm256_loadu_si256((__m256i*)&F[i + offset + p].val);
+                        __m256i r_inow = montgomery_mul_simd(r, vinow, vmod, vneg_inv);
+                        _mm256_storeu_si256((__m256i*)&F[i + offset].val, mod_add_simd(l, r_inow, vmod));
+                        _mm256_storeu_si256((__m256i*)&F[i + offset + p].val, mod_sub_simd(l, r_inow, vmod));
+                    }
+                } else
+#endif
+                {
+                    for (int i = 0; i < p; i++) {
+                        uint32_t l = F[i + offset].val;
+                        uint32_t r = montgomery_mul(F[i + offset + p].val, inow);
+                        F[i + offset].val = mod_add(l, r);
+                        F[i + offset + p].val = mod_sub(l, r);
+                    }
+                }
+                inow = montgomery_mul(inow, sum_ie[__builtin_ctz(~s)]);
+            }
+        }
+    }
+    FormalPowerSeries<M> convolution(FormalPowerSeries<M> F1, FormalPowerSeries<M> F2) const {
+        int n = F1.size();
+        int m = F2.size();
+        if (n == 0 || m == 0) return FormalPowerSeries<M>(0);
+        
+        if (std::min(n, m) <= 60) {
+            if (n < m) {
+                std::swap(n, m);
+                std::swap(F1.sz, F2.sz);
+                std::swap(F1.f, F2.f);
+            }
+            FormalPowerSeries<M> ans(n + m - 1);
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < m; j++) {
+                    ans[i + j].val = (ans[i + j].val + ull(F1[i].val) * F2[j].val) % M;
+                }
+            }
+            return ans;
+        }
+
+        int reference_size = upperpow2(n + m - 1);
+        F1.resize(reference_size);
+        F2.resize(reference_size);
+
+        for (int i = 0; i < reference_size; i++) {
+            F1[i].val = to_montgomery(F1[i].val);
+            F2[i].val = to_montgomery(F2[i].val);
+        }
+
+        inplaceDFT(F1);
+        inplaceDFT(F2);
+
+        int i = 0;
+#if defined(__AVX512F__) && defined(__AVX512DQ__)
+        __m512i vmod512 = _mm512_set1_epi32(M);
+        __m512i vneg_inv512 = _mm512_set1_epi32(NEG_INV);
+        for (; i + 15 < reference_size; i += 16) {
+            __m512i a = _mm512_loadu_si512((__m512i*)&F1[i].val);
+            __m512i b = _mm512_loadu_si512((__m512i*)&F2[i].val);
+            _mm512_storeu_si512((__m512i*)&F1[i].val, montgomery_mul_simd(a, b, vmod512, vneg_inv512));
+        }
+#elif defined(__AVX2__)
+        __m256i vmod256 = _mm256_set1_epi32(M);
+        __m256i vneg_inv256 = _mm256_set1_epi32(NEG_INV);
+        for (; i + 7 < reference_size; i += 8) {
+            __m256i a = _mm256_loadu_si256((__m256i*)&F1[i].val);
+            __m256i b = _mm256_loadu_si256((__m256i*)&F2[i].val);
+            _mm256_storeu_si256((__m256i*)&F1[i].val, montgomery_mul_simd(a, b, vmod256, vneg_inv256));
+        }
+#endif
+        for (; i < reference_size; i++) {
+            F1[i].val = montgomery_mul(F1[i].val, F2[i].val);
+        }
+
+        inplaceIDFT(F1);
+
+        uint iz_normal = modpow<M>(reference_size, M-2);
+        i = 0;
+#if defined(__AVX512F__) && defined(__AVX512DQ__)
+        __m512i viz_normal512 = _mm512_set1_epi32(iz_normal);
+        for (; i + 15 < reference_size; i += 16) {
+            __m512i a = _mm512_loadu_si512((__m512i*)&F1[i].val);
+            _mm512_storeu_si512((__m512i*)&F1[i].val, montgomery_mul_simd(a, viz_normal512, vmod512, vneg_inv512));
+        }
+#elif defined(__AVX2__)
+        __m256i viz_normal256 = _mm256_set1_epi32(iz_normal);
+        for (; i + 7 < reference_size; i += 8) {
+            __m256i a = _mm256_loadu_si256((__m256i*)&F1[i].val);
+            _mm256_storeu_si256((__m256i*)&F1[i].val, montgomery_mul_simd(a, viz_normal256, vmod256, vneg_inv256));
+        }
+#endif
+        for (; i < reference_size; i++) {
+            F1[i].val = reduce(ull(F1[i].val) * iz_normal);
+        }
+
+        F1.resize(n + m - 1);
+        return F1;
     }
     FormalPowerSeries<M> add(const FormalPowerSeries<M>& F1, const FormalPowerSeries<M>& F2) const {
         FormalPowerSeries<M> ret(max(F1.sz, F2.sz));
@@ -103,121 +463,6 @@ struct fps_operator{
             }
         }
         return ret;
-    }
-    void inplaceDFT(FormalPowerSeries<M>& F) const {
-        F.resize(upperpow2(F.sz));
-        int n = F.sz;
-        if (n == 0) return;
-        int h = __builtin_ctz(n);
-        for (int ph = 1; ph <= h; ph++) {
-            int w = 1 << (ph - 1), p = 1 << (h - ph);
-            ull now = 1;
-            for (int s = 0; s < w; s++) {
-                int offset = s << (h - ph + 1);
-                for (int i = 0; i < p; i++) {
-                    uint l = F[i + offset].val;
-                    uint r = F[i + offset + p].val*now%M;
-                    F[i + offset].val = l+r<M ? l+r : l+r-M;
-                    F[i + offset + p].val = l<r ? l+M-r : l-r;
-                }
-                now = now*sum_e[__builtin_ctz(~s)]%M;
-            }
-        }
-    }
-    void inplaceIDFT(FormalPowerSeries<M>& F) const {
-        F.resize(upperpow2(F.sz));
-        int n = F.sz;
-        if (n == 0) return;
-        int h = __builtin_ctz(n);
-        for (int ph = h; ph >= 1; ph--) {
-            int w = 1 << (ph - 1), p = 1 << (h - ph);
-            ull inow = 1;
-            for (int s = 0; s < w; s++) {
-                int offset = s << (h - ph + 1);
-                for (int i = 0; i < p; i++) {
-                    uint l = F[i + offset].val;
-                    uint r = F[i + offset + p].val;
-                    F[i + offset].val = l+r<M ? l+r : l+r-M;
-                    F[i + offset + p].val = (l<r ? l+M-r : l-r)*inow%M;
-                }
-                inow = inow*sum_ie[__builtin_ctz(~s)]%M;
-            }
-        }
-    }
-    void inplaceDFT_T(FormalPowerSeries<M>& F) const {
-        F.resize(upperpow2(F.sz));
-        int n = F.sz;
-        if (n == 0) return;
-        int h = __builtin_ctz(n);
-        for (int ph = h; ph >= 1; ph--) {
-            int w = 1 << (ph - 1), p = 1 << (h - ph);
-            ull now = 1;
-            for (int s = 0; s < w; s++) {
-                int offset = s << (h - ph + 1);
-                for (int i = 0; i < p; i++) {
-                    uint l = F[i + offset].val;
-                    uint r = F[i + offset + p].val;
-                    F[i + offset].val = l+r<M ? l+r : l+r-M;
-                    F[i + offset + p].val = (l<r ? l+M-r : l-r)*now%M;
-                }
-                now = now*sum_e[__builtin_ctz(~s)]%M;
-            }
-        }
-    }
-    void inplaceIDFT_T(FormalPowerSeries<M>& F) const {
-        F.resize(upperpow2(F.sz));
-        int n = F.sz;
-        if (n == 0) return;
-        int h = __builtin_ctz(n);
-        for (int ph = 1; ph <= h; ph++) {
-            int w = 1 << (ph - 1), p = 1 << (h - ph);
-            ull inow = 1;
-            for (int s = 0; s < w; s++) {
-                int offset = s << (h - ph + 1);
-                for (int i = 0; i < p; i++) {
-                    uint l = F[i + offset].val;
-                    uint r = F[i + offset + p].val*inow%M;
-                    F[i + offset].val = l+r<M ? l+r : l+r-M;
-                    F[i + offset + p].val = l<r ? l+M-r : l-r;
-                }
-                inow = inow*sum_ie[__builtin_ctz(~s)]%M;
-            }
-        }
-    }
-    /// @brief 多項式の積を求める。 
-    FormalPowerSeries<M> convolution(FormalPowerSeries<M> F1, FormalPowerSeries<M> F2) const {
-        int n = F1.size();
-        int m = F2.size();
-        if (n == 0 || m == 0) return FormalPowerSeries<M>(0);
-        if (min(n, m) <= 60){
-            if (n < m) {
-                swap(n, m);
-                swap(F1.sz, F2.sz);
-                swap(F1.f, F2.f);
-            }
-            FormalPowerSeries<M> ans(n+m-1);
-            for (int i = 0; i < n; i++){
-                for (int j = 0; j < m; j++){
-                    ans[i+j].val = (ans[i+j].val + F1[i].val*(ull)F2[j].val)%M;
-                }
-            }
-            return ans;
-        }
-        int reference_size = upperpow2(n+m-1);
-        F1.resize(reference_size);
-        F2.resize(reference_size);
-        inplaceDFT(F1);
-        inplaceDFT(F2);
-        for (int i = 0; i < reference_size; i++){
-            F1[i].val = F1[i].val*(ull)F2[i].val%M;
-        }
-        inplaceIDFT(F1);
-        ull iz = inverse_mod<ll,ll>(reference_size, M);
-        for (int i = 0; i < reference_size; i++){
-            F1[i].val = F1[i].val*iz%M;
-        }
-        F1.resize(n+m-1);
-        return F1;
     }
     /// @brief F*G == 1 mod x^n となるGを求める F[x^0] != 0 が必要 
     FormalPowerSeries<M> inv(const FormalPowerSeries<M>& F, const int n) const {

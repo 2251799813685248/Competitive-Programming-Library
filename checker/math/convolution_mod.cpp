@@ -46,7 +46,7 @@ const vector<ll> dj8{1,1,0,-1,-1,-1,0,1};
 #include <fps_operations.hpp>
 
 
-fps_operator<998244353> op;
+constexpr fps_operator<998244353> op;
 
 int main(){
     ios::sync_with_stdio(false);

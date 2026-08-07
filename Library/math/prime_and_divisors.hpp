@@ -533,7 +533,7 @@ constexpr ull primitive_root(ull P){
     }
     Montgomery64 mg(P);
     Xorshift64 rng(0x1234567E89ABCDEF);
-    auto factorized = Pollard_rho<ull>(P-1);
+    auto factorized = factorize<ull>(P-1);
     while (true) {
         ull r = rng.next()%P;
         if (r == 0){continue;}

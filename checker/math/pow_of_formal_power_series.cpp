@@ -47,7 +47,7 @@ const vector<ll> dj8{1,1,0,-1,-1,-1,0,1};
 #include <mod_table.hpp>
 
 
-fps_operator<998244353> op;
+constexpr fps_operator<998244353> op;
 mod_table<998244353> mtable(1000000);
 
 int main(){
