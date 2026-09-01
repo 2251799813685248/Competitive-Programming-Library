@@ -1,7 +1,6 @@
 #ifndef DOUBLY_LINKED_LIST_HPP_
 #define DOUBLY_LINKED_LIST_HPP_
 
-
 #include <vector>
 #include <iostream>
 #include <cassert>

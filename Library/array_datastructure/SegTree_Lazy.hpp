@@ -51,8 +51,9 @@ struct LazySegTree{
         id = ididid;
         max_capacity = N;
 
+        if (N == 0){return;}
+
         //セグ木のサイズを決定
-        if (N == 0){cerr << "N=0 is invalid" << endl; assert(false);}
         log2N = 64-(max_capacity == 1 ? 64 : __builtin_clzll(max_capacity-1));
 
         //セグ木に実際に乗せるvectorを構築
@@ -85,8 +86,9 @@ struct LazySegTree{
         id = ididid;
         max_capacity = A.size();
 
+        if (A.empty()){return;}
+
         //セグ木のサイズを決定
-        if (A.size() == 0){cerr << "N=0 is invalid" << endl; assert(false);}
         log2N = 64-(max_capacity == 1 ? 64 : __builtin_clzll(max_capacity-1));
 
 
@@ -108,7 +110,7 @@ struct LazySegTree{
         return (1<<(log2N-31+__builtin_clz(index_on_tree)))*(index_on_tree-(1<<(31-__builtin_clz(index_on_tree))));
     }
     int get_right(int index_on_tree){
-        return (1<<(log2N-31+__builtin_clz(index_on_tree)))*(1+index_on_tree-(1<<(31-__builtin_clz(index_on_tree))))-1;
+        return (1<<(log2N-31+__builtin_clz(index_on_tree)))*(1+index_on_tree-(1<<(31-__builtin_clz(index_on_tree))));
     }
 
     /// @brief 遅延情報の伝播を行う
@@ -130,19 +132,19 @@ struct LazySegTree{
     deque<int> lazy_node;//区間集計、区間更新に使う。
     deque<int> lazy_node_flipped;//区間更新で使う。
 
-    /// @brief index閉区間[L,R]において、集計を行う。
+    /// @brief 区間[L,R)において、集計を行う。
     /// @param L 左端(左端を含む)
-    /// @param R 右端(右端を含む)
-    /// @return [L,R]での集計結果
+    /// @param R 右端(右端を含まない)
+    /// @return [L,R)での集計結果
     info range_get(const int L, const int R){
-        if (L >= max_capacity || L < 0 || R >= max_capacity || R < 0){
+        if (L >= max_capacity || L < 0 || R > max_capacity || R < 0){
             assert(false);
         }
-        if (L > R){
+        if (L >= R){
             return e;
         }
         int Lstart = L + (1<<log2N);
-        int Rstart = R+1 + (1<<log2N);
+        int Rstart = R + (1<<log2N);
         int lm = (Lstart / (Lstart & -Lstart)) >> 1;
         int rm = (Rstart / (Rstart & -Rstart)) >> 1;
         while (Lstart < Rstart){
@@ -167,27 +169,27 @@ struct LazySegTree{
         }
         info ret = e;
         int left = L;
-        while (left < R+1){
-            int log2interval = min(left ? __builtin_ctz(left) : log2N, 31-__builtin_clz(R+1-left));
+        while (left < R){
+            int log2interval = min(left ? __builtin_ctz(left) : log2N, 31-__builtin_clz(R-left));
             ret = operation(ret, tree[(left+(1<<log2N))>>log2interval].first);
             left += 1<<log2interval;
         }
         return ret;
     }
 
-    /// @brief index閉区間[L,R]に対してFをmappingする。
+    /// @brief 区間[L,R)に対してFをmappingする。
     /// @param L 左端(左端を含む)
-    /// @param R 右端(右端を含む)
+    /// @param R 右端(右端を含まない)
     /// @param F 適用する写像(アフィン変換ならaとbを持った構造体など)
     void range_update(const int L, const int R, const func &F){
-        if (L >= max_capacity || L < 0 || R >= max_capacity || R < 0){
+        if (L >= max_capacity || L < 0 || R > max_capacity || R < 0){
             assert(false);
         }
-        if (L > R){
+        if (L >= R){
             return;
         }
         int Lstart = L + (1<<log2N);
-        int Rstart = R+1 + (1<<log2N);
+        int Rstart = R + (1<<log2N);
         int lm = (Lstart / (Lstart & -Lstart)) >> 1;
         int rm = (Rstart / (Rstart & -Rstart)) >> 1;
         while (Lstart && Lstart < Rstart){
@@ -212,8 +214,8 @@ struct LazySegTree{
             lazy_node.pop_back();
         }
         int left = L;
-        while (left < R+1){
-            int log2interval = min(left ? __builtin_ctz(left) : log2N, 31-__builtin_clz(R+1-left));
+        while (left < R){
+            int log2interval = min(left ? __builtin_ctz(left) : log2N, 31-__builtin_clz(R-left));
             tree[(left+(1<<log2N))>>log2interval].first = mapping(F,tree[(left+(1<<log2N))>>log2interval].first);
             tree[(left+(1<<log2N))>>log2interval].second = composition(F,tree[(left+(1<<log2N))>>log2interval].second);
             left += 1<<log2interval;
@@ -225,11 +227,10 @@ struct LazySegTree{
         }
     }
 
-    /// @brief 左端をLに固定したとき、Gがtrueになる最小の右端indexを返す。もしなければINF(=2147483647)が返ってくる。
+    /// @brief 左端をLに固定したとき、G(T.range_get(L, t))がtrueになる最小のt(>L)を返す。もしなければINF(=2147483647)が返ってくる。
     /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。 
     /// @param L 左端
     /// @param G 判定関数...boolを返す。引数としてinfoを受け取るが、これはT.range_get(L, t)が入り、これに関する条件式を自分で関数内に記述することで、このようなtの最小が求まる。
-    /// @return Gがtrueになる最小右端indexまたは2147483647
     int min_right(int L, const function<bool(info)> &G){
         if (L >= max_capacity || L < 0){assert(false);}
         info current_result = e;
@@ -240,11 +241,11 @@ struct LazySegTree{
         checkpoint:
         int ctz = L == 0 ? log2N : __builtin_ctz(L);
         if (!G(operation(current_result, tree[((1<<log2N)+L)>>ctz].first))){
-            if (get_right(((1<<log2N)+L)>>ctz)+1 == 1<<log2N){
+            if (get_right(((1<<log2N)+L)>>ctz) == 1<<log2N){
                 return 2147483647;
             }
             current_result = operation(current_result, tree[((1<<log2N)+L)>>ctz].first);
-            L = get_right(((1<<log2N)+L)>>ctz)+1;
+            L = get_right(((1<<log2N)+L)>>ctz);
             goto checkpoint;
         }
         tell_info(((1<<log2N)+L)>>ctz);
@@ -252,21 +253,24 @@ struct LazySegTree{
             tell_info(((1<<log2N)+L)>>i);
             if (!G(operation(current_result, tree[((1<<log2N)+L)>>i].first))){
                 current_result = operation(current_result, tree[((1<<log2N)+L)>>i].first);
-                L = get_right(((1<<log2N)+L)>>i)+1;
+                L = get_right(((1<<log2N)+L)>>i);
                 goto checkpoint;
             }
         }
-        return L;
+        return L+1;
     }
-    /// @brief 右端をRに固定したとき、Gがtrueになる最大の左端indexを返す。もしなければ-INF-1(=-2147483647)が返ってくる。
+    /// @brief 右端をRに固定したとき、G(T.range_get(t, R))がtrueになる最大のt(<R)を返す。もしなければ-INF-1(=-2147483647)が返ってくる。
     /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。 
     /// @param L 左端
     /// @param G 判定関数...boolを返す。引数としてinfoを受け取るが、これはT.range_get(t, R)が入り、これに関する条件式を自分で関数内に記述することで、このようなtの最小が求まる。
-    /// @return Gがtrueになる最大左端indexまたは-2147483648
     int max_left(int R, const function<bool(info)> &G){
-        if (R >= max_capacity || R < 0){
+        if (R > max_capacity || R < 0){
             assert(false);
         }
+        if (R == 0){
+            return -2147483648;
+        }
+        R--;
         info current_result = e;
         int cto_init = __builtin_ctz(~R);
         for (int i = log2N; i > cto_init; i--){
@@ -294,10 +298,10 @@ struct LazySegTree{
         return R;
     }
 
-    info operator[](const int t){
+    inline info operator[](const int t){
         return range_get(t,t);
     }
-    int size() const{
+    inline constexpr size_t size() const {
         return max_capacity;
     }
 };

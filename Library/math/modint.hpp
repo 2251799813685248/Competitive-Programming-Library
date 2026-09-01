@@ -58,7 +58,7 @@ struct constant_modint {
         return res;
     }
     constant_modint inv() const {
-        return inverse_mod((ll)val, M);
+        return inverse_mod<ll,ll>(val, M);
     }
 
     friend std::ostream& operator<<(std::ostream& os, const constant_modint& m) {

@@ -89,12 +89,12 @@ void solve(){
         if (!q){
             ll l,r,b,c;
             cin >> l >> r >> b >> c;
-            T.range_update(l,r-1, {b,c});
+            T.range_update(l,r, {b,c});
         }
         else{
             ll l,r;
             cin >> l >> r;
-            print(T.range_get(l,r-1)[1]);
+            print(T.range_get(l,r)[1]);
         }
     }
 

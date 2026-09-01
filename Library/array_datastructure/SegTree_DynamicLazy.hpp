@@ -63,8 +63,9 @@ struct DynamicLazySegTree{
         id = ididid;
         max_capacity = N;
 
+        if (N == 0){return;}
+
         //セグ木のサイズを決定
-        if (N == 0){cerr << "N=0 is invalid" << endl; assert(false);}
         log2N = 64-(max_capacity == 1 ? 64 : __builtin_clzll(max_capacity-1));
 
         root = new SegTreeNode;
@@ -84,15 +85,15 @@ struct DynamicLazySegTree{
         node->delay = id;
     }
 
-    /// @brief index閉区間[L,R]において、集計を行う。
+    /// @brief 区間[L,R)において、集計を行う。
     /// @param L 左端(左端を含む)
-    /// @param R 右端(右端を含む)
-    /// @return [L,R]での集計結果
+    /// @param R 右端(右端を含まない)
+    /// @return [L,R)での集計結果
     info range_get(const ll L, const ll R, ll nowleft = 0, int depth = 0, SegTreeNode* now = nullptr){
-        if (L > R){return e;}
-        if (nowleft > R || nowleft + (1ll<<(log2N-depth)) <= L){return e;}
+        if (L >= R){return e;}
+        if (nowleft >= R || nowleft + (1ll<<(log2N-depth)) <= L){return e;}
         if (now == nullptr){now = root;}
-        if (L <= nowleft && nowleft + (1ll<<(log2N-depth))-1 <= R){return now->I;}
+        if (L <= nowleft && nowleft + (1ll<<(log2N-depth)) <= R){return now->I;}
         
 
         if (depth < log2N){
@@ -111,15 +112,15 @@ struct DynamicLazySegTree{
         return operation(range_get(L,R,nowleft,depth+1,now->left), range_get(L,R,nowleft+(1ll<<(log2N-depth-1)),depth+1,now->right));
     }
 
-    /// @brief index閉区間[L,R]に対してFをmappingする。
+    /// @brief 区間[L,R)に対してFをmappingする。
     /// @param L 左端(左端を含む)
-    /// @param R 右端(右端を含む)
+    /// @param R 右端(右端を含まない)
     /// @param F 適用する写像(アフィン変換ならaとbを持った構造体など)
     void range_update(const int L, const int R, const func &F, int nowleft = 0, int depth = 0, SegTreeNode* now = nullptr){
-        if (L > R || L >= max_capacity || L < 0 || R >= max_capacity || R < 0){return;}
-        if (nowleft > R || nowleft + (1ll<<(log2N-depth)) <= L){return;}
+        if (L >= R || L >= max_capacity || L < 0 || R > max_capacity || R < 0){return;}
+        if (nowleft >= R || nowleft + (1ll<<(log2N-depth)) <= L){return;}
         if (now == nullptr){now = root;}
-        if (L <= nowleft && nowleft + (1ll<<(log2N-depth))-1 <= R){
+        if (L <= nowleft && nowleft + (1ll<<(log2N-depth)) <= R){
             now->I = mapping(F, now->I);
             now->delay = composition(F, now->delay);
             return;
@@ -145,11 +146,10 @@ struct DynamicLazySegTree{
 
     deque<SegTreeNode*> stk; //二分探索中に辿っているノードを保持
 
-    /// @brief 左端をLに固定したとき、Gがtrueになる最小の右端indexを返す。もしなければINF(=2147483647)が返ってくる。
+    /// @brief 左端をLに固定したとき、G(T.range_get(L, t))がtrueになる最小のtを返す。もしなければINF(=9223372036854775807)が返ってくる。
     /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。 
     /// @param L 左端
     /// @param G 判定関数...boolを返す。引数としてinfoを受け取るが、これはT.range_get(L, t)が入り、これに関する条件式を自分で関数内に記述することで、このようなtの最小が求まる。
-    /// @return Gがtrueになる最小右端indexまたは2147483647
     ll min_right(ll L, const function<bool(info)> &G){
         stk.clear();
         if (L >= max_capacity || L < 0){assert(false);}
@@ -190,7 +190,7 @@ struct DynamicLazySegTree{
         checkpoint:
         if (!G(operation(current_result, now->I))){
             if (nowleft + (1ll<<(log2N-depth)) == 1<<log2N){
-                return 2147483647;
+                return 9223372036854775807;
             }
             current_result = operation(current_result, now->I);
             while(nowidx&1){
@@ -250,7 +250,7 @@ struct DynamicLazySegTree{
             nowidx <<= 1;
             depth++;
         }
-        return nowleft;
+        return nowleft+1;
     }
     
     // /// @brief 右端をRに固定したとき、条件式Gが成り立つ最大の左端indexを返す。もしなければ-INF-1(=-2147483648)が返ってくる。
@@ -295,7 +295,7 @@ struct DynamicLazySegTree{
         return range_get(t,t);
     }
     
-    ll size() const{
+    inline constexpr size_t size() const {
         return max_capacity;
     }
 };

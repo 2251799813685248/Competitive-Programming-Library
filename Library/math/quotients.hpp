@@ -8,7 +8,7 @@
 using namespace std;
 using ll = long long;
 
-/// @brief 1<=x<=M の範囲におけるN/xの商を列挙する。 {値, 左端, 右端}の形で求まる。
+/// @brief 1<=x<=M の範囲におけるN/xの商を列挙する。 {値, 左端, 右端(半開区間)}の形で求まる。
 constexpr vector<array<ll,3>> enumerate_quotient(ll N, ll M){
     vector<array<ll,3>> ret;
     if (N == 0){
@@ -31,7 +31,7 @@ constexpr vector<array<ll,3>> enumerate_quotient(ll N, ll M){
         }
     }
     for (ll k = k0; k >= 0; k--){
-        ret.push_back({k, N/(k+1)+1, min(M, k > 0 ? N/k : M)});
+        ret.push_back({k, N/(k+1)+1, min(M+1, k > 0 ? N/k+1 : M+1)});
         if (ret.back()[1] > ret.back()[2]){
             ret.pop_back();
             break;
@@ -39,7 +39,7 @@ constexpr vector<array<ll,3>> enumerate_quotient(ll N, ll M){
     }
     reverse(ret.begin(), ret.end());
     for (ll x = min(M, N/(k0+1)); x >= 1; x--){
-        ret.push_back({N/x, x,x});
+        ret.push_back({N/x, x,x+1});
     }
     return ret;
 }

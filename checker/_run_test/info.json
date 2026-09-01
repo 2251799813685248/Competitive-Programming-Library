@@ -1,6 +1,7 @@
 {
     "array_datastructure":[
-        "range_affine_range_sum"
+        "range_affine_range_sum",
+        "range_affine_range_sum_large_array"
     ],
     "fps":[
         "convolution_mod",
@@ -21,7 +22,9 @@
     ],
     "matrix":[
         "pow_of_matrix",
-        "inverse_matrix"
+        "inverse_matrix",
+        "system_of_linear_equations",
+        "adjugate_matrix"
     ],
     "number_theory":[
         "enumerate_quotients",
@@ -47,6 +50,6 @@
         "sort_points_by_argument"
     ],
     "temp":[
-        "convolution_mod"
+        "adjugate_matrix"
     ]
 }
