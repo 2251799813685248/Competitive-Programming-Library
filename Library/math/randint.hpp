@@ -21,12 +21,12 @@ struct randint{
         }
         ui = uniform_int_distribution<ull>(0, 18446744073709551615ull);
     };
-    /// @brief `L`以上`R`以下の乱数を生成する。
+    /// @brief `L`以上`R`未満の乱数を生成する。
     /// @param L
     /// @param R
     ll gen(ll L = -9223372036854775807ll, ll R = 9223372036854775807ll){
-        assert(L<=R);
-        ull M = R-L+1;
+        assert(L<R);
+        ull M = R-L;
         return ui(mt)%M+L;
     }
 };

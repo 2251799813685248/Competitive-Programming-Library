@@ -6,6 +6,8 @@
 #include <cmath>
 #include <iostream>
 #include <cassert>
+#include <modint.hpp>
+#include <prime_and_divisors.hpp>
 using namespace std;
 using ll = long long;
 
@@ -24,10 +26,10 @@ struct matrix{
     int H,W;
 
     /// @brief デフォルトコンストラクタ すべて0で初期化される
-    matrix(){H = 0; W = 0; M = vector<vector<T>>();}
+    constexpr matrix(){H = 0; W = 0; M = vector<vector<T>>();}
     /// @brief N次単位行列を生成
     /// @param N 
-    matrix(int N){
+    constexpr matrix(int N){
         H = N;W = N;
         M = vector<vector<T>>(N,vector<T>(N,0));
         for (int i = 0; i < N; i++){
@@ -38,14 +40,14 @@ struct matrix{
     /// @param h 
     /// @param w 
     /// @param v 
-    matrix(int h, int w, T v = (T)0){
+    constexpr matrix(int h, int w, T v = (T)0){
         H = h;
         W = w;
         M = vector<vector<T>>(H,vector<T>(W,v));
     }
     /// @brief 2次元配列を用いて行列を生成
     /// @param A 
-    matrix(const vector<vector<T>> &A){
+    constexpr matrix(const vector<vector<T>> &A){
         M = A;
         H = A.size();
         W = A.empty() ? 0 : A[0].size();
@@ -153,7 +155,7 @@ struct matrix{
     /// @brief i行目を1/c倍
     /// @param i 
     /// @param c 
-    void row_transformation_division(size_t i, T c){
+    inline constexpr void row_transformation_division(size_t i, T c){
         for (int j = 0; j < W; j++){
             M[i][j] /= c;
         }
@@ -162,30 +164,30 @@ struct matrix{
     /// @param i 
     /// @param j 
     /// @param c 
-    void row_transformation_sub_row(size_t i, T c, size_t j){
+    inline constexpr void row_transformation_sub_row(size_t i, T c, size_t j){
         for (int k = 0; k < W; k++){
             M[j][k] -= M[i][k]*c;
         }
     }
 
-    void transpose(){
+    inline constexpr void transpose(){
         swap(H,W);
         vector<vector<T>> temp(H, vector<T>(W));
         for (int i = 0; i < W; i++){
             for (int j = 0; j < H; j++){
-                temp[j][i] = move(M[i][j]);
+                temp[j][i] = std::move(M[i][j]);
             }
         }
-        M = move(temp);
+        M = std::move(temp);
     }
 
     /// @brief 行の数を返す
     size_t size()const{return H;}
-    bool empty()const{return min(H,W) == 0;}
-    inline vector<T>& operator[](const int row){
+    inline constexpr bool empty()const{return min(H,W) == 0;}
+    inline constexpr vector<T>& operator[](const int row){
         return M[row];
     }
-    inline const vector<T>& operator[](const int row)const{
+    inline constexpr const vector<T>& operator[](const int row)const{
         return M[row];
     }
 
@@ -206,15 +208,15 @@ struct matrix{
         if (r < 0 || c < 0){return 0;}
         return M[r][c];
     }
-    /// @brief r1<=行番号<=r2, c1<=列番号<=c2を満たすような部分の総和を求める。
+    /// @brief r1 <= 行番号 < r2, c1 <= 列番号 < c2 を満たすような部分の総和を求める。
     /// @param r1 
     /// @param r2 
     /// @param c1 
     /// @param c2 
     /// @return 和
-    T rectangle_sum(int r1, int r2, int c1, int c2){
+    T rectangle_sum(int r1, int c1, int r2, int c2){
         if (r1 > r2 || c1 > c2){return 0;}
-        return sum_from_origin(r2, c2) - sum_from_origin(r2, c1-1) - sum_from_origin(r1-1, c2) + sum_from_origin(r1-1, c1-1);
+        return sum_from_origin(r2-1, c2-1) - sum_from_origin(r2-1, c1-1) - sum_from_origin(r1-1, c2-1) + sum_from_origin(r1-1, c1-1);
     }
 };
 
@@ -252,7 +254,7 @@ matrix<T> row_simplification(matrix<T> M){
                     M.row_transformation_division(i, M[i][non_zero_column]);
                     for (int l = 0; l < M.H; l++){
                         if (l == i){continue;}
-                        M.row_transformation_sub_row(i, M[l][non_zero_column]/M[i][non_zero_column], l);
+                        M.row_transformation_sub_row(i, M[l][non_zero_column], l);
                     }
                     finished = true;
                     break;
@@ -342,6 +344,44 @@ vector<vector<T>> solve_linear_equations(const matrix<T> &A){
         }
     }
     return ans;
+}
+
+/// @brief 素数mod限定の行列式
+template<uint M> constexpr constant_modint<M> det_mod_P(matrix<constant_modint<M>> A){
+    if (A.H != A.W){
+        cerr << "This is not a square matrix" << endl;
+        assert(false);
+    }
+    if (!MillerRabin<ull>(M)){
+        cerr << "MOD is not a prime number" << endl;
+        assert(false);
+    }
+    int non_zero_column = 0;
+    int swapcnt = 0;
+    constant_modint<M> det = 1;
+    for (int i = 0; i < A.H; i++){
+        bool finished = false;
+        while (!finished){
+            if (non_zero_column == A.W){break;}
+            for (int k = i; k < A.H; k++){
+                if (A[k][non_zero_column] != 0){
+                    swap(A[i],A[k]);
+                    if (i != k){swapcnt++;}
+                    det *= A[i][non_zero_column];
+                    A.row_transformation_division(i, A[i][non_zero_column]);
+                    for (int l = 0; l < A.H; l++){
+                        if (l == i){continue;}
+                        A.row_transformation_sub_row(i, A[l][non_zero_column], l);
+                    }
+                    finished = true;
+                    break;
+                }
+            }
+            non_zero_column++;
+        }
+    }
+    for (int i = 0; i < A.H; i++){det *= A[i][i];}
+    return det.val == 0 ? 0 : (swapcnt&1) ?  M-det : det;
 }
 
 

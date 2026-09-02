@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <cassert>
-#include <queue>
+#include <deque>
 using ll = long long;
 using ull = unsigned long long;
 using uint = unsigned int;
@@ -161,67 +161,62 @@ struct FullyIndexableDictionary{
         }
     }
 
-    bool at(const ull idx){
+    inline bool at(const ull idx){
         assert(initialized && idx < length);
         return data[idx>>6]&(1ull<<(idx&63));
     }
-    bool operator[](const ull idx){
+    inline bool operator[](const ull idx){
+        assert(initialized && idx < length);
         return data[idx>>6]&(1ull<<(idx&63));
     }
-    size_t size(){return length;}
+    inline size_t size(){return length;}
 
-    /// @brief 閉区間[0, idx]の中にいくつ1があるか
-    /// @param idx 
-    /// @param check 境界値チェックを行うか。オフなら範囲外アクセスで-1が返る
+    /// @brief 区間[0, idx]の中にいくつ1があるか
+    /// @param idx
     /// @return 
-    int rank_1(const ull idx, bool check){
-        if (!check && idx >= length){return -1;}
-        assert(initialized && idx < length);
+    inline int rank_1(const ull idx){
+        assert(initialized && idx <= length);
         return largeblock[idx>>6] + __builtin_popcountll(data[idx>>6]&(((1ull<<(idx&63))-1)*2+1));
     }
-    /// @brief 閉区間[0, idx]の中にいくつ0があるか
+    /// @brief 区間[0, idx]の中にいくつ0があるか
     /// @param idx 
-    /// @param check 境界値チェックを行うか。オフなら範囲外アクセスで-1が返る
     /// @return 
-    int rank_0(const ull idx, bool check){
-        if (!check && idx >= length){return -1;}
-        return idx+1-rank_1(idx, check);
+    inline int rank_0(const ull idx){
+        return idx+1-rank_1(idx);
     }
     /// @brief 閉区間[idx1, idx2]の中にいくつ1があるか
     /// @param idx1 
     /// @param idx2 
     /// @return 
-    int rank_1_range(const ull idx1, const ull idx2){
+    inline int rank_1_range(const ull idx1, const ull idx2){
         if (idx1 > idx2){return 0;}
-        if (idx1 == 0){return rank_1(idx2, 1);}
-        return rank_1(idx2, 1)-rank_1(idx1-1, 1);
+        if (idx1 == 0){return rank_1(idx2);}
+        return rank_1(idx2)-rank_1(idx1-1);
     }
     /// @brief 閉区間[idx1, idx2]の中にいくつ0があるか
     /// @param idx1 
     /// @param idx2 
     /// @return 
-    int rank_0_range(const ull idx1, const ull idx2){
+    inline int rank_0_range(const ull idx1, const ull idx2){
         if (idx1 > idx2){return 0;}
-        if (idx1 == 0){return rank_0(idx2, 1);}
-        return rank_1(idx2, 1)-rank_0(idx1-1, 1);
+        if (idx1 == 0){return rank_0(idx2);}
+        return rank_1(idx2)-rank_0(idx1-1);
     }
 
     /// @brief k番目に現れる1のindexを取得する。
     /// @attention `k`は0-indexed
     /// @param k
-    /// @param check 境界値チェックをするか。オフなら範囲外アクセスで-1が返る
-    /// @return 
-    int select_1(const ull k, bool check){
-        if (!check && k >= largeblock[(length+63)>>6]){return -1;}
-        if (!initialized || k >= largeblock[(length+63)>>6]){
-            cerr << "Invalid Value \"k\" = "+to_string(k) << endl;
-            cerr << "\"k\" must be less than or equal " + to_string(largeblock[(length+63)>>6]-1) << endl;
+    /// @attention そのような1がなければ-1が返る。
+    int select_1(const ull k){
+        if (!initialized){
+            cerr << "Not Initialized" << endl;
             assert(false);
         }
+        if (k >= largeblock[(length+63)>>6]){return -1;}
         ll left = (ll)one_per_64[k>>6]-1, right = one_per_64[(k>>6)+1];
         while (right-left > 1){
             ll mid = (left+right)/2;
-            if ((ull)rank_1(mid, 1) >= k+1){
+            if ((ull)rank_1(mid) >= k+1){
                 right = mid;
             }
             else{
@@ -233,19 +228,17 @@ struct FullyIndexableDictionary{
     /// @brief k番目に現れる1のindexを取得する。
     /// @attention `k`は0-indexed
     /// @param k
-    /// @param check 境界値チェックをするか。オフなら範囲外アクセスで-1が返る
-    /// @return 
-    int select_0(const ull k, bool check){
-        if (!check && k >= length-largeblock[(length+63)>>6]){return -1;}
-        if (!initialized || k >= length-largeblock[(length+63)>>6]){
-            cerr << "Invalid Value \"k\" = "+to_string(k) << endl;
-            cerr << "\"k\" must be less than or equal " + to_string(length-largeblock[(length+63)>>6]-1) << endl;
+    /// @attention そのような1がなければ-1が返る。
+    int select_0(const ull k){
+        if (!initialized){
+            cerr << "Not Initialized" << endl;
             assert(false);
         }
+        if (k >= length-largeblock[(length+63)>>6]){return -1;}
         ll left = (ll)zero_per_64[k>>6]-1, right = zero_per_64[(k>>6)+1];
         while (right-left > 1){
             ll mid = (left+right)/2;
-            if ((ull)rank_0(mid, 1) >= k+1){
+            if ((ull)rank_0(mid) >= k+1){
                 right = mid;
             }
             else{
@@ -266,7 +259,7 @@ struct WaveletMatrix{
     vector<pair<INTEGER,uint>> first_appear;
     size_t max_size;
     int lbl;//longest_bitlength
-    const INTEGER e = 1;
+    const INTEGER e = static_cast<INTEGER>(1);
 
     WaveletMatrix(vector<INTEGER> A){
         max_size = A.size();
@@ -310,12 +303,12 @@ struct WaveletMatrix{
     }
     WaveletMatrix(){}
 
-    size_t size(){return max_size;}
+    inline size_t size(){return max_size;}
 
     /// @brief インデックスアクセスを行う。範囲外の時は例外を発生させる
     /// @param idx 
     /// @return 
-    INTEGER access(uint idx){
+    inline INTEGER access(uint idx){
         if (idx >= max_size){
             cerr << "Index Out of Bounds" << endl;
             cerr << "Index must be less than or equal " + to_string((int)max_size-1) << endl;
@@ -325,49 +318,51 @@ struct WaveletMatrix{
         for (int i = lbl-1; i >= 0; i--){
             if (M[i][idx]){
                 r++;
-                idx = zcnt[i]+M[i].rank_1(idx, 1)-1;
+                idx = zcnt[i]+M[i].rank_1(idx)-1;
             }
             else{
-                idx = M[i].rank_0(idx, 1)-1;
+                idx = M[i].rank_0(idx)-1;
             }
             if (i){r <<= 1;}
         }
         return r;
     }
-    INTEGER operator[](uint idx) const {
+    inline INTEGER operator[](uint idx) const {
         return access(idx);
     }
 
-    /// @brief 先頭から`idx`で指定したところまで([0,idx])に`val`がいくつ現れるかを求める
+    /// @brief 区間[0,idx)に`val`がいくつ現れるかを求める
     /// @param idx 
     /// @param val 
     /// @return 
-    int rank(uint idx, const INTEGER val){
-        if (idx >= max_size){
+    inline int rank(uint idx, const INTEGER val){
+        if (idx > max_size){
             cerr << "Index Out of Bounds" << endl;
-            cerr << "Index must be less than or equal " + to_string((int)max_size-1) << endl;
+            cerr << "Index must be less than or equal " + to_string((int)max_size) << endl;
             assert(false);
         }
+        if (idx == 0){return 0;}
+        int idx2 = idx-1;
         auto tempitr = lower_bound(vall(first_appear), val, [](const pair<INTEGER,uint> a, const INTEGER b){return a.first < b;});
         if (tempitr == first_appear.end() || val != tempitr->first){return 0;}
         for (int i = lbl-1; i >= 0; i--){
             if (val&(e<<i)){
-                idx = zcnt[i] + M[i].rank_1(idx, 1)-1;
+                idx2 = zcnt[i] + M[i].rank_1(idx2)-1;
             }
             else{
-                idx = M[i].rank_0(idx,1)-1;
+                idx2 = M[i].rank_0(idx2)-1;
             }
+            if (idx2 < 0){return 0;}
         }
-        return idx-tempitr->second+1;
+        return idx2-tempitr->second+1;
     }
-    /// @brief 閉区間[idx1,idx2]の中に`val`がいくつ現れるかを求める
+    /// @brief 区間[idx1,idx2)の中に`val`がいくつ現れるかを求める
     /// @param idx1 
     /// @param idx2 
     /// @param val 
     /// @return 
-    int range_count(uint idx1, uint idx2, const INTEGER val){
-        if (idx1 > idx2){return 0;}
-        if (idx1 == 0){return rank(idx2, val);}
+    inline int range_count(uint idx1, uint idx2, const INTEGER val){
+        if (idx1 >= idx2){return 0;}
         return rank(idx2, val)-rank(idx1, val);
     }
 
@@ -375,7 +370,7 @@ struct WaveletMatrix{
     /// @param k 0-indexed
     /// @param val 
     /// @return 
-    int select(uint k, const INTEGER val){
+    inline int select(uint k, const INTEGER val){
         auto tempitr = lower_bound(vall(first_appear), val, [](const pair<ull,ll> a, const ull b){return a.first < b;});
         if (tempitr == first_appear.end() || tempitr->first != val || k >= max_size){
             return -1;
@@ -383,13 +378,13 @@ struct WaveletMatrix{
         int firstidx = tempitr->second+k;
         for (int i = 0; i < lbl; i++){
             if (val&(e<<i)){
-                firstidx = M[i].select_1(firstidx - zcnt[i], 0);
+                firstidx = M[i].select_1(firstidx - zcnt[i]);
                 if (firstidx == -1){
                     return -1;
                 }
             }
             else{
-                firstidx = M[i].select_0(firstidx, 0);
+                firstidx = M[i].select_0(firstidx);
                 if (firstidx == -1){
                     return -1;
                 }
@@ -398,72 +393,79 @@ struct WaveletMatrix{
         return firstidx;
     }
 
-    /// @brief index閉区間[l, r]において、小さい方からk番目の値を求める。存在しない場合は例外が発生する
+    /// @brief 区間[l, r)において、小さい方からk番目の値を求める。存在しない場合は例外が発生する
     /// @param l 
     /// @param r 
     /// @param k 0-indexed
-    INTEGER range_kth_min(uint l, uint r, uint k){
-        if (l > r || k > r-l || r >= max_size){
+    inline INTEGER range_kth_min(uint l, uint r, uint k){
+        if (l >= r || k >= r-l || r > max_size){
             cerr << "Invalid Range" << endl;
             cerr << "l,r,k = " + to_string(l) + ", " + to_string(r) + ", " + to_string(k) << endl;
             assert(false);
         }
         INTEGER ret_val = 0;
+        r--;
         for (int i = lbl-1; i >= 0; i--){
             int range_ocnt = M[i].rank_1_range(l,r);
             if (k >= r-l+1-range_ocnt){
                 ret_val++;
                 k -= r-l+1-range_ocnt;
-                l = zcnt[i] + (l == 0 ? 0 : M[i].rank_1(l-1, 0));
-                r = zcnt[i] + M[i].rank_1(r, 0)-1;
+                l = zcnt[i] + (l == 0 ? 0 : M[i].rank_1(l-1));
+                r = zcnt[i] + M[i].rank_1(r)-1;
             }
             else{
-                l = (l == 0 ? 0 : M[i].rank_0(l-1, 0));
-                r = M[i].rank_0(r, 0)-1;
+                l = (l == 0 ? 0 : M[i].rank_0(l-1));
+                r = M[i].rank_0(r)-1;
             }
             if (i){ret_val <<= 1;}
         }
         return ret_val;
     }
-    /// @brief index閉区間[l, r]において、大きい方からk番目の値を求める。存在しない場合は例外が発生する
+    /// @brief 区間[l, r)において、大きい方からk番目の値を求める。存在しない場合は例外が発生する
     /// @param l 
     /// @param r 
     /// @param k 0-indexed
-    INTEGER range_kth_max(uint l, uint r, uint k){
-        return range_kth_min(l,r, r-l-k);
+    inline INTEGER range_kth_max(uint l, uint r, uint k){
+        if (l >= r || k >= r-l || r > max_size){
+            cerr << "Invalid Range" << endl;
+            cerr << "l,r,k = " + to_string(l) + ", " + to_string(r) + ", " + to_string(k) << endl;
+            assert(false);
+        }
+        return range_kth_min(l,r, r-l-1-k);
     }
 
-    /// @brief index閉区間[l,r]において、val以下の値がいくつ存在するかを求める
+    /// @brief 区間[l,r)において、val以下の値がいくつ存在するかを求める
     /// @param l 0-indexed
     /// @param r 0-indexed
     /// @param val 自身を含む
     int range_frequency(uint l, uint r, INTEGER val){
-        if (l > r){
+        if (l >= r){
             return 0;
         }
-        if (r >= max_size){
+        if (r > max_size){
             cerr << "Invalid Range" << endl;
             cerr << "l,r = " + to_string(l) + ", " + to_string(r) << endl;
             assert(false);
         }
-        if (lbl < 64-__builtin_clzll(val+1)){return r-l+1;}
+        r--;
+        if (lbl < 64-__builtin_clzll(val+1)){return r-l;}
 
         int ans = 0;
         for (int i = lbl-1; i >= 0; i--){
             int range_ocnt = M[i].rank_1_range(l,r);
             if ((val+1)&(e<<i)){
                 ans += r-l+1-range_ocnt;
-                l = zcnt[i] + (l == 0 ? 0 : M[i].rank_1(l-1, 0));
-                r = zcnt[i] + M[i].rank_1(r, 0)-1;
+                l = zcnt[i] + (l == 0 ? 0 : M[i].rank_1(l-1));
+                r = zcnt[i] + M[i].rank_1(r)-1;
             }
             else{
-                l = (l == 0 ? 0 : M[i].rank_0(l-1, 0));
-                r = M[i].rank_0(r, 0)-1;
+                l = (l == 0 ? 0 : M[i].rank_0(l-1));
+                r = M[i].rank_0(r)-1;
             }
         }
         return ans;
     }
-    /// @brief index閉区間[l,r]において、val_low以上val_high以下の値がいくつ存在するかを求める
+    /// @brief 区間[l,r)において、val_low以上val_high以下の値がいくつ存在するかを求める
     /// @param l 0-indexed
     /// @param r 0-indexed
     /// @param val_low 自身を含む
@@ -472,7 +474,7 @@ struct WaveletMatrix{
         return range_frequency(l,r,val_high)-(val_low == 0 ? 0 : range_frequency(l,r,val_low-1));
     }
 
-    /// @brief index閉区間[l,r]において、val以上の最小値より小さい値のうち、最も大きい値を返す
+    /// @brief 区間[l,r)において、val以上の最小値より小さい値のうち、最も大きい値を返す
     /// @attention もしそのような値が存在しない場合、-1が返る(18446744073709551616や4294967295など)
     /// @param l 
     /// @param r 
@@ -483,14 +485,14 @@ struct WaveletMatrix{
         if (val == 0 || temp == 0){return -1;}
         return range_kth_min(l,r,temp-1);
     }
-    /// @brief index閉区間[l,r]において、val以上の最小値を返す
+    /// @brief 区間[l,r)において、val以上の最小値を返す
     /// @param l 
     /// @param r 
     /// @param val 
     /// @return 
     INTEGER range_lower_bound(uint l, uint r, INTEGER val){
         int temp = range_frequency(l,r,val-1);
-        if (temp == r-l+1){return -1;}
+        if (temp == r-l){return -1;}
         return range_kth_min(l,r,temp);
     }
 

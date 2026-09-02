@@ -2,7 +2,6 @@
 #define PRIORITY__deque_HPP_
 
 
-#include <functional>
 #include <vector>
 #include <cmath>
 #include <algorithm>
