@@ -31,12 +31,16 @@ struct UnionFind{
         function<void(nodeinfo&, nodeinfo, int, int)> mergefunc,
         function<void(nodeinfo&, int, int)> modifyfunc):
             A(N,-1),
-            P([N](){vector<int> v(N); iota(v.begin(), v.end(), 0); return v;}),
+            P(N, 0),
             groups(N),
             B(N, init),
             merge_info(mergefunc),
             modify_info(modifyfunc)
-    {}
+    {
+        for (int i = 0; i < N; i++){
+            P[i] = i;
+        }
+    }
 
     /// @brief nodeの親を見つける
     /// @param node 
