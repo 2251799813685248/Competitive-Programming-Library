@@ -230,22 +230,22 @@ inline constexpr ll cipolla(ll a, const ll M){
 }
 
 /// @brief x以下の最大の2冪を返す。0は0が返る。 
-constexpr ull lowerpow2(ull x){
+inline constexpr ull lowerpow2(ull x){
     if (x == 0){return 0;}
     return 1ull<<(63-__builtin_clzll(x));
 }
 /// @brief x以上の最小の2冪を返す。0は0が返る。 
-constexpr ull upperpow2(ull x){
+inline constexpr ull upperpow2(ull x){
     if (x == 0){return 0;}
     if (x == 1){return 1;}
     return 1ull<<(64-__builtin_clzll(x-1));
 }
 /// @brief xのpopcountを求める 
-constexpr int popcount(ull x){
+inline constexpr int popcount(ull x){
     return __builtin_popcountll(x);
 }
 /// @brief xのbit lengthを求める。
-constexpr int bit_length(ull x){
+inline constexpr int bit_length(ull x){
     if (x == 0){return 0;}
     return 64-__builtin_clzll(x);
 }
