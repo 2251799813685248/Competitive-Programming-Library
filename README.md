@@ -1,4 +1,4 @@
-# Competitive Programming Library made by $2^{51}$
+# Competitive Programming Library
 競技プログラミング用ライブラリ
 
 ## description
