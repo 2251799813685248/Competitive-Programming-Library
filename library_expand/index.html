@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Copying...</title>
+</head>
+<body>
+    <p>コピー中...</p>
+    <script>
+        // URLの「?text=〇〇」の部分から文字列を抽出
+        const urlParams = new URLSearchParams(window.location.search);
+        const textToCopy = urlParams.get('text');
+
+        if (textToCopy) {
+            // クリップボードにコピーを実行
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // コピーが成功したら自動でタブ（ウィンドウ）を閉じる
+                window.close();
+                // もしセキュリティ制限で閉じない場合のフォールバック表示
+                document.body.innerHTML = "<h1>コピーしました！</h1><p>このタブを閉じてください。</p>";
+            }).catch(err => {
+                document.body.innerHTML = "<h1>コピーに失敗しました</h1><p>ブラウザの権限を確認してください。</p>";
+            });
+        } else {
+            document.body.innerHTML = "<h1>エラー</h1><p>コピーする文字が指定されていません。</p>";
+        }
+    </script>
+</body>
+</html>
