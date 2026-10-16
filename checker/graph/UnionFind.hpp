@@ -1,7 +1,7 @@
 #ifndef UNION_FIND_HPP_
 #define UNION_FIND_HPP_
 
-#include <vector>
+#include <list.hpp>
 #include <functional>
 #include <unordered_map>
 using namespace std;
@@ -13,10 +13,10 @@ using namespace std;
 /// @tparam nodeinfo 
 template<typename nodeinfo>
 struct UnionFind{
-    vector<int> A;//根でないとき、どう辿れば根になるか(すでに根なら-1×(要素数))
+    list<int> A;//根でないとき、どう辿れば根になるか(すでに根なら-1×(要素数))
     int groups;//連結成分数
     
-    vector<nodeinfo> B;//各根に載っている状態を保存する。
+    list<nodeinfo> B;//各根に載っている状態を保存する。
     function<void(nodeinfo&, nodeinfo, int, int)> merge_info;//異なる連結成分をマージするときの関数{マージ先, マージ元, マージ先代表元, マージ元代表元}
     function<void(nodeinfo&, int, int)> modify_info;//同一連結成分内に対する操作を行う関数{変更される要素, それの代表元2つ}
 
@@ -100,18 +100,18 @@ struct UnionFind{
     /// @brief 連結成分ごとに分解し、各成分に属する頂点をまとめたリストを作成する。
     /// @param one_indexed 1-indexedかどうか(デフォルトで1-indexed)
     /// @return 
-    vector<vector<int>> connected_groups(bool one_indexed = true){
-        unordered_map<int,vector<int>> BB;//仮の答え保存用
-        vector<int> C(A.size(),-1);//どの連結成分にいるかを管理
+    list<list<int>> connected_groups(bool one_indexed = true){
+        unordered_map<int,list<int>> BB;//仮の答え保存用
+        list<int> C(A.size(),-1);//どの連結成分にいるかを管理
 
         for (int i = one_indexed, sz = A.size(); i <= sz-1; i++){
             if (A[i] < 0){
-                BB[i].push_back(i);
+                BB[i].append(i);
                 C[i] = i;
             }
         }
 
-        vector<int> passed_node;//たどっている途中の頂点を保持するスタック
+        list<int> passed_node;//たどっている途中の頂点を保持するスタック
 
         for (int i = one_indexed, sz = A.size(); i <= sz-1; i++){
             if (C[i] != -1){
@@ -119,18 +119,18 @@ struct UnionFind{
             }
             int temp = i;
             while (C[temp] == -1){
-                passed_node.push_back(temp);
+                passed_node.append(temp);
                 temp = A[temp];
             }
             while (!passed_node.empty()){
-                BB[C[temp]].push_back(passed_node.back());
+                BB[C[temp]].append(passed_node.back());
                 C[passed_node.back()] = C[temp];
-                passed_node.pop_back();
+                passed_node.pop();
             }
         }
-        vector<vector<int>> ret;
+        list<list<int>> ret;
         for (auto &pvec : BB){
-            ret.push_back(pvec.second);
+            ret.append(pvec.second);
         }
         return ret;
     }

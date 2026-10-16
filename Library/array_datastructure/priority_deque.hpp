@@ -2,7 +2,7 @@
 #define PRIORITY__deque_HPP_
 
 
-#include <vector>
+#include <list.hpp>
 #include <cmath>
 #include <algorithm>
 #include <cassert>
@@ -14,7 +14,7 @@ using namespace std;
 template<typename T>
 struct priority_deque{
     private:
-    vector<T> A;
+    list<T> A;
     void adjust_max_heap_from_bottom(int idx){
         while (idx > 0){
             if (A[((idx-1)>>1)&-2] < A[idx]){
@@ -74,8 +74,14 @@ struct priority_deque{
 	        }
         }
     }
+    inline constexpr void assert_empty(){
+        if (A.empty()){
+            cerr << "IndexError: operation on  an empty priority_delist" << endl;
+            assert(false);
+        }
+    }
     public:
-    priority_deque(const vector<T>& B){
+    priority_deque(const list<T>& B){
         A = B;
         build_heap();
     }
@@ -87,12 +93,12 @@ struct priority_deque{
                 adjust_max_heap_from_bottom(A.size()-2);
             }
             else{
-                A.push_back(value);
+                A.append(value);
                 adjust_min_heap_from_bottom(A.size()-1);
             }
         }
         else{
-            A.push_back(value);
+            A.append(value);
             if (A.size() == 1){return;}
             if (A[((A.size()-2)>>1)&-2] < A.back()){
                 adjust_max_heap_from_bottom(A.size()-1);
@@ -104,13 +110,14 @@ struct priority_deque{
         }
     }
     T pop_min(){
-        if (A.size() == 1){T temp = std::move(A[0]); A.pop_back(); return temp;}
+        assert_empty();
+        if (A.size() == 1){T temp = std::move(A[0]); A.pop(); return temp;}
         T ret = std::move(A[1]);
         A[1] = A.back();
-        A.pop_back();
+        A.pop();
         int idx = 1;
-        while ((idx<<1)+1 < (int)A.size()){
-            if ((idx<<1)+3 < (int)A.size()){
+        while ((idx<<1)+1 < A.size()){
+            if ((idx<<1)+3 < A.size()){
                 if (A[idx] < A[(idx<<1)+1] && A[idx] < A[(idx<<1)+3]){
                     return ret;
                 }
@@ -139,15 +146,16 @@ struct priority_deque{
             swap(A[idx], A[idx-1]);
             adjust_max_heap_from_bottom(idx-1);
         }
-        return ret;
+        return std::move(ret);
     }
     T pop_max(){
+        assert_empty();
         T ret = std::move(A[0]);
         A[0] = A.back();
-        A.pop_back();
+        A.pop();
         int idx = 0;
-        while ((idx<<1)+2 < (int)A.size()){
-            if ((idx<<1)+4 < (int)A.size()){
+        while ((idx<<1)+2 < A.size()){
+            if ((idx<<1)+4 < A.size()){
                 if (A[(idx<<1)+2] < A[idx] && A[(idx<<1)+4] < A[idx]){
                     return ret;
                 }
@@ -172,7 +180,7 @@ struct priority_deque{
             }
         }
         if (A.size() < 2){return ret;}
-        if (idx+1 == (int)A.size()){
+        if (idx+1 == A.size()){
             if (A.back() < A[((idx-1)>>1)|1]){
                 swap(A.back(), A[((idx-1)>>1)|1]);
                 adjust_min_heap_from_bottom(((idx-1)>>1)|1);
@@ -184,12 +192,13 @@ struct priority_deque{
                 adjust_min_heap_from_bottom(idx+1);
             }
         }
-        return ret;
+        return std::move(ret);
     }
-    T get_min(){return A.size() > 1 ? A[1] : A[0];}
-    T get_max(){return A[0];}
-    bool empty(){return A.empty();}
-    size_t size(){return A.size();}
+    inline constexpr T get_min() const {assert_empty(); return A.size() > 1 ? A[1] : A[0];}
+    inline constexpr T get_max() const {assert_empty(); return A[0];}
+    inline constexpr bool empty() const {return A.empty();}
+    inline constexpr ll size() const {return A.size();}
+
 };
 
 

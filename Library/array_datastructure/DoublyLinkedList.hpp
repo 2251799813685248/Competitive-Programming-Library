@@ -1,7 +1,7 @@
 #ifndef DOUBLY_LINKED_LIST_HPP_
 #define DOUBLY_LINKED_LIST_HPP_
 
-#include <vector>
+#include <list.hpp>
 #include <iostream>
 #include <cassert>
 using namespace std;
@@ -140,7 +140,7 @@ struct DoublyLinkedList{
         return iterator(back);
     }
 
-    void push_back(const T &val){
+    void append(const T &val){
         back->val = val;
         back->next = new LinkedListNode;
         back->next->prev = back;

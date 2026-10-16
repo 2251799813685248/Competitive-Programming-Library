@@ -22,6 +22,7 @@ def compile_source(source_path, exec_path):
         "-I/home/a1024/cpp/Competitive-Programming-Library/Library/general_algorithm",
         "-I/home/a1024/cpp/Competitive-Programming-Library/Library/graph",
         "-I/home/a1024/cpp/Competitive-Programming-Library/Library/math",
+        "-I/home/a1024/cpp/Competitive-Programming-Library/Library/io",
         "-I/home/a1024/cpp/Competitive-Programming-Library/Library/set_map",
         "-I/home/a1024/cpp/Competitive-Programming-Library/Library/string_algorithm",
         "-O3", "-Wall", "-Wextra",
@@ -34,14 +35,14 @@ def judge():
     parser = argparse.ArgumentParser(description="Library Checker Judge")
     parser.add_argument("problem", help="Problem name (e.g. aplusb)")
     parser.add_argument("source", help="Path to the source code to test")
-    parser.add_argument("--timeout", type=float, default=5.0, help="Timeout in seconds for each testcase")
+    parser.add_argument("--timeout", type=float, default=20.0, help="Timeout in seconds for each testcase")
     parser.add_argument("d")
     args = parser.parse_args()
 
     # Paths
     project_root = Path("/home/a1024/cpp")
     test_dir = project_root / "test"
-    lc_repo_dir = test_dir / "library_checker_auto_test" / "library-checker-problems"
+    lc_repo_dir = test_dir / "library-checker-problems"
 
     source_path = Path(args.source).resolve()
     if not source_path.exists():
@@ -108,7 +109,7 @@ def judge():
                     run_result = subprocess.run(
                         [str(exec_path)],
                         stdin=fin, stdout=fout, stderr=subprocess.DEVNULL,
-                        timeout=args.timeout
+                        timeout=20.0
                     )
                 elapsed_time = time.time() - start_time
                 

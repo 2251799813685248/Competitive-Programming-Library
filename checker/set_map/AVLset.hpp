@@ -374,14 +374,14 @@ struct AVLset {
 
     /// @brief 全要素を消す。
     void clear(){
-        deque<AVLsetNode<T>*> Q;
-        Q.push_back(root);
+        delist<AVLsetNode<T>*> Q;
+        Q.append(root);
         while (!Q.empty()){
             if (Q.front()->left != nullptr){
-                Q.push_back(Q.front()->left);
+                Q.append(Q.front()->left);
             }
             if (Q.front()->right != nullptr){
-                Q.push_back(Q.front()->right);
+                Q.append(Q.front()->right);
             }
             delete Q.front();
             Q.pop_front();

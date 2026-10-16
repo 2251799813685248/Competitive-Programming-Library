@@ -1,5 +1,5 @@
 #include <iostream>
-#include <vector>
+#include <list.hpp>
 #include <string>
 #include <cmath>
 #include <unordered_set>
@@ -53,11 +53,11 @@ void solve(){
 
     auto ans = factorize(P);
     ll num = 0;
-    vector<ll> pf;
+    list<ll> pf;
     for (auto& p : ans){
         num += p[1];
         for (int i = 0; i < p[1]; i++){
-            pf.push_back(p[0]);
+            pf.append(p[0]);
         }
     }
     cout << num << " ";

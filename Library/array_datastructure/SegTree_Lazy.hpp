@@ -2,12 +2,12 @@
 #define SEG_TREE__LAZY_HPP_
 
 #include <functional>
-#include <vector>
+#include <list.hpp>
 #include <cmath>
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <queue>
+#include <deque.hpp>
 using namespace std;
 
 
@@ -31,7 +31,7 @@ struct LazySegTree{
     function<func(func,func)> composition;//mを合成した結果(ax+bのあとにcx+dを作用させると実質acx+bc+dになるなど)
     func id;//mappingの恒等写像版(アフィン変換ならx -> 1x+0など)
 
-    vector<pair<info,func>> tree;//セグ木本体(info, delay)
+    list<pair<info,func>> tree;//セグ木本体(info, delay)
     int max_capacity;
 
     /// @brief N個のIで初期化
@@ -56,8 +56,8 @@ struct LazySegTree{
         //セグ木のサイズを決定
         log2N = 64-(max_capacity == 1 ? 64 : __builtin_clzll(max_capacity-1));
 
-        //セグ木に実際に乗せるvectorを構築
-        tree = vector<pair<info,func>>(1<<(log2N+1));
+        //セグ木に実際に乗せるlistを構築
+        tree = list<pair<info,func>>(1<<(log2N+1));
         tree[0] = make_pair(e,id);
         for (int i = 0; i < N; i++){
             tree[i+(1<<log2N)] = make_pair(I,id);
@@ -69,7 +69,7 @@ struct LazySegTree{
             tree[i] = make_pair(operation(tree[2*i].first, tree[2*i+1].first),id);
         }
     }
-    /// @brief vector Aで初期化
+    /// @brief list Aで初期化
     /// @param I 載せたい構造体
     /// @param N 載せた個数
     /// @param eee 載せたものの単位元(sumなら0, maxなら-infなど)
@@ -77,7 +77,7 @@ struct LazySegTree{
     /// @param m 更新を行うとどうなるか？(アフィン変換ならx -> ax+b)
     /// @param c mを合成した結果((u,v)でu(v())の結果を返すものとする)(ax+bのあとにcx+dを作用させると実質acx+bc+dになるなど)
     /// @param ididid mの恒等写像版(アフィン変換ならx -> 1x+0)
-    LazySegTree(const vector<info> &A, info eee, function<info(info,info)> op, function<info(func,info)> m, function<func(func,func)> c, func ididid){
+    LazySegTree(const list<info> &A, info eee, function<info(info,info)> op, function<info(func,info)> m, function<func(func,func)> c, func ididid){
         //基本情報を登録
         e = eee;
         operation = op;
@@ -92,8 +92,8 @@ struct LazySegTree{
         log2N = 64-(max_capacity == 1 ? 64 : __builtin_clzll(max_capacity-1));
 
 
-        //セグ木に実際に乗せるvectorを構築
-        tree = vector<pair<info,func>>(1<<(log2N+1));
+        //セグ木に実際に乗せるlistを構築
+        tree = list<pair<info,func>>(1<<(log2N+1));
         tree[0] = make_pair(e,id);
         for (int i = 0; i < max_capacity; i++){
             tree[i+(1<<log2N)] = make_pair(A[i],id);
@@ -129,8 +129,8 @@ struct LazySegTree{
         tree[index_on_tree].second = id;
     }
 
-    deque<int> lazy_node;//区間集計、区間更新に使う。
-    deque<int> lazy_node_flipped;//区間更新で使う。
+    delist<int> lazy_node;//区間集計、区間更新に使う。
+    delist<int> lazy_node_flipped;//区間更新で使う。
 
     /// @brief 区間[L,R)において、集計を行う。
     /// @param L 左端(左端を含む)
@@ -149,23 +149,23 @@ struct LazySegTree{
         int rm = (Rstart / (Rstart & -Rstart)) >> 1;
         while (Lstart < Rstart){
             if (Rstart <= rm){
-                lazy_node.push_back(Rstart);
+                lazy_node.append(Rstart);
             }
             if (Lstart <= lm){
-                lazy_node.push_back(Lstart);
+                lazy_node.append(Lstart);
             }
             Lstart >>= 1;
             Rstart >>= 1;
         }
         while (Lstart){
-            lazy_node.push_back(Lstart);
+            lazy_node.append(Lstart);
             Lstart >>=1;
         }
 
 
         while (!lazy_node.empty()){
             tell_info(lazy_node.back());
-            lazy_node.pop_back();
+            lazy_node.pop();
         }
         info ret = e;
         int left = L;
@@ -194,24 +194,24 @@ struct LazySegTree{
         int rm = (Rstart / (Rstart & -Rstart)) >> 1;
         while (Lstart && Lstart < Rstart){
             if (Rstart <= rm){
-                lazy_node.push_back(Rstart);
+                lazy_node.append(Rstart);
             }
             if (Lstart <= lm){
-                lazy_node.push_back(Lstart);
+                lazy_node.append(Lstart);
             }
             Lstart >>= 1;
             Rstart >>= 1;
         }
         while (Lstart){
-            lazy_node.push_back(Lstart);
+            lazy_node.append(Lstart);
             Lstart >>=1;
         }
 
 
         while (!lazy_node.empty()){
             tell_info(lazy_node.back());
-            lazy_node_flipped.push_back(lazy_node.back());
-            lazy_node.pop_back();
+            lazy_node_flipped.append(lazy_node.back());
+            lazy_node.pop();
         }
         int left = L;
         while (left < R){
@@ -221,9 +221,9 @@ struct LazySegTree{
             left += 1<<log2interval;
         }
         while (!lazy_node_flipped.empty()){
-            if (lazy_node_flipped.back()>>log2N){lazy_node_flipped.pop_back();continue;}
+            if (lazy_node_flipped.back()>>log2N){lazy_node_flipped.pop();continue;}
             tree[lazy_node_flipped.back()].first = operation(tree[2*lazy_node_flipped.back()].first, tree[2*lazy_node_flipped.back()+1].first);
-            lazy_node_flipped.pop_back();
+            lazy_node_flipped.pop();
         }
     }
 

@@ -3,7 +3,7 @@
 
 #include <functional>
 #include <iostream>
-#include <vector>
+#include <list.hpp>
 #include <cmath>
 #include <algorithm>
 #include <cassert>
@@ -24,7 +24,7 @@ struct SegTree{
     info e;///単位元
     function<info(info,info)> operation;//各ノードに載ってる構造体に対する二項演算をする関数(min,max,sumなど)
 
-    vector<info> tree;//セグ木本体
+    list<info> tree;//セグ木本体
     int max_capacity;
 
     /// @brief N個のIで初期化
@@ -44,8 +44,8 @@ struct SegTree{
         //セグ木のサイズを決定
         log2N = 64-(max_capacity == 1 ? 64 : __builtin_clzll(max_capacity-1));
 
-        //セグ木に実際に乗せるvectorを構築
-        tree = vector<info>(1<<(log2N+1));
+        //セグ木に実際に乗せるlistを構築
+        tree = list<info>(1<<(log2N+1));
         tree[0] = e;
         for (int i = 0; i < N; i++){
             tree[i+(1<<log2N)] = I;
@@ -57,12 +57,12 @@ struct SegTree{
             tree[i] = operation(tree[2*i], tree[2*i+1]);
         }
     }
-    /// @brief vector Aで初期化
+    /// @brief list Aで初期化
     /// @param I 載せたい構造体
     /// @param N 載せた個数
     /// @param eee 載せたものの単位元(sumなら0, maxなら-infなど)
     /// @param op 各ノードに載ってる構造体に対する二項演算をする関数(min,max,sumなど)
-    SegTree(const vector<info> &A, info eee, function<info(info,info)> op){
+    SegTree(const list<info> &A, info eee, function<info(info,info)> op){
         //基本情報を登録
         e = eee;
         operation = op;
@@ -73,8 +73,8 @@ struct SegTree{
         //セグ木のサイズを決定
         log2N = 64-(max_capacity == 1 ? 64 : __builtin_clzll(max_capacity-1));
 
-        //セグ木に実際に乗せるvectorを構築
-        tree = vector<info>(1<<(log2N+1));
+        //セグ木に実際に乗せるlistを構築
+        tree = list<info>(1<<(log2N+1));
         tree[0] = e;
         for (int i = 0; i < max_capacity; i++){
             tree[i+(1<<log2N)] = A[i];

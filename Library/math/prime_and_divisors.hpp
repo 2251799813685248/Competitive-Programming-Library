@@ -2,7 +2,7 @@
 #define PRIME_AND_DIVISORS_HPP_
 
 #include <array>
-#include <vector>
+#include <list.hpp>
 #include <math_functions.hpp>
 #include <algorithm>
 #include <cassert>
@@ -18,13 +18,13 @@ using pii = array<int,2>;
 
 
 /// @brief 試し割り法で正の整数Nを素因数分解する
-/// @return vector<array<ll,2>>{{素因数1,個数}, {素因数2,個数}, {素因数3,個数}...}
-template<typename T> constexpr vector<array<T,2>> trial_division(T N){
+/// @return list<array<ll,2>>{{素因数1,個数}, {素因数2,個数}, {素因数3,個数}...}
+template<typename T> constexpr list<array<T,2>> trial_division(T N){
     assert(N > 0);
     if (N == 1){
-        return vector<array<T,2>> {{1,0}};
+        return list<array<T,2>> {{1,0}};
     }
-    vector<array<T,2>> R;//戻り値用リスト
+    list<array<T,2>> R;//戻り値用リスト
 
     const T M = isqrt(static_cast<ull>(N));
     for (T i = 2; i <= M; i++){
@@ -34,18 +34,18 @@ template<typename T> constexpr vector<array<T,2>> trial_division(T N){
                 divide_count++;
                 N /= i;
             }
-            R.push_back({i,divide_count});
+            R.append({i,divide_count});
         }
     }
     if (N != 1){
-        R.push_back({N,1});
+        R.append({N,1});
     }
     return R;
 }
 
 /// @brief 素因数分解リストを受け取って約数関数の値を求める
 /// @return 約数のK乗和
-template<typename T> constexpr T divisor_function(const vector<array<T,2>>& vv, T K, const T MOD = -1){
+template<typename T> constexpr T divisor_function(const list<array<T,2>>& vv, T K, const T MOD = -1){
     if (vv[0][0] == 1){
         return 1;
     }
@@ -71,8 +71,8 @@ template<typename T> constexpr T divisor_function(const vector<array<T,2>>& vv, 
 }
 
 /// @brief 素因数分解の結果pを受け取って、約数リストを生成する。
-template<typename T> constexpr vector<T> enumerate_divisor(const vector<array<T,2>>& p){
-    vector<T> d{1};
+template<typename T> constexpr list<T> enumerate_divisor(const list<array<T,2>>& p){
+    list<T> d{1};
     if (p[0][0] == 1){
         return d;
     }
@@ -82,7 +82,7 @@ template<typename T> constexpr vector<T> enumerate_divisor(const vector<array<T,
         for (T w = 0; w < v[1]; w++){
             temp *= v[0];
             for (T i = 0; i < t; i++){
-                d.push_back(d[i]*temp);
+                d.append(d[i]*temp);
             }
         }
     }
@@ -93,15 +93,15 @@ template<typename T> constexpr vector<T> enumerate_divisor(const vector<array<T,
 /// @brief 線形篩
 /// @attention コンストラクタに整数Nを渡すことでN以下の整数を扱うことができる。
 struct LinearSieve{
-    vector<int> p_list;
-    vector<int> lpf;
+    list<int> p_list;
+    list<int> lpf;
     //Nを渡すことで1以上N以下の整数を扱うことができる
     LinearSieve(int N): lpf(N+1,-1){
         lpf[1] = 1;
         int p_list_size = 0;
         for (int i = 2; i <= N; i++){
             if (lpf[i] < 0){
-                p_list.push_back(i);
+                p_list.append(i);
                 p_list_size++;
                 lpf[i] = i;
             }
@@ -110,12 +110,12 @@ struct LinearSieve{
             }
         }
     }
-    vector<pii> factorize(int x){
+    list<pii> factorize(int x){
         if (x == 1){return {{1,0}};}
-        vector<pii> r;
+        list<pii> r;
         do{
             if (r.empty() || lpf[x] != r.back()[0]){
-                r.push_back({lpf[x], 1});
+                r.append({lpf[x], 1});
             }
             else{
                 r.back()[1]++;
@@ -124,17 +124,17 @@ struct LinearSieve{
         }while(x > 1);
         return r;
     }
-    vector<vector<pii>> factorize_all(int N){
-        vector<vector<pii>> r(N+1);
-        r[1].push_back({1,0});
+    list<list<pii>> factorize_all(int N){
+        list<list<pii>> r(N+1);
+        r[1].append({1,0});
         for (int i = 2; i <= N; i++){
             r[i] = factorize(i);
         }
         return r;
     }
     /// @brief N以下の整数に対するメビウス関数の値を列挙する。
-    vector<int> enumerate_mobius(int N){
-        vector<int> ret(N+1);
+    list<int> enumerate_mobius(int N){
+        list<int> ret(N+1);
         ret[1] = 1;
         for (int i = 2; i <= N; i++){
             if (lpf[i] == i){ret[i] = -1; continue;}
@@ -281,19 +281,19 @@ template<> constexpr bool MillerRabin(ull N){
 
 
 /// @brief ポラード・ロー法による素因数分解
-template<typename T> constexpr vector<array<T, 2>> Pollard_rho(T N){
+template<typename T> constexpr list<array<T, 2>> Pollard_rho(T N){
     assert(N > 0);
     if (N == 1){return {{1,0}};}
-    vector<T> res;
-    vector<T> dq;
-    dq.push_back(N);
+    list<T> res;
+    list<T> dq;
+    dq.append(N);
     while (!dq.empty()){
         T n = dq.back();
-        dq.pop_back();
+        dq.pop();
         bool next_loop = false;
         while (!MillerRabin<T>(n)){
             if ((n&1) == 0){
-                while ((n&1) == 0){res.push_back(2); n>>=1;}
+                while ((n&1) == 0){res.append(2); n>>=1;}
                 if (n == 1){next_loop = true; break;}
                 continue;
             }
@@ -319,8 +319,8 @@ template<typename T> constexpr vector<array<T, 2>> Pollard_rho(T N){
                             T g = gcd(q,n);
                             if (g > 1){
                                 if (g != n){
-                                    dq.push_back(g);
-                                    dq.push_back(n/g);
+                                    dq.append(g);
+                                    dq.append(n/g);
                                     next_loop = true; break;
                                 }
                                 else{
@@ -332,8 +332,8 @@ template<typename T> constexpr vector<array<T, 2>> Pollard_rho(T N){
                                         g = gcd(q,n);
                                         if (g > 1){
                                             if (g != n){
-                                                dq.push_back(g);
-                                                dq.push_back(n/g);
+                                                dq.append(g);
+                                                dq.append(n/g);
                                                 next_loop = true; break;
                                             }
                                             next_loop_inner = true; break;
@@ -350,8 +350,8 @@ template<typename T> constexpr vector<array<T, 2>> Pollard_rho(T N){
                     q_old = gcd(q,n);
                     if (q_old > 1){
                         if (q_old != n){
-                            dq.push_back(q_old);
-                            dq.push_back(n/q_old);
+                            dq.append(q_old);
+                            dq.append(n/q_old);
                             next_loop = true; break;
                         }
                         next_loop_inner = true; break;
@@ -363,35 +363,35 @@ template<typename T> constexpr vector<array<T, 2>> Pollard_rho(T N){
             if (next_loop) break;
         }
         if (!next_loop) {
-            res.push_back(n);
+            res.append(n);
         }
     }
     sort(res.begin(), res.end());
-    vector<array<T,2>> res2;
+    list<array<T,2>> res2;
     for (ull l = 0, r = 0, sz = res.size(); l < sz;){
         while (r < sz && res[l] == res[r]){
             r++;
         }
-        res2.push_back({res[l], r-l});
+        res2.append({res[l], r-l});
         l = r;
     }
     return res2;
 }
 
 /// @brief ポラード・ロー法による素因数分解のull範囲限定版
-template<> constexpr vector<pull> Pollard_rho(ull N){
+template<> constexpr list<pull> Pollard_rho(ull N){
     assert(N > 0);
     if (N == 1){return {{1,0}};}
-    vector<ull> res;
-    vector<ull> dq;
-    dq.push_back(N);
+    list<ull> res;
+    list<ull> dq;
+    dq.append(N);
     while (!dq.empty()){
         ull n = dq.back();
-        dq.pop_back();
+        dq.pop();
         bool next_loop = false;
         while (!MillerRabin<ull>(n)){
             if ((n&1) == 0){
-                while ((n&1) == 0){res.push_back(2); n>>=1;}
+                while ((n&1) == 0){res.append(2); n>>=1;}
                 if (n == 1){next_loop = true; break;}
                 continue;
             }
@@ -419,8 +419,8 @@ template<> constexpr vector<pull> Pollard_rho(ull N){
                             ull g = gcd(mg.reduce(q),n);
                             if (g > 1){
                                 if (g != n){
-                                    dq.push_back(g);
-                                    dq.push_back(n/g);
+                                    dq.append(g);
+                                    dq.append(n/g);
                                     next_loop = true; break;
                                 }
                                 else{
@@ -432,8 +432,8 @@ template<> constexpr vector<pull> Pollard_rho(ull N){
                                         g = gcd(mg.reduce(q),n);
                                         if (g > 1){
                                             if (g != n){
-                                                dq.push_back(g);
-                                                dq.push_back(n/g);
+                                                dq.append(g);
+                                                dq.append(n/g);
                                                 next_loop = true; break;
                                             }
                                             next_loop_inner = true; break;
@@ -450,8 +450,8 @@ template<> constexpr vector<pull> Pollard_rho(ull N){
                     q_old = gcd(mg.reduce(q),n);
                     if (q_old > 1){
                         if (q_old != n){
-                            dq.push_back(q_old);
-                            dq.push_back(n/q_old);
+                            dq.append(q_old);
+                            dq.append(n/q_old);
                             next_loop = true; break;
                         }
                         next_loop_inner = true; break;
@@ -463,16 +463,16 @@ template<> constexpr vector<pull> Pollard_rho(ull N){
             if (next_loop) break;
         }
         if (!next_loop) {
-            res.push_back(n);
+            res.append(n);
         }
     }
     sort(res.begin(), res.end());
-    vector<pull> res2;
+    list<pull> res2;
     for (int l = 0, r = 0, sz = res.size(); l < sz;){
         while (r < sz && res[l] == res[r]){
             r++;
         }
-        res2.push_back({res[l], static_cast<ull>(r-l)});
+        res2.append({res[l], static_cast<ull>(r-l)});
         l = r;
     }
     return res2;
@@ -480,7 +480,7 @@ template<> constexpr vector<pull> Pollard_rho(ull N){
 
 
 /// @brief 素因数分解を行う。`N`の大きさによって、試し割り法とポラード・ロー法を使い分けてくれる。
-template<typename T> constexpr vector<array<T, 2>> factorize(T N){
+template<typename T> constexpr list<array<T, 2>> factorize(T N){
     if (N < 640000){
         return trial_division<T>(N);
     }
@@ -489,24 +489,24 @@ template<typename T> constexpr vector<array<T, 2>> factorize(T N){
     }
     return Pollard_rho<T>(N);
 }
-template<> constexpr vector<pull> factorize(ull N){
+template<> constexpr list<pull> factorize(ull N){
     if (N < 640000ull){
         return trial_division<ull>(N);
     }
     return Pollard_rho<ull>(N);
 }
-template<> constexpr vector<pll> factorize(ll N){
+template<> constexpr list<pll> factorize(ll N){
     auto res = factorize<ull>(N);
-    vector<pll> res2(res.size());
+    list<pll> res2(res.size());
     for (int i = 0, sz = res.size(); i < sz; i++){
         res2[i][0] = res[i][0];
         res2[i][1] = res[i][1];
     }
     return res2;
 }
-template<> constexpr vector<pii> factorize(int N){
+template<> constexpr list<pii> factorize(int N){
     auto res = factorize<ull>(N);
-    vector<pii> res2(res.size());
+    list<pii> res2(res.size());
     for (int i = 0, sz = res.size(); i < sz; i++){
         res2[i][0] = res[i][0];
         res2[i][1] = res[i][1];

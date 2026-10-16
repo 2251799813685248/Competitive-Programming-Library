@@ -1,5 +1,5 @@
 #include <iostream>
-#include <vector>
+#include <list.hpp>
 #include <string>
 #include <cmath>
 #include <set>
@@ -22,7 +22,7 @@ using namespace std;
 
 
 
-void dfs(vector<vector<ll>> &E, vector<bool> &used, vector<ll> &dist, vector<pair<ll,ll>> &new_number, ll now, ll &timeee){
+void dfs(list<list<ll>> &E, list<bool> &used, list<ll> &dist, list<pair<ll,ll>> &new_number, ll now, ll &timeee){
     if (used[now]){return;}
     used[now] = 1;
     new_number[now].first = timeee;
@@ -42,16 +42,16 @@ int main(){
     
     ll N;
     cin >> N;
-    vector<vector<ll>> E(N+1);
-    vector<pair<ll,ll>> new_number(N+1);
-    vector<bool> used(N+1,0);
-    vector<ll> dist(N+1,0);
-    vector<pair<ll,ll>> Edge(N);
+    list<list<ll>> E(N+1);
+    list<pair<ll,ll>> new_number(N+1);
+    list<bool> used(N+1,0);
+    list<ll> dist(N+1,0);
+    list<pair<ll,ll>> Edge(N);
     for (ll i = 1; i < N; i++){
         ll u,v;
         cin >> u >> v;
-        E[u].push_back(v);
-        E[v].push_back(u);
+        E[u].append(v);
+        E[v].append(u);
         Edge[i] = {u,v};
     }
 

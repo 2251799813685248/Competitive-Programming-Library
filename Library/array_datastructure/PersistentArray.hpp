@@ -2,7 +2,7 @@
 #define PERSISTENT_ARRAY_HPP_
 
 #include <iostream>
-#include <vector>
+#include <list.hpp>
 #include <array>
 #include <cassert>
 using namespace std;
@@ -35,13 +35,13 @@ struct PersistentArray{
         int tempd = 0;
         dfs_construction_value(root, 0, tempd, init_val);
     }
-    PersistentArray(const vector<T> &A){
+    PersistentArray(const list<T> &A){
         int sz = A.size();
         max_size = sz;
         depth = (33-__builtin_clz(sz-1))/2;
         root = new parrnode;
         int tempd = 0;
-        dfs_construction_vector(root, 0, tempd, A);
+        dfs_construction_list(root, 0, tempd, A);
     }
     PersistentArray(const PersistentArray* pa){
         root = new parrnode;
@@ -55,7 +55,7 @@ struct PersistentArray{
         max_size = 0;
     }
 
-    PersistentArray(initializer_list<T> _init): PersistentArray(vector<T>(_init)){};
+    PersistentArray(initializer_list<T> _init): PersistentArray(list<T>(_init)){};
 
     PersistentArray clone(){
         return PersistentArray(this);
@@ -78,7 +78,7 @@ struct PersistentArray{
         }
         d--;
     }
-    void dfs_construction_vector(parrnode* parent, const int &idx, int &d, const vector<T> &A){
+    void dfs_construction_list(parrnode* parent, const int &idx, int &d, const list<T> &A){
         if (d == depth){
             parent->child[0] = nullptr;
             parent->child[1] = nullptr;
@@ -91,7 +91,7 @@ struct PersistentArray{
         for (int i = 0; i < 4; i++){
             if ((idx<<2)+i >= max_size){parent->child[i] = nullptr;continue;}
             parent->child[i] = new parrnode;
-            dfs_construction_vector(parent->child[i], (idx<<2)+i, d, A);
+            dfs_construction_list(parent->child[i], (idx<<2)+i, d, A);
         }
         d--;
     }

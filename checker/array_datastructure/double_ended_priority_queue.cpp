@@ -1,5 +1,5 @@
 #include <iostream>
-#include <vector>
+#include <list.hpp>
 #include <string>
 #include <cmath>
 #include <unordered_set>
@@ -51,7 +51,7 @@ int main(){
 
     int N,Q;
     cin >> N >> Q;
-    vector<int> A(N);
+    list<int> A(N);
     vin(A);
 
     priority_deque<int> pdq(A);

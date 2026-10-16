@@ -5,7 +5,7 @@
 #include <array>
 #include <cmath>
 #include <cassert>
-#include <vector>
+#include <list.hpp>
 #include <math_functions.hpp>
 
 using namespace std;
@@ -21,11 +21,11 @@ template<typename T> inline constexpr ll len(const T& A){return ssize(A);}
 #endif
 
 // Garnerのアルゴリズムで元の数を復元する。すべての法同士が互いに素である必要がある。解のうち最小の非負整数が返る。
-template<typename T> constexpr T crt_relatively_prime(const vector<T>& r, const vector<T>& m){
+template<typename T> constexpr T crt_relatively_prime(const list<T>& r, const list<T>& m){
     T ans = 0;
     int N = len(r);
     assert(N == len(m));
-    vector<T> A(N);
+    list<T> A(N);
     for (int i = 0; i < N; i++){
         T b = r[i]%m[i];
         T cumulative_prod = 1;
@@ -41,11 +41,11 @@ template<typename T> constexpr T crt_relatively_prime(const vector<T>& r, const 
 }
 
 // Garnerのアルゴリズムで元の数を復元する。すべての法同士が互いに素である必要がある。解のうち最小の非負整数%MODが返る。
-template<typename T> constexpr T crt_relatively_prime(const vector<T>& r, const vector<T>& m, T MOD){
+template<typename T> constexpr T crt_relatively_prime(const list<T>& r, const list<T>& m, T MOD){
     T ans = 0;
     int N = len(r);
     assert(N == len(m));
-    vector<T> A(N);
+    list<T> A(N);
     for (int i = 0; i < N; i++){
         T b = r[i]%m[i];
         T cumulative_prod1 = 1;
@@ -77,7 +77,7 @@ template<typename T> inline constexpr T internal_arrange_mod(T m1, T m2, T g){
 
 // Garnerのアルゴリズムで元の数を復元する。存在しなければ-1が返り、存在するならばありうるもののうち、最小の非負整数が返る。
 //modの最小公倍数も求まる。
-template<typename T> constexpr array<T, 2> crt(vector<T> r, vector<T> m){
+template<typename T> constexpr array<T, 2> crt(list<T> r, list<T> m){
     int N = len(r);
     assert(N == len(m));
     for (int i = 0; i < N-1; i++){
@@ -99,7 +99,7 @@ template<typename T> constexpr array<T, 2> crt(vector<T> r, vector<T> m){
 }
 // Garnerのアルゴリズムで元の数を復元する。存在しなければ-1が返り、存在するならばありうるもののうち、最小の非負整数%MODが返る。
 //modの最小公倍数も求まる。
-template<typename T> constexpr array<T, 2> crt(vector<T> r, vector<T> m, T MOD){
+template<typename T> constexpr array<T, 2> crt(list<T> r, list<T> m, T MOD){
     int N = len(r);
     assert(N == len(m));
     for (int i = 0; i < N-1; i++){

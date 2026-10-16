@@ -11,6 +11,7 @@ using namespace std;
 
 template <uint M>
 struct constant_modint {
+    static constexpr uint mod_value = M;
     uint val;
     constant_modint() : val(0) {}
     template <class T> constant_modint(T x) {

@@ -2,7 +2,7 @@
 #include <iterator>
 #include <type_traits>
 #include <utility>
-#include <vector>
+#include <list.hpp>
 #include <string>
 #include <cmath>
 #include <unordered_set>
@@ -105,7 +105,7 @@ void solve(){
         vout2d(matrix<int>(N,N,0));
     }
     else{
-        for (int i = 0; i < N; i++){A[i].push_back(0);B[i].push_back(0);}
+        for (int i = 0; i < N; i++){A[i].append(0);B[i].append(0);}
         A.W++;
         B.W++;
         auto x = solve_linear_equations(A)[1];
@@ -113,7 +113,7 @@ void solve(){
         pii non_zero{0,0};
         A.W--;
         B.W--;
-        for (int i = 0; i < N; i++){A[i].pop_back();B[i].pop_back();}
+        for (int i = 0; i < N; i++){A[i].pop();B[i].pop();}
         for (int i = 0; i < N; i++){
             if (C[i][i] == 0){
                 non_zero[1] = i;

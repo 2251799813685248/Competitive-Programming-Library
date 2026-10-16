@@ -18,7 +18,7 @@ def judge_genre():
     project_root = Path(__file__).resolve().parent.parent.parent.parent
     lib_checker_dir = project_root / "Competitive-Programming-Library" / "checker"
     info_json_path = lib_checker_dir / "_run_test" / "info.json"
-    judge_py_path = project_root / "test" / "judge.py"
+    judge_py_path = lib_checker_dir / "_run_test" / "judge.py"
 
     if not info_json_path.exists():
         print(f"Error: {info_json_path} not found.")

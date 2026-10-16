@@ -1,5 +1,5 @@
 #include <iostream>
-#include <vector>
+#include <list.hpp>
 #include <string>
 #include <cmath>
 #include <unordered_set>
@@ -46,18 +46,21 @@ constexpr ll dj8[8] = {1,1,0,-1,-1,-1,0,1};
 #include <quotients.hpp>
 #include <prime_and_divisors.hpp>
 
+#include <fastio.hpp>
+fastio::FastInput in;
+fastio::FastOutput out;
+
 void solve(){
     ll P;
-    cin >> P;
-    print(primitive_root(P));
+    in.read(P);
+    out.print(primitive_root(P));
 }
 
 int main(){
-    ios::sync_with_stdio(false);
-    std::cin.tie(nullptr);
+    
 
     ll T = 1;
-    cin >> T;
+    in.read(T);
     while (T--){solve();}
 
 }

@@ -1,7 +1,7 @@
 #ifndef MATRIX__HPP_
 #define MATRIX__HPP_
 
-#include <vector>
+#include <list.hpp>
 #include <string>
 #include <cmath>
 #include <iostream>
@@ -18,20 +18,24 @@ using ll = long long;
 /// @attention コンストラクタにHとWを渡すと、[0][0]~[H-1][W-1]までできる。
 /// @attention コンストラクタ1 matrix(N)...N次単位行列
 /// @attention コンストラクタ2 matrix(h,w,v)...全成分がvの行列
-/// @attention コンストラクタ3 matrix(vecvec)...2次元vectorで初期化
+/// @attention コンストラクタ3 matrix(vecvec)...2次元listで初期化
 /// @tparam T 数を表す型
 template<typename T>
-struct matrix{
-    vector<vector<T>> M;
+class matrix{
+    public:
+    
+    list<list<T>> M;
     int H,W;
+    using value_type = T;
+
 
     /// @brief デフォルトコンストラクタ すべて0で初期化される
-    constexpr matrix(){H = 0; W = 0; M = vector<vector<T>>();}
+    constexpr matrix(){H = 0; W = 0; M = list<list<T>>();}
     /// @brief N次単位行列を生成
     /// @param N 
     constexpr matrix(int N){
         H = N;W = N;
-        M = vector<vector<T>>(N,vector<T>(N,0));
+        M = list<list<T>>(N,list<T>(N,0));
         for (int i = 0; i < N; i++){
             M[i][i] = 1;
         }
@@ -43,32 +47,54 @@ struct matrix{
     constexpr matrix(int h, int w, T v = (T)0){
         H = h;
         W = w;
-        M = vector<vector<T>>(H,vector<T>(W,v));
+        M = list<list<T>>(H,list<T>(W,v));
     }
     /// @brief 2次元配列を用いて行列を生成
     /// @param A 
-    constexpr matrix(const vector<vector<T>> &A){
+    constexpr matrix(const list<list<T>> &A){
         M = A;
         H = A.size();
         W = A.empty() ? 0 : A[0].size();
     }
-    
-    matrix operator+(const matrix &A)const{
-        if (H != A.H  || W != A.W){
-            cerr << "size error(operator+)" << endl;
-            assert(false);
-        }
-        matrix ans(M);
-        for (int i = 0; i < H; i++){
-            for (int j = 0; j < W; j++){
-                ans.M[i][j] += A.M[i][j];
-            }
-        }
-        return ans;
+    constexpr matrix(const list<T>& A){
+        H = A.size();
+        W = 1;
+        M.resize(H);
+        for (int i = 0; i < H; i++){M[i] = list<T>{A[i]};}
     }
-    void operator+=(const matrix &A){
+    constexpr matrix(const matrix& A){
+        H = A.H;
+        W = A.W;
+        M = A.M;
+    }
+    constexpr matrix(matrix&& A) noexcept {
+        H = A.H;
+        W = A.W;
+        M = std::move(A.M);
+    }
+
+
+
+    matrix& operator=(const matrix& A){
+        H = A.H;
+        W = A.W;
+        M = A.M;
+        return *this;
+    }
+    matrix& operator=(matrix&& A) noexcept {
+        H = A.H;
+        W = A.W;
+        M = std::move(A.M);
+        return *this;
+    }
+
+    matrix operator+() const {return *this;}
+    matrix operator-() const {return  *this * (T)(-1);}
+    
+
+    matrix& operator+=(const matrix &A){
         if (H != A.H  || W != A.W){
-            cerr << "size error(operator+=)" << endl;
+            cerr << "SizeError: addition of matrix" << endl;
             assert(false);
         }
         for (int i = 0; i < H; i++){
@@ -76,23 +102,11 @@ struct matrix{
                 M[i][j] += A.M[i][j];
             }
         }
+        return *this;
     }
-    matrix operator-(const matrix &A)const{
+    matrix& operator-=(const matrix &A){
         if (H != A.H  || W != A.W){
-            cerr << "size error(operator-)" << endl;
-            assert(false);
-        }
-        matrix ans(M);
-        for (int i = 0; i < H; i++){
-            for (int j = 0; j < W; j++){
-                ans.M[i][j] -= A.M[i][j];
-            }
-        }
-        return ans;
-    }
-    void operator-=(const matrix &A){
-        if (H != A.H  || W != A.W){
-            cerr << "size error(operator-=)" << endl;
+            cerr << "SizeError: subtraction of matrix" << endl;
             assert(false);
         }
         for (int i = 0; i < H; i++){
@@ -100,26 +114,11 @@ struct matrix{
                 M[i][j] -= A.M[i][j];
             }
         }
+        return *this;
     }
-    matrix operator*(const matrix &A)const{
+    matrix& operator*=(const matrix &A){
         if (W != A.H){
-            cerr << "size error(operator*)" << endl;
-            assert(false);
-        }
-        matrix ans(H,A.W,0);
-        for (int i = 0; i < H; i++){
-            for (int k = 0; k < W; k++){
-                T constval = M[i][k];
-                for (int j = 0; j < A.W; j++){
-                    ans.M[i][j] += constval*A.M[k][j];
-                }
-            }
-        }
-        return ans;
-    }
-    void operator*=(const matrix &A){
-        if (W != A.H){
-            cerr << "size error(operator*=)" << endl;
+            cerr << "SizeError: multiplication of matrix" << endl;
             assert(false);
         }
         matrix ans(H,A.W,0);
@@ -133,29 +132,31 @@ struct matrix{
         }
         W = A.W;
         M = ans.M;
+        return *this;
     }
-    matrix operator*(const T c)const{
-        matrix ans(H,W,0);
-        for (int i = 0; i < H; i++){
-            for (int j = 0; j < W; j++){
-                ans.M[i][j] = M[i][j] * c;
-            }
-        }
-        return ans;
-    }
-    void operator*=(const T c){
+    matrix& operator*=(const T c){
         for (int i = 0; i < H; i++){
             for (int j = 0; j < W; j++){
                 M[i][j] *= c;
             }
         }
+        return *this;
     }
+    
+    friend matrix operator+(const matrix& lhs, const matrix& rhs) {return matrix(lhs) += rhs;}
+    friend matrix operator-(const matrix& lhs, const matrix& rhs) {return matrix(lhs) -= rhs;}
+    friend matrix operator*(const matrix& lhs, const matrix& rhs) {return matrix(lhs) *= rhs;}
+    friend matrix operator*(const matrix& lhs, const T& rhs) {return matrix(lhs) *= rhs;}
+    
+    friend bool operator==(const matrix& lhs, const matrix& rhs) {return lhs.M == rhs.M;}
+    friend bool operator!=(const matrix& lhs, const matrix& rhs) {return lhs.M != rhs.M;}
+
 
     
     /// @brief i行目を1/c倍
     /// @param i 
     /// @param c 
-    inline constexpr void row_transformation_division(size_t i, T c){
+    inline constexpr void row_transformation_division(int i, T c){
         for (int j = 0; j < W; j++){
             M[i][j] /= c;
         }
@@ -164,7 +165,7 @@ struct matrix{
     /// @param i 
     /// @param j 
     /// @param c 
-    inline constexpr void row_transformation_sub_row(size_t i, T c, size_t j){
+    inline constexpr void row_transformation_sub_row(int i, T c, int j){
         for (int k = 0; k < W; k++){
             M[j][k] -= M[i][k]*c;
         }
@@ -172,7 +173,7 @@ struct matrix{
 
     inline constexpr void transpose(){
         swap(H,W);
-        vector<vector<T>> temp(H, vector<T>(W));
+        list<list<T>> temp(H, list<T>(W));
         for (int i = 0; i < W; i++){
             for (int j = 0; j < H; j++){
                 temp[j][i] = std::move(M[i][j]);
@@ -181,13 +182,14 @@ struct matrix{
         M = std::move(temp);
     }
 
-    /// @brief 行の数を返す
-    size_t size()const{return H;}
-    inline constexpr bool empty()const{return min(H,W) == 0;}
-    inline constexpr vector<T>& operator[](const int row){
+    inline constexpr ll size() const {return H;}
+    inline constexpr ll rowsize() const {return H;}
+    inline constexpr ll columsize() const {return W;}
+    inline constexpr bool empty() const {return min(H,W) == 0;}
+    inline constexpr list<T>& operator[](const int row){
         return M[row];
     }
-    inline constexpr const vector<T>& operator[](const int row)const{
+    inline constexpr const list<T>& operator[](const int row)const{
         return M[row];
     }
 
@@ -220,10 +222,12 @@ struct matrix{
     }
 };
 
+
+
 /// @brief M^Nを返す。
-template<typename T>
-matrix<T> matrixpow(matrix<T> M, ll N){
-    matrix<T> R(M.H);
+template<typename matrixT>
+matrixT matrixpow(matrixT M, ull N){
+    matrixT R(M.H);
     if (N){
         while (N){
             if (N%2){
@@ -239,8 +243,8 @@ matrix<T> matrixpow(matrix<T> M, ll N){
     }
 }
 /// @brief 与えられた行列を行簡約化する
-template<typename T>
-matrix<T> row_simplification(matrix<T> M){
+template<typename matrixT>
+matrixT row_simplification(matrixT M){
     int non_zero_column = 0;
     for (int i = 0; i < M.H; i++){
         bool finished = false;
@@ -266,15 +270,15 @@ matrix<T> row_simplification(matrix<T> M){
     return M;
 }
 /// @brief 正方行列の逆行列を求める。第一引数がfalseなら正則行列でない。
-template<typename T>
-pair<bool, matrix<T>> inverse_matrix(matrix<T> M){
+template<typename matrixT>
+pair<bool, matrixT> inverse_matrix(matrixT M){
     if (M.H != M.W){
-        cerr << "This is not a square matrix" << endl;
+        cerr << "SizeError: not a square matrix" << endl;
         assert(false);
     }
     for (int i = 0; i < M.H; i++){
         for (int j = 0; j < M.W; j++){
-            M[i].push_back(0);
+            M[i].append(0);
         }
         M[i][M.W+i] = 1;
     }
@@ -291,20 +295,20 @@ pair<bool, matrix<T>> inverse_matrix(matrix<T> M){
 
 /// @brief 拡大係数行列Aで表される連立方程式を解く
 /// @attention 返り値は解空間の次元をrとして {{解の1つ}, {v1},{v2},...,{vr}} の形式である。解がなければ空となる。
-template<typename T>
-vector<vector<T>> solve_linear_equations(const matrix<T> &A){
+template<typename matrixT>
+list<list<typename matrixT::value_type>> solve_linear_equations(const matrixT &A){
     int M = A.H;
     int N = A.W-1;
     auto B = row_simplification(A);
     int r = 0;//解空間の次元
-    vector<int> c;//各行の先頭項の列のindex
-    vector<int> d(N, -1);//先頭項を含まない列が何番目にあるか
+    list<int> c;//各行の先頭項の列のindex
+    list<int> d(N, -1);//先頭項を含まない列が何番目にあるか
     int temp = 0, pre = 0;
     for (int i = 0; i < M; i++){
         bool all_zero = true;
         for (int j = pre; j < N; j++){
-            if (!(B[i][j] == (T)0)){
-                c.push_back(j);
+            if (!(B[i][j] == typename matrixT::value_type(0))){
+                c.append(j);
                 pre = j+1;
                 all_zero = false;
                 break;
@@ -326,10 +330,10 @@ vector<vector<T>> solve_linear_equations(const matrix<T> &A){
     }
 
     for (ll i = r; i < M; i++){
-        if (!(B[i][N] == (T)0)){return {};}
+        if (!(B[i][N] == typename matrixT::value_type(0))){return {};}
     }
 
-    vector<vector<T>> ans(N-r+1, vector<T>(N,0));
+    list<list<typename matrixT::value_type>> ans(N-r+1, list<typename matrixT::value_type>(N,0));
     for (int i = 0; i < r; i++){
         ans[0][c[i]] += B[i][N];
         for (int j = c[i]+1; j < N; j++){
@@ -347,18 +351,18 @@ vector<vector<T>> solve_linear_equations(const matrix<T> &A){
 }
 
 /// @brief 素数mod限定の行列式
-template<uint M> constexpr constant_modint<M> det_mod_P(matrix<constant_modint<M>> A){
+template<typename matrixT> constexpr matrixT::value_type det_mod_P(matrixT A){
     if (A.H != A.W){
-        cerr << "This is not a square matrix" << endl;
+        cerr << "SizeError: not a square matrix" << endl;
         assert(false);
     }
-    if (!MillerRabin<ull>(M)){
+    if (!MillerRabin<ull>(matrixT::value_type::mod_value)){
         cerr << "MOD is not a prime number" << endl;
         assert(false);
     }
     int non_zero_column = 0;
     int swapcnt = 0;
-    constant_modint<M> det = 1;
+    typename matrixT::value_type det = 1;
     for (int i = 0; i < A.H; i++){
         bool finished = false;
         while (!finished){
@@ -381,7 +385,7 @@ template<uint M> constexpr constant_modint<M> det_mod_P(matrix<constant_modint<M
         }
     }
     for (int i = 0; i < A.H; i++){det *= A[i][i];}
-    return det.val == 0 ? 0 : (swapcnt&1) ?  M-det : det;
+    return (swapcnt&1) ? (-1)*det : det;
 }
 
 

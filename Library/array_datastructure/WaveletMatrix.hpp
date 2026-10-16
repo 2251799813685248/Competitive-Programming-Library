@@ -2,9 +2,9 @@
 #define WAVELET_MATRIX_HPP_
 
 #include <iostream>
-#include <vector>
+#include <list.hpp>
 #include <cassert>
-#include <deque>
+#include <deque.hpp>
 using ll = long long;
 using ull = unsigned long long;
 using uint = unsigned int;
@@ -22,16 +22,16 @@ struct FullyIndexableDictionary{
     bool initialized = false;//初期化されたかを保持しておく
     size_t length;
 
-    /// @brief vectorを渡して直接初期化して構築
+    /// @brief listを渡して直接初期化して構築
     /// @tparam INTEGER int,bool,longなどのboolにキャストできるもの
     /// @param init 
     template<typename INTEGER>
-    FullyIndexableDictionary(vector<INTEGER> init){
+    FullyIndexableDictionary(list<INTEGER> init){
         initialized = true;
         length = init.size();
         ull targetsize = ((init.size()+63)>>6)<<6;
         while (init.size() < targetsize){
-            init.push_back(0);
+            init.append(0);
         }
 
         data = new ull[targetsize>>6];
@@ -254,29 +254,29 @@ struct FullyIndexableDictionary{
 /// @details 
 template<typename INTEGER>
 struct WaveletMatrix{
-    vector<FullyIndexableDictionary> M;
-    vector<uint> zcnt;
-    vector<pair<INTEGER,uint>> first_appear;
+    list<FullyIndexableDictionary> M;
+    list<uint> zcnt;
+    list<pair<INTEGER,uint>> first_appear;
     size_t max_size;
     int lbl;//longest_bitlength
     const INTEGER e = static_cast<INTEGER>(1);
 
-    WaveletMatrix(vector<INTEGER> A){
+    WaveletMatrix(list<INTEGER> A){
         max_size = A.size();
         lbl = 64-__builtin_clzll(max(e, *max_element(vall(A))));
-        M = vector<FullyIndexableDictionary>(lbl);
-        zcnt = vector<uint>(lbl, 0);
+        M = list<FullyIndexableDictionary>(lbl);
+        zcnt = list<uint>(lbl, 0);
         for (int i = lbl-1; i >= 0; i--){
-            deque<INTEGER> B;//0
-            deque<INTEGER> C;//1
+            delist<INTEGER> B;//0
+            delist<INTEGER> C;//1
             M[i] = FullyIndexableDictionary(max_size);
             for (size_t j = 0; j < max_size; j++){
                 if (A[j]&(e<<i)){
                     M[i].write_1(j);
-                    C.push_back(A[j]);
+                    C.append(A[j]);
                 }
                 else{
-                    B.push_back(A[j]);
+                    B.append(A[j]);
                     zcnt[i]++;
                 }
             }
@@ -296,7 +296,7 @@ struct WaveletMatrix{
             while (A[i] == A[j] && j < max_size){
                 j++;
             }
-            first_appear.push_back({A[i], i});
+            first_appear.append({A[i], i});
             i = j;
         }
         sort(vall(first_appear));
