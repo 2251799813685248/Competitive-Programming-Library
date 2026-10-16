@@ -5,6 +5,9 @@
 #include <deque.hpp>
 #include <algorithm>
 #include <array>
+#include <cassert>
+#include <utility>
+#include <functional>
 using namespace std;
 using pii = array<int,2>;
 
@@ -77,6 +80,27 @@ template<typename INT> list<pair<pair<int, int>, list<list<INT>>>> tree_decompos
     }
     return res;
 }
+
+template<typename INT> pair<vector<INT>, vector<pair<INT, vector<INT>>>> subtree_size(int N, const vector<vector<INT>>& E, int root){
+    vector<bool> used(N, false);
+    vector<INT> res(N, 0);
+    vector<pair<INT, vector<INT>>> res2;
+    function<INT(INT)> dfs = [&](INT n){
+        if (used[n]){return;}
+        used[n] = true;
+        for (auto& w : E[n]){
+            if (used[w]){continue;}
+            res2[w].first = n;
+            res2[n].second.push_back(w);
+            res[n] += dfs(w);
+        }
+        res[n] += 1;
+        return res[n];
+    };
+    res[root] = dfs(root);
+    return res2;
+}
+
 
 
 #endif /* TREE__HPP_ */
