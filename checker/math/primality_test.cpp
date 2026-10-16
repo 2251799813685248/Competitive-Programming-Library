@@ -46,6 +46,10 @@ constexpr ll dj8[8] = {1,1,0,-1,-1,-1,0,1};
 #include <math_functions.hpp>
 #include <quotients.hpp>
 #include <prime_and_divisors.hpp>
+#include <fastio.hpp>
+
+fastio::FastInput in;
+fastio::FastOutput out;
 
 
 constexpr ll mod = 998244353;
@@ -55,14 +59,9 @@ constexpr ll mod = 998244353;
 
 
 void solve(){
-    ll P;
-    cin >> P;
-    if (MillerRabin<ull>(P)){
-        cout << "Yes\n";
-    }
-    else{
-        cout << "No\n";
-    }
+    ull P;
+    in.read(P);
+    out.print(MillerRabin(P) ? "Yes" : "No");
 }
 
 int main(){
@@ -70,7 +69,7 @@ int main(){
     std::cin.tie(nullptr);
 
     ll T = 1;
-    cin >> T;
+    in.read(T);
     while (T--){
         solve();
     }

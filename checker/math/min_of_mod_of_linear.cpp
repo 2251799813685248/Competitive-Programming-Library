@@ -43,19 +43,21 @@ const list<ll> dj{1,0,-1,0};
 const list<ll> dj8{1,1,0,-1,-1,-1,0,1};
 
 #include <floor_of_linear.hpp>
+#include <fastio.hpp>
+
+fastio::FastInput in;
+fastio::FastOutput out;
 
 
 
 int main(){
-    ios::sync_with_stdio(false);
-    std::cin.tie(nullptr);
 
     int T;
-    cin >> T;
+    in.read(T);
 
     while (T--){
         ll N,M,A,B;
-        cin >> N >> M >> A >> B;
-        print(-floor_max(N-1, M, M, A, B, -A, -B));
+        in.read(N,M,A,B);
+        out.print(-floor_max(N-1, M, M, A, B, -A, -B));
     }
 }
