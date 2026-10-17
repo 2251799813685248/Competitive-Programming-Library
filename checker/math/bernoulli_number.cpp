@@ -1,5 +1,5 @@
 #include <iostream>
-#include <vector>
+#include <list.hpp>
 #include <string>
 #include <cmath>
 #include <unordered_set>
@@ -60,7 +60,7 @@ int main(){
     cin >> N;
     FormalPowerSeries<998244353> F(N+1);
     for (ll i = 0; i <= N; i++){
-        F[i] = mtable.factorialmod(i+1);
+        F[i] = mtable.factorialmodinv(i+1);
     }
     F = op.inv(F, N+1);
     FormalPowerSeries<998244353> ans(N+1);

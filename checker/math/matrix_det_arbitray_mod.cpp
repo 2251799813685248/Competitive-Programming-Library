@@ -1,7 +1,7 @@
 #include <iostream>
 #include <iterator>
 #include <utility>
-#include <vector>
+#include <list.hpp>
 #include <string>
 #include <cmath>
 #include <unordered_set>
@@ -141,11 +141,11 @@ void solve(){
     
     auto fact = factorize(M);
 
-    vector<ll> r,m;
+    list<ll> r,m;
 
     for (auto& p : fact){
-        m.push_back(powll(p[0], p[1]));
-        r.push_back(det_mod_p_n(A, p[0], p[1]));
+        m.append(powll(p[0], p[1]));
+        r.append(det_mod_p_n(A, p[0], p[1]));
     }
     print(crt_relatively_prime(r,m));
 }

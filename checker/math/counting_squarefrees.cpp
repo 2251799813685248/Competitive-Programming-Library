@@ -1,5 +1,5 @@
 #include <iostream>
-#include <vector>
+#include <list.hpp>
 #include <string>
 #include <cmath>
 #include <unordered_set>
@@ -66,14 +66,14 @@ ll count_square_free_integers(ll N){
     }
     LinearSieve L(D+10);
     auto mobius = L.enumerate_mobius(D+10);
-    vector<int> mobius_cum = mobius;
+    list<int> mobius_cum = mobius;
     for (ll i = 2; i <= D+10; i++){
         mobius_cum[i] += mobius_cum[i-1];
     }
     for (ll i = 1; i <= D; i++){
         ans += N/(i*i)*mobius[i];
     }
-    vector<int> M(I+2, 0);
+    list<int> M(I+2, 0);
     for (int i = I+1; i >= 1; i--){
         ll x = sqrt(N/i);
         while (x*x*i > N){

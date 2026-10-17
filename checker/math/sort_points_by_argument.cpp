@@ -1,5 +1,5 @@
 #include <iostream>
-#include <vector>
+#include <list.hpp>
 #include <string>
 #include <cmath>
 #include <unordered_set>
@@ -56,7 +56,7 @@ int main(){
 
     ll N;
     cin >> N;
-    vector<pll> P(N);
+    list<pll> P(N);
     for (ll i = 0; i < N; i++){
         cin >> P[i][0] >> P[i][1];
     }

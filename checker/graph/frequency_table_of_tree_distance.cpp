@@ -1,5 +1,5 @@
 #include <iostream>
-#include <vector>
+#include <list.hpp>
 #include <string>
 #include <cmath>
 #include <unordered_set>
@@ -49,77 +49,7 @@ constexpr ll dj8[8] = {1,1,0,-1,-1,-1,0,1};
 #include <fps.hpp>
 #include <fps_operations.hpp>
 
-/// @brief 与えられた木の重心を1つ見つける 
-template<typename INT> int tree_centroid(int N, const vector<vector<INT>>& E){
-    if (N == 1){return 1;}
-    vector<bool> used(N+1, 0);
-    vector<int> subtreesize(N+1, 0);
-    deque<int> st;
-    st.push_back(~1);
-    st.push_back(1);
-    used[1] = true;
-    while (!st.empty()){
-        int n = st.back();
-        st.pop_back();
-        if (n < 0){
-            n = ~n;
-            subtreesize[n] = 1;
-            bool is_centroid = true;
-            for (INT w : E[n]){
-                if (subtreesize[w] > N/2){is_centroid = false;}
-                subtreesize[n] += subtreesize[w];
-            }
-            if (is_centroid && N-subtreesize[n] <= N/2){return n;}
-            continue;
-        }
-        for (INT w : E[n]){
-            if (used[w]){continue;}
-            used[w] = true;
-            st.push_back(~w);
-            st.push_back(w);
-        }
-    }
-    assert(false);
-    return -1;
-}
-
-/// @brief 与えられた木を指定した頂点で分解する。{{頂点数, 根(分解した頂点のすぐ隣の頂点)}, 隣接頂点リスト}の形で返ってくる
-template<typename INT> vector<pair<pair<int, int>, vector<vector<INT>>>> tree_decomposition(int N, const vector<vector<INT>>& E, int centroid){
-    vector<pair<pair<int, int>, vector<vector<INT>>>> res;
-    vector<bool> used(N+1, 0);
-    deque<int> st;
-    used[centroid] = true;
-    for (INT subtreeroot : E[centroid]){
-        int subtreesize = 1;
-        vector<pii> edges;
-        vector<int> vertex_list;
-        st.push_back(subtreeroot);
-        used[subtreeroot] = 1;
-        vertex_list.push_back(-2147483647);
-        vertex_list.push_back(subtreeroot);
-        while (!st.empty()){
-            int n = st.back();
-            st.pop_back();
-            for (INT w : E[n]){
-                if (used[w]){continue;}
-                subtreesize++;
-                vertex_list.push_back(w);
-                used[w] = true;
-                edges.push_back({n,(int)w});
-                st.push_back(w);
-            }
-        }
-        sort(vertex_list.begin(), vertex_list.end());
-        res.emplace_back(make_pair(subtreesize, (int)(lower_bound(vertex_list.begin(), vertex_list.end(), subtreeroot)-vertex_list.begin())), vector<vector<INT>>(subtreesize+1));
-        for (pii& e : edges){
-            int u = lower_bound(vertex_list.begin(), vertex_list.end(), e[0]) - vertex_list.begin();
-            int v = lower_bound(vertex_list.begin(), vertex_list.end(), e[1]) - vertex_list.begin();
-            res.back().second[u].push_back(v);
-            res.back().second[v].push_back(u);
-        }
-    }
-    return res;
-}
+#include <tree.hpp>
 
 
 fps_operator<998244353> op;
@@ -131,60 +61,57 @@ int main(){
 
     ll N;
     cin >> N;
-    vector<vector<ll>> E(N+1);
+    list<list<ll>> E(N);
     for (ll i = 0; i < N-1; i++){
         ll u,v;
         cin >> u >> v;
-        u++;
-        v++;
-        E[u].push_back(v);
-        E[v].push_back(u);
+        E[u].append(v);
+        E[v].append(u);
     }
     
-    vector<ll> ans(N), ans2(N);
+    list<constant_modint<998244353>> ans(N+1);
+    list<constant_modint<167772161>> ans2(N+1);
 
-    vector<pair<pair<int, int>, vector<vector<ll>>>> st;
-    st.push_back({{N, 1}, E});
+    list<pair<pair<int, int>, list<list<ll>>>> st;
+    st.append({{N, 0}, E});
 
     while (!st.empty()){
-        auto T = st.back();
-        st.pop_back();
+        auto T = st.pop();
         if (T.first.first == 1){continue;}
         int centroid = tree_centroid(T.first.first, T.second);
         auto decomposed = tree_decomposition(T.first.first, T.second, centroid);
 
-        deque<ll> dq;
+        delist<ll> dq;
 
-        vector<FormalPowerSeries> U;
+        list<list<ll>> U;
         ull maxsize = 0;
 
         for (auto& subT : decomposed){
-            st.push_back(subT);
-            vector<ll> F{0, 1};
-            dq.push_back(subT.first.second);
-            vector<ll> dist(subT.second.size(), -1);
+            st.append(subT);
+            list<ll> F{0, 1};
+            dq.append(subT.first.second);
+            list<ll> dist(subT.second.size(), -1);
             dist[subT.first.second] = 1;
-            ans[1]++;
-            ans2[1]++;
+            ans[1] += 1;
+            ans2[1] += 1;
             while (!dq.empty()){
-                ll n = dq.back();
-                dq.pop_back();
+                ll n = dq.pop();
                 for (auto w : subT.second[n]){
                     if (dist[w] >= 0){continue;}
                     dist[w] = dist[n]+1;
-                    dq.push_back(w);
+                    dq.append(w);
                     F.resize(max<ull>(F.size(), dist[w]+1), 0);
-                    ans[dist[w]]++;
-                    ans2[dist[w]]++;
+                    ans[dist[w]] += 1;
+                    ans2[dist[w]] += 1;
                     F[dist[w]]++;
                 }
             }
             maxsize = max<ull>(maxsize, F.size());
-            U.push_back(F);
+            U.append(F);
         }
 
-        FormalPowerSeries S1(maxsize, 0);
-        FormalPowerSeries S2(maxsize, 0);
+        FormalPowerSeries<998244353> S1(maxsize, 0);
+        FormalPowerSeries<167772161> S2(maxsize, 0);
         for (auto& f : U){
             for (uint i = 0; i < f.size(); i++){
                 S1[i] += f[i];
@@ -198,25 +125,21 @@ int main(){
             auto g2 = op2.convolution(f,f);
             for (uint i = 0; i < g.size(); i++){
                 S1[i] += 998244353-g[i];
-                if (S1[i] >= 998244353){S1[i] -= 998244353;}
             }
             for (uint i = 0; i < g.size(); i++){
                 S2[i] += 167772161-g2[i];
-                if (S2[i] >= 167772161){S2[i] -= 167772161;}
             }
         }
         for (uint i = 0; i < S1.size(); i++){
-            ans[i] += S1[i]*499122177ll%998244353;
-            ans[i] %= 998244353;
-            ans2[i] += S2[i]*83886081ll%167772161;
-            ans2[i] %= 167772161;
+            ans[i] += S1[i]/2;
+            ans2[i] += S2[i]/2;
         }
     }
-    vector<ll> ans3(N);
+    list<ll> ans3(N);
     auto temp = axby1<lll>(998244353, 167772161);
     temp[1] += 998244353ll*167772161;
     for (ll i = 0; i < N; i++){
-        ans3[i] = (ans[i]*167772161*temp[1]+ans2[i]*998244353*temp[0])%(998244353ll*167772161);
+        ans3[i] = (ans[i].val*167772161ll*temp[1]+ans2[i].val*998244353ll*temp[0])%(998244353ll*167772161);
     }
     adjvout(ans3);
 }

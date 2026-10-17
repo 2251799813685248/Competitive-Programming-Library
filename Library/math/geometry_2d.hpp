@@ -1,7 +1,7 @@
 #ifndef GEOMETRY__HPP_
 #define GEOMETRY__HPP_
 
-#include <vector>
+#include <list.hpp>
 #include <queue>
 #include <array>
 #include <algorithm>
@@ -21,54 +21,55 @@ template<typename T> T cross_z(const array<T, 2>& a, const array<T, 2>& b){retur
 
 
 /// @brief {x,y}の辞書順に点をソートした時、最小と最大を通るような下側凸包を求める。 
-template<typename T> vector<array<T, 2>> static_convex_hull_below(vector<array<T, 2>> A){
-    sort(A.begin(), A.end());
-    deque<array<T, 2>> res;
+template<typename T> list<array<T, 2>> static_convex_hull_below(const list<array<T, 2>>& A){
+    list<array<T, 2>> res;
+    res.reserve(A.size());
     for (auto& R : A){
-        if (res.empty()){res.push_back(R);continue;}
+        if (res.empty()){res.append(R);continue;}
         if (R == res.back()){continue;}
-        if (res.size() == 1ull){res.push_back(R);}
-        while (res.size() >= 2ull){
-            auto Q = res.back();
-            res.pop_back();
-            auto P = res.back();
-            if (cross_z(Q-P, R-P) > 0){
-                res.push_back(Q);
-                break;
-            }
-        }
-        res.push_back(R);
-    }
-    return vector<array<T, 2>>(res.begin(), res.end());
-}
-/// @brief {x,y}の辞書順に点をソートした時、最小と最大を通るような上側凸包を求める。 
-template<typename T> vector<array<T, 2>> static_convex_hull_above(vector<array<T, 2>> A){
-    sort(A.begin(), A.end());
-    deque<array<T, 2>> res;
-    for (auto& R : A){
-        if (res.empty()){res.push_back(R);continue;}
-        if (R == res.back()){continue;}
-        if (res.size() == 1ull){res.push_back(R);}
+        if (res.size() == 1){res.append(R);}
         while (res.size() >= 2){
             auto Q = res.back();
-            res.pop_back();
+            res.pop();
             auto P = res.back();
-            if (cross_z(R-P, Q-P) > 0){
-                res.push_back(Q);
+            if (cross_z(Q-P, R-P) > 0){
+                res.append(Q);
                 break;
             }
         }
-        res.push_back(R);
+        res.append(R);
     }
-    return vector<array<T, 2>>(res.begin(), res.end());
+    return std::move(res);
+}
+/// @brief {x,y}の辞書順に点をソートした時、最小と最大を通るような上側凸包を求める。 
+template<typename T> list<array<T, 2>> static_convex_hull_above(const list<array<T, 2>>& A){
+    list<array<T, 2>> res;
+    res.reserve(A.size());
+    for (auto& R : A){
+        if (res.empty()){res.append(R);continue;}
+        if (R == res.back()){continue;}
+        if (res.size() == 1){res.append(R);}
+        while (res.size() >= 2){
+            auto Q = res.back();
+            res.pop();
+            auto P = res.back();
+            if (cross_z(R-P, Q-P) > 0){
+                res.append(Q);
+                break;
+            }
+        }
+        res.append(R);
+    }
+    return std::move(res);
 }
 
 /// @brief {x,y}の辞書順に点をソートした時、最小の点から始めて反時計回りに回るように凸包の頂点をすべて列挙する。
-template<typename T> vector<array<T, 2>> static_convex_hull(const vector<array<T, 2>>& A){
+template<typename T> list<array<T, 2>> static_convex_hull(list<array<T, 2>> A){
+    sort(vall(A));
     auto B = static_convex_hull_below(A);
     auto C = static_convex_hull_above(A);
     for (int i = (int)C.size()-2; i > 0; i--){
-        B.push_back(move(C[i]));
+        B.append(std::move(C[i]));
     }
     return B;
 }
@@ -96,12 +97,24 @@ template<typename T> int same_side(const array<T, 2>& a, const array<T, 2>& b, c
     if ((e > 0 && f > 0) || (e < 0 && f < 0)){return 1;}
     return -1;
 }
-/// @brief 三点`a`,`b`,`c`が作る凸包の内部に点`d`があれば2, 境界上にあれば1, 外部にあれば0を返す。 
-//template<typename T> int in_triangle(const array<T, 2>& a, const array<T, 2>& b, const array<T, 2>& c, const array<T, 2>& d){
-//    if (colinear(a,b,c)){
-//        
-//    }
-//}
+/// @brief 三点`a`,`b`,`c`が作る凸包の内部(境界を除く)に点`d`があれば1, そうでなければ0を返す。 
+template<typename T> int in_triangle(const array<T, 2>& a, const array<T, 2>& b, const array<T, 2>& c, const array<T, 2>& d){
+    if (cross_z(b-a, c-a) >= 0){
+        return (cross_z(b-a, d-a) > 0 && cross_z(c-b, d-b) > 0 && cross_z(a-c, d-c) > 0) ? 1 : 0;
+    }
+    else{
+        return (cross_z(b-a, d-a) < 0 && cross_z(c-b, d-b) < 0 && cross_z(a-c, d-c) < 0) ? 1 : 0;
+    }
+}
+/// @brief 三点`a`,`b`,`c`が作る凸包の内部(境界を含む)に点`d`があれば1, そうでなければ0を返す。 
+template<typename T> int in_or_on_triangle(const array<T, 2>& a, const array<T, 2>& b, const array<T, 2>& c, const array<T, 2>& d){
+    if (cross_z(b-a, c-a) >= 0){
+        return (cross_z(b-a, d-a) >= 0 && cross_z(c-b, d-b) >= 0 && cross_z(a-c, d-c) >= 0) ? 1 : 0;
+    }
+    else{
+        return (cross_z(b-a, d-a) <= 0 && cross_z(c-b, d-b) <= 0 && cross_z(a-c, d-c) <= 0) ? 1 : 0;
+    }
+}
 
 /// @brief 偏角は-πより大きく、π以下であるとする。原点の偏角は0とする。このとき、arg(a) < arg(b)かどうかを判定する 
 template<typename T> inline constexpr bool compare_argument(const array<T, 2>& a, const array<T, 2>& b){

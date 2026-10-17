@@ -1,7 +1,7 @@
 #ifndef GENERAL__algorithm_sum_HPP_
 #define GENERAL__algorithm_sum_HPP_
 
-#include <vector>
+#include <list.hpp>
 using namespace std;
 using ll = long long;
 
@@ -9,19 +9,19 @@ using ll = long long;
 
 /// @brief 累積和を作成する
 template<typename T>
-vector<T> cumulative_sum(vector<T> A){
+list<T> cumulative_sum(list<T> A){
     for (size_t i = 1, sz = A.size(); i < sz; i++){
         A[i] += A[i-1];
     }
     return A;
 }
 
-/// @brief vectorの和を求める
+/// @brief listの和を求める
 /// @tparam T 
 /// @param A 
 /// @return 
 template<typename T>
-T vsum(const vector<T> &A){
+T vsum(const list<T> &A){
     T init_val = 0;
     for (auto &v : A){
         init_val += v;

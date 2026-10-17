@@ -1,7 +1,7 @@
 #ifndef ROLLING_HASH_HPP_
 #define ROLLING_HASH_HPP_
 
-#include <vector>
+#include <list.hpp>
 #include <array>
 #include <random>
 #include <math_functions.hpp>
@@ -58,8 +58,8 @@ struct rolling_hash{
     /// @brief 文字列Sにおいて、indexが0以上i以下の部分文字列のローリングハッシュを生成する。
     /// @param S 
     /// @return ローリングハッシュを記録した配列
-    vector<ull> gen_hash(const string &S){
-        vector<ull> r(S.size());
+    list<ull> gen_hash(const string &S){
+        list<ull> r(S.size());
         r[0] = char_to_digit(S[0]);
         ull temp = B;
         for (size_t i = 1; i < S.size(); i++){
@@ -75,7 +75,7 @@ struct rolling_hash{
     /// @param l 
     /// @param r 
     /// @return `[l,r]`のハッシュ
-    ull get_hash(const vector<ull> &hs, int l, int r){
+    ull get_hash(const list<ull> &hs, int l, int r){
         ull ret = 2305843009213693951ull + hs[r] - (l == 0 ? 0ull : hs[l-1]);
         if (ret >= 2305843009213693951ull){
             ret -= 2305843009213693951ull;

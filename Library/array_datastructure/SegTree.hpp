@@ -3,7 +3,7 @@
 
 #include <functional>
 #include <iostream>
-#include <vector>
+#include <list.hpp>
 #include <cmath>
 #include <algorithm>
 #include <cassert>
@@ -24,7 +24,7 @@ struct SegTree{
     info e;///単位元
     function<info(info,info)> operation;//各ノードに載ってる構造体に対する二項演算をする関数(min,max,sumなど)
 
-    vector<info> tree;//セグ木本体
+    list<info> tree;//セグ木本体
     int max_capacity;
 
     /// @brief N個のIで初期化
@@ -44,8 +44,8 @@ struct SegTree{
         //セグ木のサイズを決定
         log2N = 64-(max_capacity == 1 ? 64 : __builtin_clzll(max_capacity-1));
 
-        //セグ木に実際に乗せるvectorを構築
-        tree = vector<info>(1<<(log2N+1));
+        //セグ木に実際に乗せるlistを構築
+        tree = list<info>(1<<(log2N+1));
         tree[0] = e;
         for (int i = 0; i < N; i++){
             tree[i+(1<<log2N)] = I;
@@ -57,12 +57,12 @@ struct SegTree{
             tree[i] = operation(tree[2*i], tree[2*i+1]);
         }
     }
-    /// @brief vector Aで初期化
+    /// @brief list Aで初期化
     /// @param I 載せたい構造体
     /// @param N 載せた個数
     /// @param eee 載せたものの単位元(sumなら0, maxなら-infなど)
     /// @param op 各ノードに載ってる構造体に対する二項演算をする関数(min,max,sumなど)
-    SegTree(const vector<info> &A, info eee, function<info(info,info)> op){
+    SegTree(const list<info> &A, info eee, function<info(info,info)> op){
         //基本情報を登録
         e = eee;
         operation = op;
@@ -73,8 +73,8 @@ struct SegTree{
         //セグ木のサイズを決定
         log2N = 64-(max_capacity == 1 ? 64 : __builtin_clzll(max_capacity-1));
 
-        //セグ木に実際に乗せるvectorを構築
-        tree = vector<info>(1<<(log2N+1));
+        //セグ木に実際に乗せるlistを構築
+        tree = list<info>(1<<(log2N+1));
         tree[0] = e;
         for (int i = 0; i < max_capacity; i++){
             tree[i+(1<<log2N)] = A[i];
@@ -142,28 +142,24 @@ struct SegTree{
         }
     }
 
-    /// @brief 左端をLに固定したとき、G(T.range_get(L, t))がtrueになる最小のt(>L)を返す。もしなければINF(=2147483647)が返ってくる。
+    /// @brief 左端をLに固定したとき、G(T.range_get(L, t))がtrueになる最小のt(L <= t <= max_capacity)を返す。もしなければINF(=2147483647)が返ってくる。
     /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。 
     /// @param L 左端
     /// @param G 判定関数...boolを返す。引数としてinfoを受け取るが、これはT.range_get(L, t)が入り、これに関する条件式を自分で関数内に記述することで、このようなtの最小が求まる。
     int min_right(int L, const function<bool(info)> &G){
-        if (L >= max_capacity || L < 0){
-            assert(false);
-        }
+        if (L >= max_capacity || L < 0){assert(false);}
         info current_result = e;
-
+        if (G(current_result)){return L;}
         checkpoint:
-
         int ctz = L == 0 ? log2N : __builtin_ctz(L);
         if (!G(operation(current_result, tree[((1<<log2N)+L)>>ctz]))){
-            if (get_right(((1<<log2N)+L)>>ctz) == 1<<log2N){
+            if (get_right(((1<<log2N)+L)>>ctz) == (1<<log2N)){
                 return 2147483647;
             }
             current_result = operation(current_result, tree[((1<<log2N)+L)>>ctz]);
             L = get_right(((1<<log2N)+L)>>ctz);
             goto checkpoint;
         }
-
         for (int i = ctz-1; i >= 0; i--){
             if (!G(operation(current_result, tree[((1<<log2N)+L)>>i]))){
                 current_result = operation(current_result, tree[((1<<log2N)+L)>>i]);
@@ -171,24 +167,19 @@ struct SegTree{
                 goto checkpoint;
             }
         }
-        return L+1;
+        return L+1 <= max_capacity ? L+1 : 2147483647;
     }
-    /// @brief 右端をRに固定したとき、G(T.range_get(t, R))がtrueになる最大のt(<R)を返す。もしなければ-INF-1(=-2147483648)が返ってくる。
+    /// @brief 右端をRに固定したとき、G(T.range_get(t, R))がtrueになる最大のt(0 <= t <= R)を返す。もしなければ-INF-1(=-2147483648)が返ってくる。
     /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。
     /// @param R 右端 
     /// @param G 判定関数...boolを返す。引数としてinfoを受け取るが、これはT.range_get(t, R)が入り、これに関する条件式を自分で関数内に記述することで、このようなtの最大が求まる。
     int max_left(int R, const function<bool(info)> &G){
-        if (R > max_capacity || R < 0){
-            assert(false);
-        }
-        if (R == 0){
-            return -2147483648;
-        }
-        R--;
+        if (R > max_capacity || R < 0){assert(false);}
+        if (R == 0){return -2147483648;}
         info current_result = e;
-
+        if (G(current_result)){return R;}
+        R--;
         checkpoint:
-
         int cto = __builtin_ctz(~R);//cto...count trailing one
         if (!G(operation(current_result, tree[((1<<log2N)+R)>>cto]))){
             if (get_left(((1<<log2N)+R)>>cto) == 0){
@@ -209,10 +200,10 @@ struct SegTree{
         return R;
     }
 
-    info operator[](const int t)const{
+    inline info operator[](const int t)const{
         return get(t);
     }
-    inline constexpr size_t size() const {
+    inline constexpr ll size() const {
         return max_capacity;
     }
 };

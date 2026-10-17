@@ -4,7 +4,7 @@
 
 
 #include <utility>
-#include <vector>
+#include <list.hpp>
 #include <cmath>
 #include <cassert>
 #include <math_functions.hpp>
@@ -24,13 +24,13 @@ template<typename T> inline constexpr ll len(const T& A){return ssize(A);}
 //前計算O(N) 取得O(1)
 template<ull M>
 struct factorialncr{
-    vector<uint> factorialmod;
-    vector<uint> factorialmodinv;
+    list<uint> factorialmod;
+    list<uint> factorialmodinv;
     uint N_MAX;
     factorialncr(const uint N_MAX__){
         N_MAX = max(1u, N_MAX__);
-        factorialmod = vector<uint>(N_MAX+1);
-        factorialmodinv = vector<uint>(N_MAX+1);
+        factorialmod = list<uint>(N_MAX+1);
+        factorialmodinv = list<uint>(N_MAX+1);
         factorialmod[0] = 1;
         factorialmodinv[0] = 1;
         ull temp = 1;
@@ -58,15 +58,15 @@ struct factorialncr{
 //素数mod限定の階乗前計算による二項係数mod M  Mが実行時に与えられても使える
 //前計算O(N) 取得O(1)
 struct factorialncr2{
-    vector<uint> factorialmod;
-    vector<uint> factorialmodinv;
+    list<uint> factorialmod;
+    list<uint> factorialmodinv;
     uint N_MAX;
     ull M;
     factorialncr2(const uint N_MAX__, const ull MOD){
         N_MAX = max(1u, N_MAX__);
         M = MOD;
-        factorialmod = vector<uint>(N_MAX+1);
-        factorialmodinv = vector<uint>(N_MAX+1);
+        factorialmod = list<uint>(N_MAX+1);
+        factorialmodinv = list<uint>(N_MAX+1);
         factorialmod[0] = 1;
         factorialmodinv[0] = 1;
         ull temp = 1;
@@ -97,28 +97,28 @@ struct factorialncr3{
     uint N_MAX;
     ull M;
     int k_max; //Mが持つ素因数の個数
-    vector<vector<uint>> factorial_vp; //i!がp_1, p_2,...,p_kで何回割れるか
-    vector<vector<uint>> pow_p; // p_1, p_2,...,p_kの累乗表
-    vector<uint> factorialmod;
-    vector<uint> factorialmodinv;
+    list<list<uint>> factorial_vp; //i!がp_1, p_2,...,p_kで何回割れるか
+    list<list<uint>> pow_p; // p_1, p_2,...,p_kの累乗表
+    list<uint> factorialmod;
+    list<uint> factorialmodinv;
 
     factorialncr3(uint N_MAX__, ull MOD){
         N_MAX = max(N_MAX__, 1u); //0が入ってくるとバグるので調整
         M = MOD;
-        vector<uint> M_fact;
+        list<uint> M_fact;
         for (auto& p : factorize(M)){
-            M_fact.push_back(p[0]);
+            M_fact.append(p[0]);
         }
         k_max = M_fact.size();
         
         //配列の長さを決め、初期化
-        factorial_vp = vector<vector<uint>>(N_MAX+1, vector<uint>(k_max, 0));
-        pow_p = vector<vector<uint>>(k_max);
-        vector<uint> except_M(N_MAX+1);
+        factorial_vp = list<list<uint>>(N_MAX+1, list<uint>(k_max, 0));
+        pow_p = list<list<uint>>(k_max);
+        list<uint> except_M(N_MAX+1);
         
         //累乗数を前計算
         for (int k = 0; k < k_max; k++){
-            pow_p[k] = vector<uint>((N_MAX+M_fact[k]-2)/(M_fact[k]-1), 1); //ルジャンドルの定理より、N_MAX!がpで割り切れる回数は最大N/(p-1)回
+            pow_p[k] = list<uint>((N_MAX+M_fact[k]-2)/(M_fact[k]-1), 1); //ルジャンドルの定理より、N_MAX!がpで割り切れる回数は最大N/(p-1)回
             ull temp = M_fact[k];
             for (int i = 1, sz = pow_p[k].size(); i < sz; i++){
                 pow_p[k][i] = temp;
@@ -141,8 +141,8 @@ struct factorialncr3{
         }
         
         //配列を初期化
-        factorialmod = vector<uint>(N_MAX+1);
-        factorialmodinv = vector<uint>(N_MAX+1);
+        factorialmod = list<uint>(N_MAX+1);
+        factorialmodinv = list<uint>(N_MAX+1);
         factorialmod[0] = 1;
         factorialmodinv[0] = 1;
         
@@ -178,24 +178,24 @@ struct factorialncr3{
 struct factorialncr4{
     ull M;
     int k_max;//Mが持つ素因数の個数
-    vector<vector<uint>> factorialmod; //n! mod p**q
-    vector<vector<uint>> factorialmodinv; //n!^-1 mod p**q
-    vector<vector<uint>> pow_pi; //pごとの{p^i}のリスト
-    vector<ll> crt_mod; //pごとのp^qのリスト
-    vector<ll> crt_rem;
+    list<list<uint>> factorialmod; //n! mod p**q
+    list<list<uint>> factorialmodinv; //n!^-1 mod p**q
+    list<list<uint>> pow_pi; //pごとの{p^i}のリスト
+    list<ll> crt_mod; //pごとのp^qのリスト
+    list<ll> crt_rem;
 
     factorialncr4(ull MOD){
         M = MOD;
         for (auto& p : factorize(M)){
             ull pq = powll(p[0], p[1]);
-            vector<uint> powlist(p[1]+1); //累乗リスト
+            list<uint> powlist(p[1]+1); //累乗リスト
             powlist[0] = 1;
             for (uint i = 1; i <= p[1]; i++){
                 powlist[i] = powlist[i-1]*p[0];
             }
-            crt_mod.push_back(powlist.back());
-            pow_pi.push_back(std::move(powlist));
-            vector<uint> temp(pq); //階乗逆元
+            crt_mod.append(powlist.back());
+            pow_pi.append(std::move(powlist));
+            list<uint> temp(pq); //階乗逆元
             temp[0] = 1;
             for (ull i = 1; i < pq; i++){
                 if (i%p[0] == 0){
@@ -205,7 +205,7 @@ struct factorialncr4{
                     temp[i] = i;
                 }
             }
-            vector<uint> temp2(pq); //階乗
+            list<uint> temp2(pq); //階乗
             temp2[0] = 1;
             for (ull i = 1; i < pq; i++){
                 temp2[i] = temp2[i-1]*(ull)temp[i]%pq;
@@ -217,8 +217,8 @@ struct factorialncr4{
                 temp3 = temp[i]*temp3%pq;
                 temp[i] = temp4;
             }
-            factorialmod.push_back(std::move(temp2));
-            factorialmodinv.push_back(std::move(temp));
+            factorialmod.append(std::move(temp2));
+            factorialmodinv.append(std::move(temp));
         }
         k_max = len(crt_mod);
         crt_rem.resize(k_max, 0ll);
@@ -275,11 +275,11 @@ struct factorialncr4{
 
 //任意modの表の前計算による二項係数modM
 struct tablencr{
-    vector<vector<ll>> ncrmodlist;
+    list<list<ll>> ncrmodlist;
     ll N_MAX;
     tablencr(const ll N_MAX__, const ll M){
         N_MAX = N_MAX__;
-        ncrmodlist = vector<vector<ll>> (N_MAX+1, vector<ll>(N_MAX+1,0));
+        ncrmodlist = list<list<ll>> (N_MAX+1, list<ll>(N_MAX+1,0));
         ncrmodlist[0][0] = 1;
         for (int i = 1; i <= N_MAX; i++){
             for (int j = 0; j <= i; j++){

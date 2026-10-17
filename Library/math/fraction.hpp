@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 #include <math_functions.hpp>
 template<typename T> struct fraction{
@@ -43,6 +44,11 @@ template<typename T> struct fraction{
     }
     inline constexpr fraction& inv(){
         swap(denominator, numerator);
+        assert(denominator != 0);
+        if (denominator < 0){
+            denominator *= -1;
+            numerator *= -1;
+        }
         return *this;
     }
     fraction& operator+=(const fraction& rhs) {

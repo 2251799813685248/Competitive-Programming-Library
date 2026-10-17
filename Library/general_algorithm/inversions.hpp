@@ -8,10 +8,10 @@ using ll = long long;
 
 /// @brief 転倒数と、座標圧縮後の配列を返す。
 /// 転倒数とは、i<jかつA[i]>A[j]を満たす非負整数i,j(0<=i,j<A.size())の組の個数である。
-template<typename T> inline constexpr pair<ll, vector<int>> inversions(const vector<T>& A){
-    vector<T> B = A;
+template<typename T> inline constexpr pair<ll, list<int>> inversions(const list<T>& A){
+    list<T> B = A;
     sort(vall(B));
-    vector<int> C(A.size());
+    list<int> C(A.size());
     for (int i = 0, sz = A.size(); i < sz; i++){
         C[i] = lower_bound(vall(B), A[i]) - B.begin();
     }

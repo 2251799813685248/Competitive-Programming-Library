@@ -2,7 +2,7 @@
 #include <iterator>
 #include <type_traits>
 #include <utility>
-#include <vector>
+#include <list.hpp>
 #include <string>
 #include <cmath>
 #include <unordered_set>
@@ -58,36 +58,40 @@ constexpr ll dj8[8] = {1,1,0,-1,-1,-1,0,1};
 
 
 #include <modint.hpp>
-using mint = constant_modint<998244353>;
 #include <matrix.hpp>
 
 
+using mint = constant_modint<998244353>;
+
+#include <fastio.hpp>
+fastio::FastInput in;
+fastio::FastOutput out;
 
 void solve(){
 
     
     ll N,M;
-    cin >> N >> M;
+    in.read(N,M);
     matrix<mint> A(N,M+1);
 
     for (int i = 0; i < N; i++){
         for (int j = 0; j < M; j++){
-            cin >> A[i][j];
+            in.read(A[i][j]);
         }
     }
     for (int i = 0; i < N; i++){
-        cin >> A[i][M];
+        in.read(A[i][M]);
     }
 
     auto ans = solve_linear_equations(A);
 
     if (len(ans) == 0){
-        print(-1);return;
+        out.print(-1); return;
     }
     else{
-        print(len(ans)-1);
+        out.print(len(ans)-1);
         for (int i = 0; i < len(ans); i++){
-            vout(ans[i]);
+            out.print(ans[i]);
         }
     }
     

@@ -1,5 +1,5 @@
 #define ll long long
-#include <vector>
+#include <list.hpp>
 using namespace std;
 
 //全方位木DP用の構造体
@@ -35,7 +35,7 @@ treedpinfo update_operation(treedpinfo a){
 /// @param used 訪問記録
 /// @param now 今いる場所
 /// @param eee dp情報の単位元
-void dfs_dp(vector<vector<ll>> &E, vector<treedpinfo> &dp, vector<bool> &used, ll now, treedpinfo &eee){
+void dfs_dp(list<list<ll>> &E, list<treedpinfo> &dp, list<bool> &used, ll now, treedpinfo &eee){
     used[now] = 1;
     if (E[now].empty() || (E[now].size() == 1 && now != 1)){
         //葉の状態は自分で書く。
@@ -58,16 +58,16 @@ void dfs_dp(vector<vector<ll>> &E, vector<treedpinfo> &dp, vector<bool> &used, l
 /// @param used 訪問済みリスト(初期化済み)
 /// @param now 今いる場所
 /// @param from_parent 親からの伝達情報
-void dfs_rerooting(vector<vector<ll>> &E, vector<treedpinfo> &dp, vector<bool> &used, ll now, treedpinfo from_parent){
+void dfs_rerooting(list<list<ll>> &E, list<treedpinfo> &dp, list<bool> &used, ll now, treedpinfo from_parent){
     used[now] = 1;
     if (E[now].empty() || (E[now].size() == 1 && now != 1)){return;}
 
 
     ll child_num = 0;
-    vector<ll> child_index;
+    list<ll> child_index;
     for (auto v : E[now]){
         if (used[v]){continue;}
-        child_index.push_back(v);
+        child_index.append(v);
         child_num++;
     }
     if (child_num == 1){
@@ -75,9 +75,9 @@ void dfs_rerooting(vector<vector<ll>> &E, vector<treedpinfo> &dp, vector<bool> &
         dfs_rerooting(E,dp,used,child_index[0],update_operation(from_parent));
         return;
     }
-    vector<treedpinfo> left_ruiseki(child_num);
+    list<treedpinfo> left_ruiseki(child_num);
     left_ruiseki.front() = dp[child_index.front()];
-    vector<treedpinfo> right_ruiseki(child_num);
+    list<treedpinfo> right_ruiseki(child_num);
     right_ruiseki.back() = dp[child_index.back()];
     for (ll i = 1; i < child_num; i++){
         left_ruiseki[i] = merge_operation(left_ruiseki[i-1], dp[child_index[i]]);
@@ -112,22 +112,22 @@ int main(){
     
     ll N;
     cin >> N;
-    vector<vector<ll>> E(N+1);
+    list<list<ll>> E(N+1);
     for (ll i = 1; i < N; i++){
         ll s,t;
         cin >> s >> t;
-        E[s].push_back(t);
-        E[t].push_back(s);
+        E[s].append(t);
+        E[t].append(s);
     }
 
-    vector<treedpinfo> alldirectiondp(N+1);
-    vector<bool> used(N+1,0);
+    list<treedpinfo> alldirectiondp(N+1);
+    list<bool> used(N+1,0);
 
     treedpinfo eee;//単位元(作用させても変わらないもの)
 
 
     dfs_dp(E,alldirectiondp,used,1,eee);
-    used = vector<bool>(N+1,0);
+    used = list<bool>(N+1,0);
     treedpinfo only_parent;//親のみの部分木の時の答えを記録しておく。
     only_parent.dist = 0;
     only_parent.farthest_vertex = 1;

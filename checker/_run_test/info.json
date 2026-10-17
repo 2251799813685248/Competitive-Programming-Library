@@ -10,8 +10,10 @@
         "exp_of_formal_power_series",
         "pow_of_formal_power_series",
         "composition_of_formal_power_series_large",
+        "compositional_inverse_of_formal_power_series_large",
         "product_of_polynomial_sequence",
-        "polynomial_taylor_shift"
+        "polynomial_taylor_shift",
+        "multipoint_evaluation"
     ],
     "tree":[
         "frequency_table_of_tree_distance"
@@ -47,9 +49,10 @@
     ],
     "geometry":[
         "static_convex_hull",
-        "sort_points_by_argument"
+        "sort_points_by_argument",
+        "count_points_in_triangle"
     ],
     "temp":[
-        "adjugate_matrix"
+        "convolution_mod"
     ]
 }

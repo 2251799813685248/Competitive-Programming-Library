@@ -1,7 +1,7 @@
 #ifndef LIS_HPP_
 #define LIS_HPP_
 
-#include <vector>
+#include <list.hpp>
 #include <algorithm>
 using namespace std;
 
@@ -15,8 +15,8 @@ using namespace std;
 /// @note 1.2 最長増加部分列の長さの取得
 /// @see https://zenn.dev/reputeless/books/standard-cpp-for-competitive-programming/viewer/lis
 template <bool Strict, class Type>
-size_t LIS_length(const std::vector<Type>& v){
-    std::vector<Type> dp;
+size_t LIS_length(const std::list<Type>& v){
+    std::list<Type> dp;
 
     auto it = dp.begin();
 
@@ -33,7 +33,7 @@ size_t LIS_length(const std::vector<Type>& v){
 
         if (it == dp.end())
         {
-            dp.push_back(elem);
+            dp.append(elem);
         }
         else
         {
@@ -52,13 +52,13 @@ size_t LIS_length(const std::vector<Type>& v){
 /// @note 1.4 最長増加部分列の復元
 /// @see https://zenn.dev/reputeless/books/standard-cpp-for-competitive-programming/viewer/lis
 template <bool Strict, class Type>
-std::vector<int> LIS_construction(const std::vector<Type>& v)
+std::list<int> LIS_construction(const std::list<Type>& v)
 {
-    std::vector<Type> dp;
+    std::list<Type> dp;
 
     auto it = dp.begin();
 
-    std::vector<int> positions;
+    std::list<int> positions;
 
     for (const auto& elem : v)
     {
@@ -71,11 +71,11 @@ std::vector<int> LIS_construction(const std::vector<Type>& v)
             it = std::upper_bound(dp.begin(), dp.end(), elem);
         }
 
-        positions.push_back(static_cast<int>(it - dp.begin()));
+        positions.append(static_cast<int>(it - dp.begin()));
 
         if (it == dp.end())
         {
-            dp.push_back(elem);
+            dp.append(elem);
         }
         else
         {
@@ -83,7 +83,7 @@ std::vector<int> LIS_construction(const std::vector<Type>& v)
         }
     }
 
-    std::vector<int> subseq(dp.size());
+    std::list<int> subseq(dp.size());
 
     int si = static_cast<int>(subseq.size()) - 1;
 

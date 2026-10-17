@@ -1,6 +1,6 @@
 #include <iostream>
 #include <utility>
-#include <vector>
+#include <list.hpp>
 #include <string>
 #include <cmath>
 #include <unordered_set>
@@ -62,9 +62,9 @@ fps_operator<998244353> op;
 
 void solve(){
 
-    deque<FormalPowerSeries> q;
+    delist<FormalPowerSeries<998244353>> q;
     for (ll i = 0; i <= 500000; i++){
-        q.push_back(FormalPowerSeries(i+1));
+        q.append(FormalPowerSeries<998244353>(i+1));
         q.back()[i] = 998244352;
         q.back()[0] = 1;
     }
@@ -74,7 +74,7 @@ void solve(){
         q.pop_front();
         auto g = std::move(q.front());
         q.pop_front();
-        q.push_back(op.convolution(f, g));
+        q.append(op.convolution(f, g));
         while (len(q.back()) > 500000){
             q.back().f.pop_back();
             q.back().sz--;

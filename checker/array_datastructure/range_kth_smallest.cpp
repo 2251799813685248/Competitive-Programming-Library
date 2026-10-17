@@ -1,7 +1,7 @@
 #include <iostream>
 #include <iterator>
 #include <utility>
-#include <vector>
+#include <list.hpp>
 #include <string>
 #include <cmath>
 #include <unordered_set>
@@ -62,7 +62,7 @@ void solve(){
     int N,Q;
     cin >> N >> Q;
 
-    vector<int> A(N);
+    list<int> A(N);
     vin(A,0,N);
     WaveletMatrix<int> W(A);
 

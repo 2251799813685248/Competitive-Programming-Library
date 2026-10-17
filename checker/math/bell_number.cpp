@@ -1,5 +1,5 @@
 #include <iostream>
-#include <vector>
+#include <list.hpp>
 #include <string>
 #include <cmath>
 #include <unordered_set>
@@ -63,7 +63,7 @@ int main(){
         F[i] = mtable.factorialmodinv(i);
     }
     F = op.exp(F, N+1, mtable);
-    vector<constant_modint<998244353>> ans(N+1);
+    list<constant_modint<998244353>> ans(N+1);
     for (ll i = 0; i <= N; i++){
         ans[i] = F[i]*mtable.factorialmod(i);
     }

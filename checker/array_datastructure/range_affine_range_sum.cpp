@@ -1,5 +1,5 @@
 #include <iostream>
-#include <vector>
+#include <list.hpp>
 #include <string>
 #include <cmath>
 #include <unordered_set>
@@ -67,7 +67,7 @@ affine id(){return {1,0};}
 void solve(){
     ll N,Q;
     cin >> N >> Q;
-    vector<sum> A(N);
+    list<sum> A(N);
     for (ll i = 0; i < N; i++){
         A[i][0] = 1;
         cin >> A[i][1];

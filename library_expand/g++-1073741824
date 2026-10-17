@@ -1,0 +1,41 @@
+#!/bin/bash
+
+if [ "$#" == 3 ]; then
+    g++-14 \
+    -std=c++23 \
+    -mavx2 \
+    -I/home/a1024/cpp/Competitive-Programming-Library/Library/array_datastructure \
+    -I/home/a1024/cpp/Competitive-Programming-Library/Library/general_algorithm \
+    -I/home/a1024/cpp/Competitive-Programming-Library/Library/graph \
+    -I/home/a1024/cpp/Competitive-Programming-Library/Library/math \
+    -I/home/a1024/cpp/Competitive-Programming-Library/Library/io \
+    -I/home/a1024/cpp/Competitive-Programming-Library/Library/set_map \
+    -I/home/a1024/cpp/Competitive-Programming-Library/Library/string_algorithm \
+    -fdiagnostics-color=always \
+    -DLOCAL_a1073741824 \
+    -g \
+    -O0 \
+    -Wall \
+    -Wextra \
+    $1 \
+    -o $2/$3
+else
+    g++-14 \
+    -std=c++23 \
+    -mavx2 \
+    -I/home/a1024/cpp/Competitive-Programming-Library/Library/array_datastructure \
+    -I/home/a1024/cpp/Competitive-Programming-Library/Library/general_algorithm \
+    -I/home/a1024/cpp/Competitive-Programming-Library/Library/graph \
+    -I/home/a1024/cpp/Competitive-Programming-Library/Library/math \
+    -I/home/a1024/cpp/Competitive-Programming-Library/Library/io \
+    -I/home/a1024/cpp/Competitive-Programming-Library/Library/set_map \
+    -I/home/a1024/cpp/Competitive-Programming-Library/Library/string_algorithm \
+    -fdiagnostics-color=always \
+    -DLOCAL_a1073741824 \
+    -g \
+    -O0 \
+    -Wall \
+    -Wextra \
+    $1 \
+    -o $2
+fi

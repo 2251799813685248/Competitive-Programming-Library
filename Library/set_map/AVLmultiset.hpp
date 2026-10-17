@@ -357,14 +357,14 @@ struct AVLmultiset {
     }
 
     void clear(){
-        deque<AVLmultisetNode<T>*> Q;
-        Q.push_back(root);
+        delist<AVLmultisetNode<T>*> Q;
+        Q.append(root);
         while (!Q.empty()){
             if (Q.front()->left != nullptr){
-                Q.push_back(Q.front()->left);
+                Q.append(Q.front()->left);
             }
             if (Q.front()->right != nullptr){
-                Q.push_back(Q.front()->right);
+                Q.append(Q.front()->right);
             }
             delete Q.front();
             Q.pop_front();

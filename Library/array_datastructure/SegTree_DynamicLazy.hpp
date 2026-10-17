@@ -2,12 +2,12 @@
 #define SEG_TREE__DYNAMIC_LAZY_HPP_
 
 #include <functional>
-#include <vector>
+#include <list.hpp>
 #include <cmath>
 #include <algorithm>
 #include <cassert>
 #include <iostream>
-#include <deque>
+#include <deque.hpp>
 using namespace std;
 using ll = long long;
 
@@ -143,7 +143,7 @@ struct DynamicLazySegTree{
         now->I = operation(now->left->I, now->right->I);
     }
 
-    deque<SegTreeNode*> stk; //二分探索中に辿っているノードを保持
+    delist<SegTreeNode*> stk; //二分探索中に辿っているノードを保持
 
     /// @brief 左端をLに固定したとき、G(T.range_get(L, t))がtrueになる最小のtを返す。もしなければINF(=9223372036854775807)が返ってくる。
     /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。 
@@ -155,7 +155,7 @@ struct DynamicLazySegTree{
         info current_result = e;
         int ctz_init = L == 0 ? log2N : __builtin_ctz(L);
         SegTreeNode* now = root;
-        stk.push_back(now);
+        stk.append(now);
         ll nowidx = 1;
         ll nowidx_ref = L;
         ll nowleft = 0;
@@ -184,7 +184,7 @@ struct DynamicLazySegTree{
                 depth++;
                 nowidx <<= 1;
             }
-            stk.push_back(now);
+            stk.append(now);
         }
         checkpoint:
         if (!G(operation(current_result, now->I))){
@@ -194,15 +194,15 @@ struct DynamicLazySegTree{
             current_result = operation(current_result, now->I);
             while(nowidx&1){
                 nowidx >>= 1;
-                stk.pop_back();
+                stk.pop();
                 now = stk.back();
                 nowleft -= 1ll<<(log2N-depth);
                 depth--;
             }
-            stk.pop_back();
+            stk.pop();
             now = stk.back();
             now = now->right;
-            stk.push_back(now);
+            stk.append(now);
             nowleft += 1ll<<(log2N-depth);
             nowidx++;
             goto checkpoint;
@@ -219,7 +219,7 @@ struct DynamicLazySegTree{
         }
         tell_info(now);
         now = now->left;
-        stk.push_back(now);
+        stk.append(now);
         nowidx <<= 1;
         depth++;
         while (depth <= log2N){
@@ -236,16 +236,16 @@ struct DynamicLazySegTree{
             tell_info(now);
             if (!G(operation(current_result, now->I))){
                 current_result = operation(current_result, now->I);
-                stk.pop_back();
+                stk.pop();
                 now = stk.back();
                 now = now->right;
-                stk.push_back(now);
+                stk.append(now);
                 nowleft += 1ll<<(log2N-depth);
                 nowidx++;
                 goto checkpoint;
             }
             now = now->left;
-            stk.push_back(now);
+            stk.append(now);
             nowidx <<= 1;
             depth++;
         }

@@ -2,14 +2,14 @@
 #define KMP_SEARCH_HPP_
 
 #include <string>
-#include <vector>
+#include <list.hpp>
 using namespace std;
 
 
 
 /// @brief kmp_searchに使うスキップテーブルを作成
-vector<int> create_partial_match_table(const string &t){
-    vector<int> table(t.size(),0);
+list<int> create_partial_match_table(const string &t){
+    list<int> table(t.size(),0);
     table[0] = -1;
     int j = -1;
     for (int i = 0; i < (int)t.size()-1; i++){
