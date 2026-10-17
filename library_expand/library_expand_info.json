@@ -1,14 +1,34 @@
 {
     "registered_library": [
         "fastio.hpp",
+        "list.hpp",
+        "range.hpp",
+        "deque.hpp",
         "math_functions.hpp",
         "nCr.hpp",
         "prime_and_divisors.hpp",
         "fps.hpp",
         "fps_operations.hpp",
         "mod_table.hpp",
+        "modint.hpp",
         "SegTree_Lazy.hpp",
-        "priority_delist.hpp"
+        "priority_deque.hpp",
+        "matrix.hpp",
+        "quotients.hpp",
+        "geomrtry_2d.hpp",
+        "AVLset.hpp",
+        "AVLmap.hpp",
+        "geometry_2d.hpp",
+        "CRT.hpp",
+        "SegTree.hpp",
+        "SegTree_DynamicLazy.hpp",
+        "randint.hpp",
+        "graph.hpp",
+        "WaveletMatrix.hpp",
+        "floor_of_linear.hpp",
+        "UnionFind.hpp",
+        "tree.hpp",
+        "inversions.hpp"
     ],
     "library_path": [
         "/home/a1024/cpp/Competitive-Programming-Library/Library/io",
@@ -19,6 +39,6 @@
         "/home/a1024/cpp/Competitive-Programming-Library/Library/set_map",
         "/home/a1024/cpp/Competitive-Programming-Library/Library/string_algorithm"
     ],
-    "source_file_path": "/home/a1024/cpp/contest/contest_true/programs",
-    "result_path": "/home/a1024/cpp/contest/contest_true/submissions"
+    "source_file_path": "/home/a1024/cpp/contest/programs",
+    "result_path": "/home/a1024/cpp/contest/submissions"
 }

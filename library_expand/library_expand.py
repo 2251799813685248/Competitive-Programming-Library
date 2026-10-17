@@ -1,12 +1,20 @@
 import json
 import re
 import os
+import subprocess
+
+
+def copy_to_windows_clipboard(text):
+    process = subprocess.Popen(['clip.exe'], stdin=subprocess.PIPE)
+    encoded_text = text.encode('cp932', errors='replace')
+    process.communicate(input=encoded_text)
+    print("提出用ソースコードをクリップボードにコピーしました")
 
 
 F = input()
 
 
-settings = json.load(open("/home/a1024/cpp/contest/contest_true/library_expand/library_expand_info.json"))
+settings = json.load(open("/home/a1024/cpp/contest/library_expand/library_expand_info.json"))
 
 
 registered_library = set(settings["registered_library"])
@@ -40,7 +48,9 @@ def dfs_expand(sourcecode):
                 raise ValueError("指定されたライブラリは指定されたパス内に存在しません")
     return res
 
+expanded_sourcecode = "".join(dfs_expand(open(f"{source_file_path}/{F}").read()))
 with open(f"{result_path}/{F[:F.find(".")]}_submit.cpp", "w") as result:
-    result.write("".join(dfs_expand(open(f"{source_file_path}/{F}").read())))
+    result.write(expanded_sourcecode)
 
-print("展開が正常に終了しました")
+print(f"展開先: {F[:F.find(".")]}_submit.cpp")
+copy_to_windows_clipboard(expanded_sourcecode)

@@ -227,13 +227,14 @@ struct LazySegTree{
         }
     }
 
-    /// @brief 左端をLに固定したとき、G(T.range_get(L, t))がtrueになる最小のt(>L)を返す。もしなければINF(=2147483647)が返ってくる。
+    /// @brief 左端をLに固定したとき、G(T.range_get(L, t))がtrueになる最小のt(L <= t <= max_capacity)を返す。もしなければINF(=2147483647)が返ってくる。
     /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。 
     /// @param L 左端
     /// @param G 判定関数...boolを返す。引数としてinfoを受け取るが、これはT.range_get(L, t)が入り、これに関する条件式を自分で関数内に記述することで、このようなtの最小が求まる。
     int min_right(int L, const function<bool(info)> &G){
         if (L >= max_capacity || L < 0){assert(false);}
         info current_result = e;
+        if (G(current_result)){return L;}
         int ctz_init = L == 0 ? log2N : __builtin_ctz(L);
         for (int i = log2N; i > ctz_init; i--){
             tell_info(((1<<log2N)+L)>>i);
@@ -257,21 +258,18 @@ struct LazySegTree{
                 goto checkpoint;
             }
         }
-        return L+1;
+        return L+1 <= max_capacity ? L+1 : 2147483647;
     }
-    /// @brief 右端をRに固定したとき、G(T.range_get(t, R))がtrueになる最大のt(<R)を返す。もしなければ-INF-1(=-2147483647)が返ってくる。
+    /// @brief 右端をRに固定したとき、G(T.range_get(t, R))がtrueになる最大のt(0 <= t <= R)を返す。もしなければ-INF-1(=-2147483647)が返ってくる。
     /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。 
     /// @param L 左端
     /// @param G 判定関数...boolを返す。引数としてinfoを受け取るが、これはT.range_get(t, R)が入り、これに関する条件式を自分で関数内に記述することで、このようなtの最小が求まる。
     int max_left(int R, const function<bool(info)> &G){
-        if (R > max_capacity || R < 0){
-            assert(false);
-        }
-        if (R == 0){
-            return -2147483648;
-        }
-        R--;
+        if (R > max_capacity || R < 0){assert(false);}
+        if (R == 0){return -2147483648;}
         info current_result = e;
+        if (G(current_result)){return R;}
+        R--;
         int cto_init = __builtin_ctz(~R);
         for (int i = log2N; i > cto_init; i--){
             tell_info(((1<<log2N)+R)>>i);
@@ -299,7 +297,7 @@ struct LazySegTree{
     }
 
     inline info operator[](const int t){
-        return range_get(t,t);
+        return range_get(t,t+1);
     }
     inline constexpr size_t size() const {
         return max_capacity;

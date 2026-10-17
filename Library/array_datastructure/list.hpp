@@ -388,6 +388,8 @@ class list{
             return std::move(B);
         }
     }
+    inline constexpr T* data() {return empty() ? nullptr : &A[0];}
+    inline constexpr const T* data() const {return empty() ? nullptr : &A[0];}
     inline constexpr T sum() const requires has_plus_operator<T> && has_identity<T>{
         auto res = T();
         for (int i = 0; i < sz_; i++){

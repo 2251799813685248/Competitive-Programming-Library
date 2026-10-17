@@ -97,7 +97,7 @@ template<class T> inline char* decimal_small(char* p, const T& value) {
 }
 } // namespace detail
 
-template<std::size_t BufferSize = 1 << 20>
+template<std::size_t BufferSize = 1 << 18>
 class BasicInput {
     static_assert(BufferSize > 0);
     std::FILE* file_;
@@ -233,7 +233,7 @@ public:
     explicit operator bool() const { return good_; }
 };
 
-template<std::size_t BufferSize = 1 << 20>
+template<std::size_t BufferSize = 1 << 18>
 class BasicOutput {
     static_assert(BufferSize > 0);
     std::FILE* file_;
@@ -338,6 +338,13 @@ class BasicOutput {
         } else if constexpr (detail::indexed_range<const T>) {
             const auto n = std::size(value);
             using Element = std::remove_cvref_t<decltype(value[0])>;
+            if constexpr (detail::indexed_range<Element> || detail::tuple_like<Element>){
+                for (decltype(std::size(value)) i = 0; i < n; ++i) {
+                    if (i != 0 && !put('\n')) return false;
+                    if (!write_one(value[i])) return false;
+                }
+                return true;
+            }
             if constexpr (BufferSize >= 32 && detail::output32<Element> && requires { std::data(value); }) {
                 const auto* data = std::data(value);
                 char* p = buffer_+size_;

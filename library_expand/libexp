@@ -13,7 +13,7 @@ elif [[ "$1" =~ -.* ]]; then
     exit 1
 elif [[ "$1" =~ .*\.cpp ]]; then
     echo "ファイル「$1」を展開します"
-    echo $1 | python3 /home/a1024/cpp/contest/contest_true/library_expand/library_expand.py
+    echo $1 | python3 /home/a1024/cpp/contest/library_expand/library_expand.py
     exit 0
 else
     echo "C++ファイルではありません"
