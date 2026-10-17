@@ -241,7 +241,7 @@ struct LazySegTree{
         checkpoint:
         int ctz = L == 0 ? log2N : __builtin_ctz(L);
         if (!G(operation(current_result, tree[((1<<log2N)+L)>>ctz].first))){
-            if (get_right(((1<<log2N)+L)>>ctz) == 1<<log2N){
+            if (get_right(((1<<log2N)+L)>>ctz) == (1<<log2N)){
                 return 2147483647;
             }
             current_result = operation(current_result, tree[((1<<log2N)+L)>>ctz].first);
@@ -299,7 +299,7 @@ struct LazySegTree{
     }
 
     inline info operator[](const int t){
-        return range_get(t,t);
+        return range_get(t,t+1);
     }
     inline constexpr size_t size() const {
         return max_capacity;
