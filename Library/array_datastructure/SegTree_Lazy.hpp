@@ -242,7 +242,7 @@ struct LazySegTree{
         checkpoint:
         int ctz = L == 0 ? log2N : __builtin_ctz(L);
         if (!G(operation(current_result, tree[((1<<log2N)+L)>>ctz].first))){
-            if (get_right(((1<<log2N)+L)>>ctz) == 1<<log2N){
+            if (get_right(((1<<log2N)+L)>>ctz) == (1<<log2N)){
                 return 2147483647;
             }
             current_result = operation(current_result, tree[((1<<log2N)+L)>>ctz].first);

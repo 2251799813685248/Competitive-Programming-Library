@@ -14,8 +14,7 @@ using ll = long long;
 
 
 /// @brief 抽象化動的遅延セグメントツリー
-/// @attention コンストラクタ1 DynamicLazySegTree(A, e, op, mapping, composition, id)
-/// @attention コンストラクタ2 DynamicLazySegTree(N, I, e, op, mapping, composition , id)
+/// @attention コンストラクタ DynamicLazySegTree(N, e, op, init, mapping, composition , id)
 /// @tparam info セグ木の各ノードに載せる情報をまとめた構造体の型
 /// @tparam func 更新に使う変数をまとめた構造体の型(アフィン変換なら、aとbを持つ構造体など)
 /// @param e 載せたものの単位元(sumなら0, maxなら-infなど)
@@ -49,7 +48,7 @@ struct DynamicLazySegTree{
     /// @param N 載せた個数
     /// @param eee 載せたものの単位元(sumなら0, maxなら-infなど)
     /// @param op 各ノードに載ってる構造体に対する二項演算をする関数(min,max,sumなど)
-    /// @param I 区間[l,r]に対する初期値を返す関数
+    /// @param I 区間[l,r)に対する初期値を返す関数
     /// @param m 更新を行うとどうなるか？(アフィン変換ならx -> ax+b)
     /// @param c mを合成した結果((u,v)でu(v())の結果を返すものとする)(ax+bのあとにcx+dを作用させると実質acx+bc+dになるなど)
     /// @param ididid mの恒等写像版(アフィン変換ならx -> 1x+0)
@@ -70,7 +69,7 @@ struct DynamicLazySegTree{
 
         root = new SegTreeNode;
         root->delay = id;
-        root->I = init_info(0, (1ll<<log2N)-1);
+        root->I = init_info(0, (1ll<<log2N));
     }
     
     /// @brief 遅延情報の伝播を行う
@@ -100,12 +99,12 @@ struct DynamicLazySegTree{
             if (now->left == nullptr){
                 now->left = new SegTreeNode;
                 now->left->delay = id;
-                now->left->I = init_info(nowleft, nowleft + (1ll<<(log2N-depth-1)) - 1);
+                now->left->I = init_info(nowleft, nowleft + (1ll<<(log2N-depth-1)));
             }
             if (now->right == nullptr){
                 now->right = new SegTreeNode;
                 now->right->delay = id;
-                now->right->I = init_info(nowleft + (1ll<<(log2N-depth-1)), nowleft + (1<<(log2N-depth)) - 1);
+                now->right->I = init_info(nowleft + (1ll<<(log2N-depth-1)), nowleft + (1<<(log2N-depth)));
             }
         }
         tell_info(now);
@@ -116,7 +115,7 @@ struct DynamicLazySegTree{
     /// @param L 左端(左端を含む)
     /// @param R 右端(右端を含まない)
     /// @param F 適用する写像(アフィン変換ならaとbを持った構造体など)
-    void range_update(const int L, const int R, const func &F, int nowleft = 0, int depth = 0, SegTreeNode* now = nullptr){
+    void range_update(const ll L, const ll R, const func &F, ll nowleft = 0, int depth = 0, SegTreeNode* now = nullptr){
         if (L >= R || L >= max_capacity || L < 0 || R > max_capacity || R < 0){return;}
         if (nowleft >= R || nowleft + (1ll<<(log2N-depth)) <= L){return;}
         if (now == nullptr){now = root;}
@@ -130,12 +129,12 @@ struct DynamicLazySegTree{
             if (now->left == nullptr){
                 now->left = new SegTreeNode;
                 now->left->delay = id;
-                now->left->I = init_info(nowleft, nowleft + (1ll<<(log2N-depth-1)) - 1);
+                now->left->I = init_info(nowleft, nowleft + (1ll<<(log2N-depth-1)));
             }
             if (now->right == nullptr){
                 now->right = new SegTreeNode;
                 now->right->delay = id;
-                now->right->I = init_info(nowleft + (1ll<<(log2N-depth-1)), nowleft + (1<<(log2N-depth)) - 1);
+                now->right->I = init_info(nowleft + (1ll<<(log2N-depth-1)), nowleft + (1<<(log2N-depth)));
             }
         }
         tell_info(now);
@@ -165,12 +164,12 @@ struct DynamicLazySegTree{
             if (now->left == nullptr){
                 now->left = new SegTreeNode;
                 now->left->delay = id;
-                now->left->I = init_info(nowleft, nowleft + (1ll<<(log2N-depth-1)) - 1);
+                now->left->I = init_info(nowleft, nowleft + (1ll<<(log2N-depth-1)));
             }
             if (now->right == nullptr){
                 now->right = new SegTreeNode;
                 now->right->delay = id;
-                now->right->I = init_info(nowleft + (1ll<<(log2N-depth-1)), nowleft + (1<<(log2N-depth)) - 1);
+                now->right->I = init_info(nowleft + (1ll<<(log2N-depth-1)), nowleft + (1<<(log2N-depth)));
             }
             tell_info(now);
             if ((nowidx_ref & (1ll<<(i-1)))){
@@ -211,12 +210,12 @@ struct DynamicLazySegTree{
         if (now->left == nullptr){
             now->left = new SegTreeNode;
             now->left->delay = id;
-            now->left->I = init_info(nowleft, nowleft + (1ll<<(log2N-depth-1)) - 1);
+            now->left->I = init_info(nowleft, nowleft + (1ll<<(log2N-depth-1)));
         }
         if (now->right == nullptr){
             now->right = new SegTreeNode;
             now->right->delay = id;
-            now->right->I = init_info(nowleft + (1ll<<(log2N-depth-1)), nowleft + (1<<(log2N-depth)) - 1);
+            now->right->I = init_info(nowleft + (1ll<<(log2N-depth-1)), nowleft + (1<<(log2N-depth)));
         }
         tell_info(now);
         now = now->left;
@@ -227,12 +226,12 @@ struct DynamicLazySegTree{
             if (now->left == nullptr){
                 now->left = new SegTreeNode;
                 now->left->delay = id;
-                now->left->I = init_info(nowleft, nowleft + (1ll<<(log2N-depth-1)) - 1);
+                now->left->I = init_info(nowleft, nowleft + (1ll<<(log2N-depth-1)));
             }
             if (now->right == nullptr){
                 now->right = new SegTreeNode;
                 now->right->delay = id;
-                now->right->I = init_info(nowleft + (1ll<<(log2N-depth-1)), nowleft + (1<<(log2N-depth)) - 1);
+                now->right->I = init_info(nowleft + (1ll<<(log2N-depth-1)), nowleft + (1<<(log2N-depth)));
             }
             tell_info(now);
             if (!G(operation(current_result, now->I))){
