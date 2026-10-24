@@ -410,11 +410,13 @@ using FastInput = BasicInput<1>;
 using FastInput = BasicInput<>;
 #endif
 using FastOutput = BasicOutput<>;
+
 // template<class... T> bool read(T&... values) { return in.read(values...); }
 // template<class... T> bool write(const T&... values) { return out.write(values...); }
 // template<class... T> bool print(const T&... values) { return out.print(values...); }
 // template<class... T> bool printflush(const T&... values) { return out.print(values...) && out.flush(); }
 // inline bool flush() { return out.flush(); }
+
 } // namespace fastio
 
 #endif /* FASTIO__HPP_ */

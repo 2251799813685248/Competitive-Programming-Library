@@ -26,13 +26,13 @@ class list{
     constexpr list(): sz_(0), max_sz_(0), A(nullptr){}
     constexpr list(uint sz): sz_(sz), max_sz_(sz){
         if (sz == 0){A = nullptr; return;}
-        if (sz_ > 2147483647){cerr << "ValueError: too large or negative size" << endl; assert(false);}
+        if (sz > 214748367){cerr << "ValueError: too large or negative size" << endl; assert(false);}
         A = new T[sz_]{};
         if (A == nullptr){cerr << "MomoryError: failed to allocate memory" << endl; assert(false);}
     }
     constexpr list(uint sz, T elem): sz_(sz), max_sz_(sz){
         if (sz == 0){A = nullptr; return;}
-        if (sz_ > 2147483647){cerr << "ValueError: too large or negative size" << endl; assert(false);}
+        if (sz > 2147483647){cerr << "ValueError: too large or negative size" << endl; assert(false);}
         A = new T[sz_]{};
         if (A == nullptr){cerr << "MemoryError: failed to allocate memory" << endl; assert(false);}
         for (int i = 0; i < sz_; i++){
@@ -286,7 +286,7 @@ class list{
         return std::move(A[sz_]);
     }
     inline constexpr void reserve(uint new_sz){
-        if (sz_ > 2147483647){cerr << "ValueError: too large or negative size" << endl; assert(false);}
+        if (new_sz > 2147483647){cerr << "ValueError: too large or negative size" << endl; assert(false);}
         if ((int)new_sz <= max_sz_){return;}
         max_sz_ = new_sz;
         auto B = new T[new_sz]{};
@@ -296,7 +296,7 @@ class list{
         A = B;
     }
     inline constexpr void resize(uint new_sz, T elem = T()){
-        if (sz_ > 2147483647){cerr << "ValueError: too large or negative size" << endl; assert(false);}
+        if (new_sz > 2147483647){cerr << "ValueError: too large or negative size" << endl; assert(false);}
         if ((int)new_sz <= max_sz_){
             while (sz_ > (int)new_sz){pop();}
             for (int i = sz_, new_sz_int = new_sz; i < new_sz_int; i++){A[i] = elem;}

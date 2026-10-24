@@ -13,7 +13,7 @@ using ll = long long;
 
 
 
-/// @brief 行列
+/// @brief 可変サイズの行列
 /// @attention 行,列共に0-indexed
 /// @attention コンストラクタにHとWを渡すと、[0][0]~[H-1][W-1]までできる。
 /// @attention コンストラクタ1 matrix(N)...N次単位行列
