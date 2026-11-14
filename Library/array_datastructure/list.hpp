@@ -16,7 +16,7 @@ template<typename T> concept has_plus_operator = requires (T a, T b){a+b;};
 template<typename T> concept has_compare_operator = requires (T a, T b){a < b;};
 template<typename T> concept has_equal_operator = requires (T a, T b){a == b; a != b;};
 
-
+/// @brief 動的配列
 template<typename T>
 class list{
     public:
@@ -84,7 +84,9 @@ class list{
         other.A = nullptr;
     }
     constexpr ~list() {
-        delete[] A;
+        if (A != nullptr){
+            delete[] A;
+        }
     }
 
     class iterator{
@@ -153,6 +155,12 @@ class list{
         
         inline constexpr int check_idx() const {
             if (idx < 0 || idx >= listptr->sz_){
+                cerr << "IteratorIndexError: index out of range. current size: " << listptr->sz_ << " target index: " << idx << endl; assert(false);
+            }
+            return idx;
+        }
+        inline constexpr int check_idx_tolerate_end() const {
+            if (idx < 0 || idx > listptr->sz_){
                 cerr << "IteratorIndexError: index out of range. current size: " << listptr->sz_ << " target index: " << idx << endl; assert(false);
             }
             return idx;
@@ -245,8 +253,6 @@ class list{
     inline constexpr list operator+(const T& val) const {
         return list(*this) += val;
     }
-    
-    
 
     inline constexpr void append(const T& val){
         if (sz_ < max_sz_){
@@ -339,7 +345,7 @@ class list{
         return pos;
     }
     inline constexpr iterator erase(iterator start, iterator end){
-        int startidx = start.check_idx(), endidx = end.check_idx();
+        int startidx = start.check_idx_tolerate_end(), endidx = end.check_idx_tolerate_end();
         if (startidx > endidx){cerr << "IndexError: invalid interval: [start, end) = []" << startidx << ", " << endidx << ")" << endl; assert(false);}
         for (int i = startidx; i < endidx; i++){
             A[i].~T();
@@ -352,7 +358,7 @@ class list{
         sz_ -= endidx-startidx;
         return end;
     }
-    inline constexpr void clear(){sz_ = 0; max_sz_ = 0; delete[] A;}
+    inline constexpr void clear(){sz_ = 0; max_sz_ = 0; delete[] A; A = nullptr;}
     inline constexpr const T& operator[](int idx) const {
         check_and_adjust_idx(idx);
         return A[idx];
@@ -403,13 +409,11 @@ class list{
         }
         return init;
     }
-    inline constexpr void sort(bool reverse = false) requires has_compare_operator<T> {
-        if (reverse){
-            std::sort(begin(), end(), std::move([](const T& a, const T& b){return b < a;}));
-        }
-        else{
-            std::sort(begin(), end());
-        }
+    inline constexpr void sort() requires has_compare_operator<T> {
+        std::sort(begin(), end());
+    }
+    inline constexpr void sort_reverse() requires has_compare_operator<T> {
+        std::sort(begin(), end(), std::move([](const T& a, const T& b){return b < a;}));
     }
     inline constexpr void sort(const function<bool(T,T)>& f) requires has_compare_operator<T> {
         std::sort(begin(), end(), f);
@@ -421,6 +425,31 @@ class list{
         ll res = 0;
         for (int i = 0; i < sz_; i++){res += A[i] == val;}
         return res;
+    }
+    inline constexpr ll index(const T& val){
+        for (int i = 0; i < sz_; i++){
+            if (A[i] == val){
+                return i;
+            }
+        }
+        return -1;
+    }
+    inline constexpr ll rindex(const T& val){
+        for (int i = sz_-1; i >= 0; i--){
+            if (A[i] == val){
+                return i;
+            }
+        }
+        return -1;
+    }
+    inline constexpr list<ll> allindex(const T& val){
+        list<ll> res;
+        for (int i = 0; i < sz_; i++){
+            if (A[i] == val){
+                res.append(i);
+            }
+        }
+        return std::move(res);
     }
     inline constexpr void apply(const function<T(T)>& f){for (int i = 0; i < sz_; i++){A[i] = f(A[i]);}}
     inline constexpr list<pair<int, T>> RLE(){

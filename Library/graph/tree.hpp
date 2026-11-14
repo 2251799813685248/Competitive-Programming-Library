@@ -1,13 +1,13 @@
 #ifndef TREE__HPP_
 #define TREE__HPP_
 
-#include <list.hpp>
-#include <deque.hpp>
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <utility>
+#include <deque.hpp>
 #include <functional>
+#include <list.hpp>
+#include <utility>
 using namespace std;
 using pii = array<int,2>;
 
@@ -16,7 +16,7 @@ template<typename INT> int tree_centroid(int N, const list<list<INT>>& E){
     if (N == 1){return 1;}
     list<bool> used(N+1, 0);
     list<int> subtreesize(N+1, 0);
-    delist<int> st;
+    deque2<int> st;
     st.append(~1);
     st.append(1);
     used[1] = true;
@@ -48,7 +48,7 @@ template<typename INT> int tree_centroid(int N, const list<list<INT>>& E){
 template<typename INT> list<pair<pair<int, int>, list<list<INT>>>> tree_decomposition(int N, const list<list<INT>>& E, int centroid){
     list<pair<pair<int, int>, list<list<INT>>>> res;
     list<bool> used(N+1, 0);
-    delist<int> st;
+    deque2<int> st;
     used[centroid] = true;
     for (INT subtreeroot : E[centroid]){
         int subtreesize = 1;
@@ -81,24 +81,25 @@ template<typename INT> list<pair<pair<int, int>, list<list<INT>>>> tree_decompos
     return res;
 }
 
-template<typename INT> pair<vector<INT>, vector<pair<INT, vector<INT>>>> subtree_size(int N, const vector<vector<INT>>& E, int root){
-    vector<bool> used(N, false);
-    vector<INT> res(N, 0);
-    vector<pair<INT, vector<INT>>> res2;
+template <typename INT>
+pair<list<INT>, list<pair<INT, list<INT>>>> subtree_size(int N, const list<list<INT>>& E, int root) {
+    list<bool> used(N, false);
+    list<INT> res(N, 0);
+    list<pair<INT, list<INT>>> res2(N, {static_cast<INT>(-1), list<INT>()});
     function<INT(INT)> dfs = [&](INT n){
-        if (used[n]){return;}
         used[n] = true;
         for (auto& w : E[n]){
             if (used[w]){continue;}
             res2[w].first = n;
-            res2[n].second.push_back(w);
+            res2[n].second.append(w);
             res[n] += dfs(w);
         }
         res[n] += 1;
         return res[n];
     };
+    used[root] = true;
     res[root] = dfs(root);
-    return res2;
+    return make_pair(res, res2);
 }
 
 

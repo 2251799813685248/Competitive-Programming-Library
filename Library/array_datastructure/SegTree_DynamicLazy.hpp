@@ -1,13 +1,13 @@
 #ifndef SEG_TREE__DYNAMIC_LAZY_HPP_
 #define SEG_TREE__DYNAMIC_LAZY_HPP_
 
-#include <functional>
-#include <list.hpp>
-#include <cmath>
 #include <algorithm>
 #include <cassert>
-#include <iostream>
+#include <cmath>
 #include <deque.hpp>
+#include <functional>
+#include <iostream>
+#include <list.hpp>
 using namespace std;
 using ll = long long;
 
@@ -143,7 +143,7 @@ struct DynamicLazySegTree{
         now->I = operation(now->left->I, now->right->I);
     }
 
-    delist<SegTreeNode*> stk; //二分探索中に辿っているノードを保持
+    deque2<SegTreeNode*> stk; //二分探索中に辿っているノードを保持
 
     /// @brief 左端をLに固定したとき、G(T.range_get(L, t))がtrueになる最小のtを返す。もしなければINF(=9223372036854775807)が返ってくる。
     /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。 
@@ -188,7 +188,7 @@ struct DynamicLazySegTree{
         }
         checkpoint:
         if (!G(operation(current_result, now->I))){
-            if (nowleft + (1ll<<(log2N-depth)) == 1<<log2N){
+            if (nowleft + (1ll<<(log2N-depth)) == (1<<log2N)){
                 return 9223372036854775807;
             }
             current_result = operation(current_result, now->I);
@@ -251,55 +251,14 @@ struct DynamicLazySegTree{
         }
         return nowleft+1;
     }
-    
-    // /// @brief 右端をRに固定したとき、条件式Gが成り立つ最大の左端indexを返す。もしなければ-INF-1(=-2147483648)が返ってくる。
-    // /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。
-    // /// @param R 右端 
-    // /// @param G 判定関数...引数a,bがあり、引数aを動かし、引数bを比較対象tに固定した時に引数aによってtrue,falseが変動するようなものである。
-    // /// @param t 比較対象のinfo
-    // /// @return Gがtrueになる最大左端indexまたは-2147483648
-    // int max_left(int R, const function<bool(info,info)> &G, const info &t){
-    //     info current_result = e;
-
-    //     int cto_init = __builtin_ctz(~R);
-    //     for (int i = log2N; i > cto_init; i--){
-    //         tell_info(((1<<log2N)+R)>>i);
-    //     }
-
-    //     checkpoint:
-
-    //     int cto = __builtin_ctz(~R);//cto...count trailing one
-    //     tell_info(((1<<log2N)+R)>>cto);
-    //     if (!G(operation(current_result, tree[((1<<log2N)+R)>>cto].first), t)){
-    //         if (get_left(((1<<log2N)+R)>>cto) == 0){
-    //             return -2147483648;
-    //         }
-    //         current_result = operation(current_result, tree[((1<<log2N)+R)>>cto].first);
-    //         R = get_left(((1<<log2N)+R)>>cto)-1;
-    //         goto checkpoint;
-    //     }
-
-    //     for (int i = cto-1; i >= 0; i--){
-    //         tell_info(((1<<log2N)+R)>>i);
-    //         if (!G(operation(current_result, tree[((1<<log2N)+R)>>i].first), t)){
-    //             current_result = operation(current_result, tree[((1<<log2N)+R)>>i].first);
-    //             R = get_left(((1<<log2N)+R)>>i)-1;
-    //             goto checkpoint;
-    //         }
-    //     }
-    //     return R;
-    // }
 
     info operator[](const ll t){
         return range_get(t,t);
     }
-    
-    inline constexpr size_t size() const {
+
+    inline constexpr ll size()const{
         return max_capacity;
     }
 };
-
-
-
 
 #endif /* SEG_TREE__DYNAMIC_LAZY_HPP_ */

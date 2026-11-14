@@ -1,44 +1,44 @@
 #ifndef AVLSET_HPP_
 #define AVLSET_HPP_
 
-
-
-//AVLset.hpp
+// AVLset.hpp
 /// @brief AVL木による重複なし集合
 /// @tparam T
 template <typename T>
 struct AVLset {
-    private:
+private:
     /// @brief AVLset用ノード
     /// @tparam TTT
-    template<typename TTT>
-    struct AVLsetNode{
-        TTT key; //値
+    template <typename TTT>
+    struct AVLsetNode {
+        TTT key;  // 値
         AVLsetNode* left;
         AVLsetNode* right;
-        AVLsetNode* parent; //親へのポインタ
-        int size; //この部分木に含まれるノードの総数
-        int height; //部分木から各ノードへの経路長の最大値
+        AVLsetNode* parent;  // 親へのポインタ
+        int size;            // この部分木に含まれるノードの総数
+        int height;          // 部分木から各ノードへの経路長の最大値
 
-        AVLsetNode(TTT k, AVLsetNode* p = nullptr) : key(k), left(nullptr), right(nullptr), parent(p), size(1), height(1) {}
+        AVLsetNode(TTT k, AVLsetNode* p = nullptr) : key(k), left(nullptr), right(nullptr), parent(p), size(1), height(1) {
+        }
     };
 
-    int treesize = 0;//全体の要素数
+    int treesize = 0;  // 全体の要素数
 
-    public:
+public:
     AVLsetNode<T>* root;
 
-    AVLset() : root(nullptr) {}
+    AVLset() : root(nullptr) {
+    }
 
-
-    ///双方向イテレーターの実装
+    /// 双方向イテレーターの実装
     class iterator {
     public:
         AVLsetNode<T>* current;
-        const AVLset<T>* tree; // 所属する木へのポインタ
+        const AVLset<T>* tree;  // 所属する木へのポインタ
 
         // コンストラクタで木への参照を受け取る
-        iterator(AVLsetNode<T>* node, const AVLset<T>* t) : current(node), tree(t) {}
+        iterator(AVLsetNode<T>* node, const AVLset<T>* t) : current(node), tree(t) {
+        }
 
         T& operator*() const {
             if (current == nullptr) {
@@ -55,8 +55,12 @@ struct AVLset {
             return &current->key;
         }
 
-        bool operator==(const iterator& other) const { return current == other.current; }
-        bool operator!=(const iterator& other) const { return current != other.current; }
+        bool operator==(const iterator& other) const {
+            return current == other.current;
+        }
+        bool operator!=(const iterator& other) const {
+            return current != other.current;
+        }
 
         // --- 前方移動 (++) ---
         iterator& operator++() {
@@ -69,8 +73,7 @@ struct AVLset {
             // 2. 通常の移動ロジック
             if (current->right != nullptr) {
                 current = current->right;
-                while (current->left != nullptr)
-                    current = current->left;
+                while (current->left != nullptr) current = current->left;
             } else {
                 AVLsetNode<T>* p = current->parent;
                 while (p != nullptr && current == p->right) {
@@ -93,8 +96,7 @@ struct AVLset {
             // 2. 通常の移動ロジック
             if (current->right != nullptr) {
                 current = current->right;
-                while (current->left != nullptr)
-                    current = current->left;
+                while (current->left != nullptr) current = current->left;
             } else {
                 AVLsetNode<T>* p = current->parent;
                 while (p != nullptr && current == p->right) {
@@ -122,15 +124,14 @@ struct AVLset {
             // 2. 通常の移動ロジック
             if (current->left != nullptr) {
                 current = current->left;
-                while (current->right != nullptr)
-                    current = current->right;
+                while (current->right != nullptr) current = current->right;
             } else {
                 AVLsetNode<T>* p = current->parent;
                 while (p != nullptr && current == p->left) {
                     current = p;
                     p = p->parent;
                 }
-                
+
                 // 3. begin() の手前に戻ろうとした場合（不正操作）
                 if (p == nullptr) {
                     // 移動先がない（＝自分が最小値だった）
@@ -159,15 +160,14 @@ struct AVLset {
             // 2. 通常の移動ロジック
             if (current->left != nullptr) {
                 current = current->left;
-                while (current->right != nullptr)
-                    current = current->right;
+                while (current->right != nullptr) current = current->right;
             } else {
                 AVLsetNode<T>* p = current->parent;
                 while (p != nullptr && current == p->left) {
                     current = p;
                     p = p->parent;
                 }
-                
+
                 // 3. begin() の手前に戻ろうとした場合（不正操作）
                 if (p == nullptr) {
                     // 移動先がない（＝自分が最小値だった）
@@ -179,16 +179,15 @@ struct AVLset {
         }
     };
 
-
     /// @brief 最小値を指すイテレーターを取得する。
     iterator begin() const {
         return iterator(getMinNode(root), this);
     }
-    /// @brief 最大値を指すイテレーターを取得する。 
-    iterator prevend() const{
-        return iterator(getMaxNode(root),this);
+    /// @brief 最大値を指すイテレーターを取得する。
+    iterator prevend() const {
+        return iterator(getMaxNode(root), this);
     }
-    /// @brief 最大値の次を指すイテレーターを取得する。 
+    /// @brief 最大値の次を指すイテレーターを取得する。
     iterator end() const {
         return iterator(nullptr, this);
     }
@@ -206,61 +205,63 @@ struct AVLset {
         return n;
     }
 
-
     /// @brief 指定したkeyを挿入する。すでにあれば何も起きない
-    /// @param key 
+    /// @param key
     void insert(const T& key) {
         root = insertNode(root, nullptr, key);
     }
 
     /// @brief 指定した要素を指すイテレーターを返す。なければend()が返される。
-    /// @param key 
-    /// @return 
+    /// @param key
+    /// @return
     iterator find(const T& key) {
         AVLsetNode<T>* curr = root;
         while (curr) {
-            if (key == curr->key) return iterator(curr, this);
-            else if (key < curr->key) curr = curr->left;
-            else curr = curr->right;
+            if (key == curr->key)
+                return iterator(curr, this);
+            else if (key < curr->key)
+                curr = curr->left;
+            else
+                curr = curr->right;
         }
         return end();
     }
-
 
     // イテレータが指す要素を1つだけ削除し、次の要素へのイテレータを返す
     iterator eraseone(iterator pos) {
         if (pos == end()) return end();
 
-        AVLsetNode<T>* targetNode = pos.current; // イテレータからノードを取得
+        AVLsetNode<T>* targetNode = pos.current;  // イテレータからノードを取得
 
         // ケースA: 子が2つある場合
         // この場合、deleteNodeDirect内部で「後継ノード(nextItが指す先)」が物理的に削除され、
         // その値が targetNode にコピーされます。
-        // つまり、targetNode はメモリ上には残りますが、中身が「次の要素」に入れ替わります。
+        // つまり、targetNode
+        // はメモリ上には残りますが、中身が「次の要素」に入れ替わります。
         if (targetNode->left != nullptr && targetNode->right != nullptr) {
-            
             // 削除操作を実行
             // (内部で targetNode->key が書き換わり、後継ノードが delete されます)
             deleteNodeDirect(targetNode);
 
             // targetNode の場所には「削除した値の次の値」が入っているため、
             // 更新された targetNode を指すイテレータを返せば正解です。
-            // (pos は内部的に targetNode を指しているので、そのまま pos を返せばOKですが、
+            // (pos は内部的に targetNode を指しているので、そのまま pos
+            // を返せばOKですが、
             //  念のため再構築して返します)
             return pos;
-            //return iterator(targetNode, this);
-        } 
-        
+            // return iterator(targetNode, this);
+        }
+
         // ケースB: 子が0個 または 1個の場合
         // この場合、targetNode そのものが物理的に delete されます。
         // そのため、削除前に「次のイテレータ」を確保しておく従来の方法が有効です。
         else {
             iterator nextIt = pos;
-            ++nextIt; // 次へ進めておく
+            ++nextIt;  // 次へ進めておく
 
             deleteNodeDirect(targetNode);
-            
-            return nextIt; // 退避しておいたイテレータを返す
+
+            return nextIt;  // 退避しておいたイテレータを返す
         }
     }
 
@@ -273,14 +274,14 @@ struct AVLset {
     // 戻り値: 削除された範囲の直後のイテレータ（つまり last）
     iterator range_erase(iterator first, iterator last) {
         while (first != last) {
-            AVLsetNode<T>* node = first.current; // Iteratorのcurrentにアクセスできる前提
+            AVLsetNode<T>* node = first.current;  // Iteratorのcurrentにアクセスできる前提
 
             // 【バグ修正】
             // firstが2つの子を持つ場合、内部実装では「後継ノード(右の最小)」が物理的に削除されます。
             // もし、その「後継ノード」が「last」そのものであった場合、
-            // eraseを実行すると last イテレーターが無効化(メモリ解放)されてしまいます。
+            // eraseを実行すると last
+            // イテレーターが無効化(メモリ解放)されてしまいます。
             if (node->left != nullptr && node->right != nullptr) {
-                
                 // 物理的に削除される予定の後継ノードを探す
                 AVLsetNode<T>* successor = node->right;
                 while (successor->left != nullptr) {
@@ -291,16 +292,17 @@ struct AVLset {
                 if (last.current == successor) {
                     // この場合、範囲 [first, last) には first 1つしか要素がありません。
                     // (successorはBSTにおいて直後の要素であるため)
-                    
+
                     // 1. 削除実行
                     //    値のSwapが行われ、successor(元のlast)がdeleteされます。
                     //    この時点で引数の last は無効になります。
                     eraseone(first);
 
                     // 2. ループ終了
-                    //    元の first ノードには、コピーされた successor(last) の値が入っています。
-                    //    つまり、現在の node こそが、新しい「last」相当の位置です。
-                    //    無効になった last と比較する前に、正しいイテレータを返して終了します。
+                    //    元の first ノードには、コピーされた successor(last)
+                    //    の値が入っています。 つまり、現在の node
+                    //    こそが、新しい「last」相当の位置です。 無効になった last
+                    //    と比較する前に、正しいイテレータを返して終了します。
                     return iterator(node, this);
                 }
             }
@@ -312,59 +314,62 @@ struct AVLset {
     }
 
     /// @brief 指定した要素keyがあるかを検索する。
-    /// @param key 
+    /// @param key
     /// @return keyがあればtrue なければfalse
     int count(const T& key) {
         AVLsetNode<T>* current = root;
         while (current != nullptr) {
-            if (key == current->key) return 1;
-            else if (key < current->key) current = current->left;
-            else current = current->right;
+            if (key == current->key)
+                return 1;
+            else if (key < current->key)
+                current = current->left;
+            else
+                current = current->right;
         }
         return 0;
     }
 
     /// @brief 要素数を取得
     /// @return 要素数
-    int size(){
+    int size() {
         return treesize;
     }
 
     /// @brief 空であるか判定
     /// @return treesize==0
-    bool empty(){
+    bool empty() {
         return treesize == 0;
     }
 
-    /// @brief 指定したkey以上の最小要素を指すイテレーターを取得する。なければend()が返される。
-    /// @param key 
+    /// @brief
+    /// 指定したkey以上の最小要素を指すイテレーターを取得する。なければend()が返される。
+    /// @param key
     /// @return iterator
-    iterator lower_bound(const T& key){
+    iterator lower_bound(const T& key) {
         AVLsetNode<T>* curr = root;
         AVLsetNode<T>* ok_node = nullptr;
-        while (curr != nullptr){
-            if (curr->key < key){
-                curr = curr->right; 
-            }
-            else{
+        while (curr != nullptr) {
+            if (curr->key < key) {
+                curr = curr->right;
+            } else {
                 ok_node = curr;
                 curr = curr->left;
             }
         }
         return iterator(ok_node, this);
     }
-    
-    /// @brief 指定したkeyより大きい最小要素を指すイテレーターを取得する。なければend()が返される。
-    /// @param key 
+
+    /// @brief
+    /// 指定したkeyより大きい最小要素を指すイテレーターを取得する。なければend()が返される。
+    /// @param key
     /// @return iterator
-    iterator upper_bound(const T& key){
+    iterator upper_bound(const T& key) {
         AVLsetNode<T>* curr = root;
         AVLsetNode<T>* ok_node = nullptr;
-        while (curr != nullptr){
-            if (curr->key <= key){
+        while (curr != nullptr) {
+            if (curr->key <= key) {
                 curr = curr->right;
-            }
-            else{
+            } else {
                 ok_node = curr;
                 curr = curr->left;
             }
@@ -373,52 +378,52 @@ struct AVLset {
     }
 
     /// @brief 全要素を消す。
-    void clear(){
-        delist<AVLsetNode<T>*> Q;
+    void clear() {
+        deque2<AVLsetNode<T>*> Q;
         Q.append(root);
-        while (!Q.empty()){
-            if (Q.front()->left != nullptr){
+        while (!Q.empty()) {
+            if (Q.front()->left != nullptr) {
                 Q.append(Q.front()->left);
             }
-            if (Q.front()->right != nullptr){
+            if (Q.front()->right != nullptr) {
                 Q.append(Q.front()->right);
             }
             delete Q.front();
             Q.pop_front();
         }
-        root = nullptr;//すべて初期化。
+        root = nullptr;  // すべて初期化。
         treesize = 0;
     }
 
     /// @brief index(0-indexed)でk番目の要素にアクセスする。
-    /// @param k 
-    /// @return 
-    iterator getkth(const int &k){
-        if (k < 0){
+    /// @param k
+    /// @return
+    iterator getkth(const int& k) {
+        if (k < 0) {
             cerr << "Index out of bounds(index must be non-negative)" << endl;
             assert(false);
         }
-        if (k >= treesize){
+        if (k >= treesize) {
             return end();
-            //cerr << "Index out of bounds(right out)" << endl;
-            //assert(false);
+            // cerr << "Index out of bounds(right out)" << endl;
+            // assert(false);
         }
         return iterator(findKthNode(root, k), this);
     }
 
-    iterator operator[](const int &k){
+    iterator operator[](const int& k) {
         return getkth(k);
     }
 
     /// @brief イテレーターが指す場所のindex(0-indexed)を返す。
-    /// @param pos 
+    /// @param pos
     /// @return index
-    int getindex(const iterator& it){
-        //end()のindexはtreesize
+    int getindex(const iterator& it) {
+        // end()のindexはtreesize
         if (it == end()) return treesize;
 
-        AVLsetNode<T>* node = it.current; 
-        
+        AVLsetNode<T>* node = it.current;
+
         // --- Step 1: 自分の左部分木のサイズをカウント ---
         int idx = getSize(node->left);
 
@@ -430,14 +435,13 @@ struct AVLset {
                 // 親(1つ) + 親の左部分木(getSize) を加算
                 idx += 1 + getSize(curr->parent->left);
             }
-            
+
             // 上へ移動
             curr = curr->parent;
         }
 
         return idx;
     }
-
 
     /// @brief 全要素を小さい順に表示
     void display() {
@@ -446,13 +450,10 @@ struct AVLset {
         std::cout << "\n\n";
     }
 
-
-
-
 private:
     // --- ヘルパー関数 ---
 
-    //部分木サイズを取得
+    // 部分木サイズを取得
     int getSize(AVLsetNode<T>* n) {
         if (n == nullptr) return 0;
         return n->size;
@@ -462,7 +463,7 @@ private:
     void updateNode(AVLsetNode<T>* n) {
         if (n != nullptr) {
             n->height = 1 + std::max(getHeight(n->left), getHeight(n->right));
-            n->size = 1 + getSize(n->left) + getSize(n->right); // ★サイズ計算
+            n->size = 1 + getSize(n->left) + getSize(n->right);  // ★サイズ計算
         }
     }
 
@@ -487,8 +488,8 @@ private:
 
         // 親の更新
         if (T2) T2->parent = y;
-        x->parent = y->parent; // xはyの元の親を継承
-        y->parent = x;         // yの親はxになる
+        x->parent = y->parent;  // xはyの元の親を継承
+        y->parent = x;          // yの親はxになる
 
         // 高さ、部分木の要素数更新
         updateNode(y);
@@ -521,11 +522,11 @@ private:
     // 挿入ロジック (親ポインタの設定を追加)
     AVLsetNode<T>* insertNode(AVLsetNode<T>* node, AVLsetNode<T>* parent, const T& key) {
         // 1. 通常のBST挿入
-        if (node == nullptr){// 親をセット
+        if (node == nullptr) {  // 親をセット
             treesize++;
             return new AVLsetNode<T>(key, parent);
         }
-        
+
         if (key < node->key)
             node->left = insertNode(node->left, node, key);
         else if (key > node->key)
@@ -540,11 +541,9 @@ private:
         int balance = getBalance(node);
 
         // LL
-        if (balance > 1 && key < node->left->key)
-            return rightRotate(node);
+        if (balance > 1 && key < node->left->key) return rightRotate(node);
         // RR
-        if (balance < -1 && key > node->right->key)
-            return leftRotate(node);
+        if (balance < -1 && key > node->right->key) return leftRotate(node);
         // LR
         if (balance > 1 && key > node->left->key) {
             node->left = leftRotate(node->left);
@@ -559,12 +558,11 @@ private:
         return node;
     }
 
-    
     // 特定のノードを物理的に削除し、親を遡ってバランス調整する
     void deleteNodeDirect(AVLsetNode<T>* node) {
         if (node == nullptr) return;
 
-        treesize--;//削除されるので一個減らす
+        treesize--;  // 削除されるので一個減らす
 
         // ---------------------------------------------------
         // 1. 子が2つある場合
@@ -572,10 +570,10 @@ private:
         // ---------------------------------------------------
         if (node->left != nullptr && node->right != nullptr) {
             AVLsetNode<T>* successor = getMinNode(node->right);
-            
+
             // 値だけコピー（本来はstd::moveなどが好ましい）
             node->key = successor->key;
-            
+
             // 削除対象を successor に変更して、以下の「子0or1」の処理に流す
             node = successor;
         }
@@ -616,7 +614,7 @@ private:
 
             // バランスチェック
             int balance = getBalance(curr);
-            
+
             // 親へのポインタを繋ぎ変えるため、回転後の新しい部分木の根を受け取る
             AVLsetNode<T>* newSubRoot = curr;
 
@@ -644,8 +642,10 @@ private:
             //  「親のleft/rightのどちらか」という情報はここで更新する)
             AVLsetNode<T>* p = newSubRoot->parent;
             if (p != nullptr) {
-                if (curr == p->left) p->left = newSubRoot;
-                else p->right = newSubRoot;
+                if (curr == p->left)
+                    p->left = newSubRoot;
+                else
+                    p->right = newSubRoot;
             } else {
                 root = newSubRoot;
             }
@@ -657,7 +657,7 @@ private:
 
     // 再帰探索ロジック
     AVLsetNode<T>* findKthNode(AVLsetNode<T>* node, int k) {
-        if (node == nullptr){
+        if (node == nullptr) {
             cerr << "There are fatal bugs in this AVL tree" << endl;
             assert(false);
         }
@@ -677,18 +677,14 @@ private:
         }
     }
 
-
     void inOrder(AVLsetNode<T>* roott) {
         if (roott != nullptr) {
             inOrder(roott->left);
             // T型を cout で出力できる必要がある
-            std::cout << roott->key << " "; 
+            std::cout << roott->key << " ";
             inOrder(roott->right);
         }
     }
 };
-
-
-
 
 #endif /* AVLSET_HPP_ */

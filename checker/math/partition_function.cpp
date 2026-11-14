@@ -1,21 +1,19 @@
-#include <iostream>
-#include <utility>
-#include <list.hpp>
-#include <string>
-#include <cmath>
-#include <unordered_set>
-#include <unordered_map>
-#include <queue>
 #include <algorithm>
-#include <iomanip>
-#include <cassert>
-#include <functional>
-#include <random>
 #include <bitset>
+#include <cassert>
+#include <cmath>
+#include <functional>
+#include <iomanip>
+#include <iostream>
+#include <list.hpp>
+#include <queue>
+#include <random>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
 
 // #include <boost/multiprecision/cpp_int.hpp>
-
-
 
 using namespace std;
 using ll = long long;
@@ -61,22 +59,19 @@ fps_operator<998244353> op;
 
 
 void solve(){
-
-    delist<FormalPowerSeries<998244353>> q;
+    deque2<FormalPowerSeries<998244353>> q;
     for (ll i = 0; i <= 500000; i++){
         q.append(FormalPowerSeries<998244353>(i+1));
         q.back()[i] = 998244352;
         q.back()[0] = 1;
     }
 
-    while (len(q) > 1){
-        auto f = std::move(q.front());
-        q.pop_front();
-        auto g = std::move(q.front());
-        q.pop_front();
+    while (q.size() > 1) {
+        auto f = q.popleft();
+        auto g = q.popleft();
         q.append(op.convolution(f, g));
-        while (len(q.back()) > 500000){
-            q.back().f.pop_back();
+        while (q.size() > 500000){
+            q.back().f.pop();
             q.back().sz--;
         }
     }

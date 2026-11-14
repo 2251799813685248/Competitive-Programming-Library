@@ -12,12 +12,9 @@ using namespace std;
 
 
 /// @brief 抽象化セグメントツリー
-/// @attention コンストラクタ1 SegTree(A, e, op, mapping)
-/// @attention コンストラクタ2 SegTree(N, I, e, op, mapping)
+/// @note コンストラクタ1 SegTree(配列, 単位元, 二項演算)
+/// @note コンストラクタ2 SegTree(長さ, 初期値, 単位元, 二項演算)
 /// @tparam info セグ木の各ノードに載せる情報をまとめた構造体の型
-/// @tparam func 更新に使う変数をまとめた構造体の型(アフィン変換なら、aとbを持つ構造体など)
-/// @param e 載せたものの単位元(sumなら0, maxなら-infなど)
-/// @param operation 各ノードに載ってる構造体に対する二項演算をする関数(min,max,sumなど)
 template<typename info>
 struct SegTree{
     int log2N;//セグ木の高さ-1
@@ -59,7 +56,6 @@ struct SegTree{
     }
     /// @brief list Aで初期化
     /// @param I 載せたい構造体
-    /// @param N 載せた個数
     /// @param eee 載せたものの単位元(sumなら0, maxなら-infなど)
     /// @param op 各ノードに載ってる構造体に対する二項演算をする関数(min,max,sumなど)
     SegTree(const list<info> &A, info eee, function<info(info,info)> op){
@@ -87,10 +83,10 @@ struct SegTree{
         }
     }
 
-    int get_left(int index_on_tree){
+    inline int get_left(int index_on_tree){
         return (1<<(log2N-31+__builtin_clz(index_on_tree)))*(index_on_tree-(1<<(31-__builtin_clz(index_on_tree))));
     }
-    int get_right(int index_on_tree){
+    inline int get_right(int index_on_tree){
         return (1<<(log2N-31+__builtin_clz(index_on_tree)))*(1+index_on_tree-(1<<(31-__builtin_clz(index_on_tree))));
     }    
 
@@ -127,7 +123,7 @@ struct SegTree{
     }
 
     /// @brief index tが指す要素をvalに置換する。
-    /// @param L 置換対象のindex
+    /// @param t 置換対象のindex
     /// @param val 置換後の値
     void pointwise_update(const int t, const info &val){
         if (t >= max_capacity || t < 0){
@@ -143,7 +139,7 @@ struct SegTree{
     }
 
     /// @brief 左端をLに固定したとき、G(T.range_get(L, t))がtrueになる最小のt(L <= t <= max_capacity)を返す。もしなければINF(=2147483647)が返ってくる。
-    /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。 
+    /// @note 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。 
     /// @param L 左端
     /// @param G 判定関数...boolを返す。引数としてinfoを受け取るが、これはT.range_get(L, t)が入り、これに関する条件式を自分で関数内に記述することで、このようなtの最小が求まる。
     int min_right(int L, const function<bool(info)> &G){
@@ -170,7 +166,7 @@ struct SegTree{
         return L+1 <= max_capacity ? L+1 : 2147483647;
     }
     /// @brief 右端をRに固定したとき、G(T.range_get(t, R))がtrueになる最大のt(0 <= t <= R)を返す。もしなければ-INF-1(=-2147483648)が返ってくる。
-    /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。
+    /// @note 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。
     /// @param R 右端 
     /// @param G 判定関数...boolを返す。引数としてinfoを受け取るが、これはT.range_get(t, R)が入り、これに関する条件式を自分で関数内に記述することで、このようなtの最大が求まる。
     int max_left(int R, const function<bool(info)> &G){

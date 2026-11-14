@@ -13,15 +13,10 @@ using namespace std;
 
 
 /// @brief 抽象化遅延セグメントツリー
-/// @attention コンストラクタ1 LazySegTree(A, e, op, mapping, composition, id)
-/// @attention コンストラクタ2 LazySegTree(N, I, e, op, mapping, composition , id)
+/// @attention コンストラクタ1 LazySegTree(配列, 単位元, 二項演算, 写像, 写像合成, 恒等写像)
+/// @attention コンストラクタ2 LazySegTree(長さ, 初期値, 単位元, 二項演算, 写像, 写像合成 , 恒等写像)
 /// @tparam info セグ木の各ノードに載せる情報をまとめた構造体の型
 /// @tparam func 更新に使う変数をまとめた構造体の型(アフィン変換なら、aとbを持つ構造体など)
-/// @param e 載せたものの単位元(sumなら0, maxなら-infなど)
-/// @param operation 各ノードに載ってる構造体に対する二項演算をする関数(min,max,sumなど)
-/// @param mapping infoに対してfuncを作用させた結果を返す関数(アフィン変換ならx -> ax+b)
-/// @param composition func同士の合成結果を1つのfuncにする関数((u,v)でu(v())の結果を返すものとする)(ax+bのあとにcx+dを作用させると実質acx+bc+dになるなど)
-/// @param id funcの恒等写像(アフィン変換ならx -> 1x+0)
 template<typename info, typename func>
 struct LazySegTree{
     int log2N;//セグ木の高さ-1
@@ -129,8 +124,8 @@ struct LazySegTree{
         tree[index_on_tree].second = id;
     }
 
-    delist<int> lazy_node;//区間集計、区間更新に使う。
-    delist<int> lazy_node_flipped;//区間更新で使う。
+    deque2<int> lazy_node;//区間集計、区間更新に使う。
+    deque2<int> lazy_node_flipped;//区間更新で使う。
 
     /// @brief 区間[L,R)において、集計を行う。
     /// @param L 左端(左端を含む)
@@ -228,7 +223,7 @@ struct LazySegTree{
     }
 
     /// @brief 左端をLに固定したとき、G(T.range_get(L, t))がtrueになる最小のt(L <= t <= max_capacity)を返す。もしなければINF(=2147483647)が返ってくる。
-    /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。 
+    /// @note 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。 
     /// @param L 左端
     /// @param G 判定関数...boolを返す。引数としてinfoを受け取るが、これはT.range_get(L, t)が入り、これに関する条件式を自分で関数内に記述することで、このようなtの最小が求まる。
     int min_right(int L, const function<bool(info)> &G){
@@ -261,7 +256,7 @@ struct LazySegTree{
         return L+1 <= max_capacity ? L+1 : 2147483647;
     }
     /// @brief 右端をRに固定したとき、G(T.range_get(t, R))がtrueになる最大のt(0 <= t <= R)を返す。もしなければ-INF-1(=-2147483647)が返ってくる。
-    /// @attention 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。 
+    /// @note 判定関数Gは、区間を広げていったときにfalse,false,false,...false,true,true,true...のように、falseが続いた後にtrueが続くものでなければならない。 
     /// @param L 左端
     /// @param G 判定関数...boolを返す。引数としてinfoを受け取るが、これはT.range_get(t, R)が入り、これに関する条件式を自分で関数内に記述することで、このようなtの最小が求まる。
     int max_left(int R, const function<bool(info)> &G){

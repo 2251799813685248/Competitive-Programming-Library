@@ -66,58 +66,6 @@ struct fps_operator{
         return x < y ? x + M - y : x - y;
     }
 
-    // --- AVX-512 / AVX2 SIMD Intrinsics ---
-#if defined(__AVX512F__) && defined(__AVX512DQ__)
-    static inline __m512i montgomery_mul_simd(__m512i a, __m512i b, __m512i mod, __m512i neg_inv) {
-        __m512i mul0 = _mm512_mul_epu32(a, b);
-        __m512i mul1 = _mm512_mul_epu32(_mm512_srli_epi64(a, 32), _mm512_srli_epi64(b, 32));
-        __m512i q0 = _mm512_mul_epu32(_mm512_mullo_epi32(mul0, neg_inv), mod);
-        __m512i q1 = _mm512_mul_epu32(_mm512_mullo_epi32(mul1, neg_inv), mod);
-        __m512i res0 = _mm512_srli_epi64(_mm512_add_epi64(mul0, q0), 32);
-        __m512i res1 = _mm512_srli_epi64(_mm512_add_epi64(mul1, q1), 32);
-        __m512i res = _mm512_or_si512(res0, _mm512_slli_epi64(res1, 32));
-        __mmask16 cmp = _mm512_cmpge_epu32_mask(res, mod);
-        return _mm512_mask_sub_epi32(res, cmp, res, mod);
-    }
-    static inline __m512i mod_add_simd(__m512i a, __m512i b, __m512i mod) {
-        __m512i res = _mm512_add_epi32(a, b);
-        __mmask16 cmp = _mm512_cmpge_epu32_mask(res, mod);
-        return _mm512_mask_sub_epi32(res, cmp, res, mod);
-    }
-    static inline __m512i mod_sub_simd(__m512i a, __m512i b, __m512i mod) {
-        __mmask16 cmp = _mm512_cmplt_epu32_mask(a, b);
-        __m512i res = _mm512_sub_epi32(a, b);
-        return _mm512_mask_add_epi32(res, cmp, res, mod);
-    }
-#elif defined(__AVX2__)
-    // AVX2用 モンゴメリ乗算・剰余加減算
-    static inline __m256i montgomery_mul_simd(__m256i a, __m256i b, __m256i mod, __m256i neg_inv) {
-        __m256i mul0 = _mm256_mul_epu32(a, b);
-        __m256i mul1 = _mm256_mul_epu32(_mm256_srli_epi64(a, 32), _mm256_srli_epi64(b, 32));
-        __m256i q0 = _mm256_mul_epu32(_mm256_mullo_epi32(mul0, neg_inv), mod);
-        __m256i q1 = _mm256_mul_epu32(_mm256_mullo_epi32(mul1, neg_inv), mod);
-        __m256i res0 = _mm256_srli_epi64(_mm256_add_epi64(mul0, q0), 32);
-        __m256i res1 = _mm256_srli_epi64(_mm256_add_epi64(mul1, q1), 32);
-        
-        __m256i res = _mm256_blend_epi32(res0, _mm256_slli_epi64(res1, 32), 0xAA);
-        __m256i diff = _mm256_sub_epi32(res, mod);
-        // diff < 0 なら -1 (全ビット1)、そうでないなら 0 となるマスク
-        __m256i mask = _mm256_srai_epi32(diff, 31);
-        return _mm256_add_epi32(diff, _mm256_and_si256(mask, mod));
-    }
-    static inline __m256i mod_add_simd(__m256i a, __m256i b, __m256i mod) {
-        __m256i diff = _mm256_sub_epi32(_mm256_add_epi32(a, b), mod);
-        __m256i mask = _mm256_srai_epi32(diff, 31);
-        return _mm256_add_epi32(diff, _mm256_and_si256(mask, mod));
-    }
-    static inline __m256i mod_sub_simd(__m256i a, __m256i b, __m256i mod) {
-        __m256i diff = _mm256_sub_epi32(a, b);
-        __m256i mask = _mm256_srai_epi32(diff, 31);
-        return _mm256_add_epi32(diff, _mm256_and_si256(mask, mod));
-    }
-#endif
-
-
     constexpr fps_operator(){
         list<ll> powroot{1};
         list<ll> powrootinv;
@@ -1128,8 +1076,8 @@ constant_modint<M> Bostan_Mori(const ll N, FormalPowerSeries<M> P, FormalPowerSe
             Q[i/2] = B[i];
         }
 
-        P.resize((A.size()+!btest_for_fps(N,_i_))/2);
-        for (size_t i = btest_for_fps(N,_i_); i < A.size(); i += 2){
+        P.resize((A.size() + ((N & (1<<_i_)) == 0)) / 2);
+        for (size_t i = ((N & (1<<_i_)) != 0); i < A.size(); i += 2){
             P[i/2] = A[i];
         }
     }
@@ -1225,7 +1173,7 @@ list<constant_modint<M>> multipoint_evaluation(const FormalPowerSeries<M>& F, co
 
 template<uint M>
 FormalPowerSeries<M> product_of_polynomial_sequence(const list<FormalPowerSeries<M>>& A, const fps_operator<M>& op){
-    delist<FormalPowerSeries<M>> dq;
+    deque2<FormalPowerSeries<M>> dq;
     dq.append(FormalPowerSeries<998244353>{1});
     for (auto& f : A){
         dq.append(std::move(f));
