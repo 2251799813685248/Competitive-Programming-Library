@@ -35,6 +35,7 @@ template<class T> using unsigned_t = typename unsigned_type<T>::type;
 template<class T> inline constexpr bool signed_integer = integer<T> && T(-1) < T(0);
 template<class T> concept modular = requires(T x) { x.val; } &&
     (requires { T::mod_value; } || requires { T::mod(); });
+template<class T> concept fraction = requires(T x) { x.denominator; };
 template<class T> constexpr auto modulus() {
     if constexpr (requires { T::mod_value; }) return T::mod_value;
     else return T::mod();
@@ -327,6 +328,8 @@ class BasicOutput {
             return unsigned_number(u,negative);
         } else if constexpr (detail::modular<T>) {
             return write_one(value.val);
+        } else if constexpr (detail::fraction<T>) {
+            return write_one(value.numerator) && write_one("/") && write_one(value.denominator);
         } else if constexpr (std::is_convertible_v<const T&,std::string_view>) {
             const std::string_view text(value);
             return bytes(text.data(),text.size());

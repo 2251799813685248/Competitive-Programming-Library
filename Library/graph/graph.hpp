@@ -4,7 +4,8 @@
 #include <iostream>
 #include <utility>
 #include <list.hpp>
-#include <queue>
+#include <deque.hpp>
+#include <priority_deque.hpp>
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -286,72 +287,6 @@ struct NoWeightGraph{
 
 };
 
-struct WeightedGraph{
-    ll N;
-    list<list<list<ll>>> Edge;
-    list<ll> D;//直近のDijkstraで求めた距離リスト
-
-    /// @brief 頂点,辺数を指定して自動で入力を受け取ってグラフを構築する
-    /// @param vertex_num 
-    /// @param edge_num 
-    /// @param directional 
-    WeightedGraph(ll vertex_num, ll edge_num, bool directional = false){
-        N = vertex_num;
-        Edge = list<list<list<ll>>>(N+1);
-        for (int i = 0; i < edge_num; i++){
-            ll u,v,w;
-            cin >> u >> v >> w;
-            Edge[u].append({v,w});
-            if (!directional){
-                Edge[v].append({u,w});
-            }
-        }
-    }
-    /// @brief 頂点数を指定して辺のないグラフを構築
-    /// @param vertex_num 
-    WeightedGraph(ll vertex_num){
-        N = vertex_num;
-        Edge = list<list<list<ll>>>(N+1);
-    }
-
-    /// @brief 事前に作った隣接頂点リストでグラフを構築
-    /// @param E 
-    WeightedGraph(const list<list<list<ll>>> &E){
-        N = E.size()-1;
-        Edge = E;
-    }
-
-    void add_edge(ll u, ll v, ll w, bool directional = false){
-        Edge[u].append({v,w});
-        if (!directional){
-            Edge[v].append({v,w});
-        }
-    }
-
-    list<ll> Djikstra(const list<ll> &startpoints){
-        list<bool> visited(N+1,0);
-        D = list<ll>(N+1,9223372036854775807);
-
-        priority_queue<list<ll>,list<list<ll>>,greater<list<ll>>> pQ;
-        for (auto v : startpoints){
-            pQ.push({0,v});
-        }
-
-        while (!pQ.empty()){
-            ll dist = pQ.top()[0];
-            ll now = pQ.top()[1];
-            pQ.pop();
-            if (visited[now]){continue;}
-            visited[now] = 1;
-            D[now] = dist;
-            for (auto v : Edge[now]){
-                if (visited[v[0]]){continue;}
-                pQ.push({dist+v[1], v[0]});
-            }
-        }
-        return D;
-    }
-};
 
 struct Tree{
     ll N;//頂点数
@@ -396,21 +331,21 @@ struct Tree{
     /// @param startpoints 
     /// @return 
     list<pll> BFS(const list<ll> &startpoints){
-        queue<ll> Q;
+        delist<ll> Q;
         D = list<pll>(N+1,{9223372036854775807, -2});//-2...まだ到達してない,  -1...始点,  それ以外...一個前の頂点
         for (auto v : startpoints){
             D[v] = {0, -1};
-            Q.push(v);
+            Q.append(v);
         }
 
         while (!Q.empty()){
             ll now = Q.front();
-            Q.pop();
+            Q.popleft();
             for (auto v : Edge[now]){
                 if (D[v[0]][1] == -2){
                     D[v[0]][0] = D[now][0] + v[1];
                     D[v[0]][1] = now;
-                    Q.push(v[0]);
+                    Q.append(v[0]);
                 }
             }
         }
@@ -424,7 +359,7 @@ struct Tree{
         list<int> R;
         if (D[g][1] == -2){return R;}
         while (D[g][1] != -1){
-            R.emplace_back(g);
+            R.append(g);
             g = D[g][1];
         }
         R.append(g);
@@ -462,20 +397,20 @@ struct Tree{
         lca_doubling_table = list<list<pll>> (N+1, list<pll>(M+1,pll{-1,-1}));
         lca_depth = list<ll>(N+1,0);
 
-        queue<ll> Q;
+        delist<ll> Q;
         list<bool> used(N+1,0);
-        Q.push(1);
+        Q.append(1);
         used[1] = 1;
         lca_depth[1] = 0;
         while (!Q.empty()){
             ll now = Q.front();
-            Q.pop();
+            Q.popleft();
             for (auto &v : Edge[now]){
                 if (used[v[0]]){continue;}
                 used[v[0]] = 1;
                 lca_depth[v[0]] = lca_depth[now]+1;
                 lca_doubling_table[v[0]][0] = {now, v[1]};
-                Q.push(v[0]);
+                Q.append(v[0]);
             }
         }
 

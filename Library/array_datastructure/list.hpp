@@ -157,6 +157,12 @@ class list{
             }
             return idx;
         }
+        inline constexpr int check_idx_tolerate_end() const {
+            if (idx < 0 || idx > listptr->sz_){
+                cerr << "IteratorIndexError: index out of range(out of end). current size: " << listptr->sz_ << " target index: " << idx << endl; assert(false);
+            }
+            return idx;
+        }
 
         private:
         
@@ -339,7 +345,7 @@ class list{
         return pos;
     }
     inline constexpr iterator erase(iterator start, iterator end){
-        int startidx = start.check_idx(), endidx = end.check_idx();
+        int startidx = start.check_idx_tolerate_end(), endidx = end.check_idx_tolerate_end();
         if (startidx > endidx){cerr << "IndexError: invalid interval: [start, end) = []" << startidx << ", " << endidx << ")" << endl; assert(false);}
         for (int i = startidx; i < endidx; i++){
             A[i].~T();
@@ -403,15 +409,13 @@ class list{
         }
         return init;
     }
-    inline constexpr void sort(bool reverse = false) requires has_compare_operator<T> {
-        if (reverse){
-            std::sort(begin(), end(), std::move([](const T& a, const T& b){return b < a;}));
-        }
-        else{
-            std::sort(begin(), end());
-        }
+    inline constexpr void sort() requires has_compare_operator<T> {
+        std::sort(begin(), end());
     }
-    inline constexpr void sort(const function<bool(T,T)>& f) requires has_compare_operator<T> {
+    inline constexpr void sort_reverse() requires has_compare_operator<T> {
+        std::sort(begin(), end(), std::move([](const T& a, const T& b){return b < a;}));
+    }
+    inline constexpr void sort(const function<bool(T,T)>& f){
         std::sort(begin(), end(), f);
     }
     inline constexpr void reverse(){
