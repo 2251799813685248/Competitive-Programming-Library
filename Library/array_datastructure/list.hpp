@@ -161,7 +161,7 @@ class list{
         }
         inline constexpr int check_idx_tolerate_end() const {
             if (idx < 0 || idx > listptr->sz_){
-                cerr << "IteratorIndexError: index out of range. current size: " << listptr->sz_ << " target index: " << idx << endl; assert(false);
+                cerr << "IteratorIndexError: index out of range(out of end). current size: " << listptr->sz_ << " target index: " << idx << endl; assert(false);
             }
             return idx;
         }
@@ -415,7 +415,7 @@ class list{
     inline constexpr void sort_reverse() requires has_compare_operator<T> {
         std::sort(begin(), end(), std::move([](const T& a, const T& b){return b < a;}));
     }
-    inline constexpr void sort(const function<bool(T,T)>& f) requires has_compare_operator<T> {
+    inline constexpr void sort(const function<bool(T,T)>& f){
         std::sort(begin(), end(), f);
     }
     inline constexpr void reverse(){

@@ -74,7 +74,7 @@ struct priority_deque{
 	        }
         }
     }
-    inline constexpr void assert_empty(){
+    inline constexpr void assert_empty() const {
         if (A.empty()){
             cerr << "IndexError: operation on  an empty priority_deque" << endl;
             assert(false);

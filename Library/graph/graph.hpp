@@ -310,11 +310,11 @@ struct NoWeightGraph {
 };
 
 
-template<typename costT>
-struct MaxFlowGraph {
-    int N;
-    list<>
-};
+// template<typename costT>
+// struct MaxFlowGraph {
+//     int N;
+//     list<>
+// };
 
 
 struct WeightedGraph {
