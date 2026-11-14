@@ -341,6 +341,7 @@ class list{
         for (int i = idx; i < sz_-1; i++){
             swap(A[i], A[i+1]);
         }
+        A[sz_-1].~T();
         sz_ -= 1;
         return pos;
     }
