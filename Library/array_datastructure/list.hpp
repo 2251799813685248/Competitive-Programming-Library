@@ -211,7 +211,7 @@ class list{
         return res;
     }
     inline constexpr bool operator!=(const list& other) const {
-        return !this->operator==(other);
+        return !(this->operator==(other));
     }
     inline constexpr bool operator<(const list& other) const {
         int lcp_back = 0;
@@ -449,7 +449,7 @@ class list{
                 res.append(i);
             }
         }
-        return std::move(res);
+        return res;
     }
     inline constexpr void apply(const function<T(T)>& f){for (int i = 0; i < sz_; i++){A[i] = f(A[i]);}}
     inline constexpr list<pair<int, T>> RLE(){
